@@ -1,4 +1,4 @@
-package com.example.mingle.domain.calendar.shcedule.entity;
+package com.example.mingle.domain.calendar.schedule.entity;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
