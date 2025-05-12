@@ -1,7 +1,7 @@
 ---
 name: ✨ Feature Request
 about: "새로운 기능이나 개선사항을 요청하는 템플릿입니다."
-title: "[Feature] "
+title: "[BE/FEAT] - 기능대상 - 기능내용 "
 labels: ["💜feature"]
 assignees: []
 
