@@ -1,5 +1,6 @@
 package com.example.mingle.domain.post.legalpost.entity;
 
+import com.example.mingle.domain.post.legalpost.enums.SettlementCategory;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -33,7 +34,4 @@ public class Settlement {
     @Column(nullable = false)
     private Boolean isSettled;
 
-    public enum SettlementCategory {
-        광고수익, 음원수익, 출연료정산, 용역료정산, 행사정산
-    }
 }
