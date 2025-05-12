@@ -1,11 +1,9 @@
-package com.example.mingle.domain.calendar.shcedule.entity;
+package com.example.mingle.domain.calendar.schedule.entity;
 
-import com.example.mingle.domain.user.user.entity.UserRole;
 import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.collection.spi.BagSemantics;
 
 import java.time.LocalDateTime;
 
