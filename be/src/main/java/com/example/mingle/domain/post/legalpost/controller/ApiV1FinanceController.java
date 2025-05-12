@@ -52,12 +52,14 @@ public class ApiV1FinanceController {
         return ResponseEntity.ok("정산 수정 완료");
     }
 
+    // 정산 삭제
     @DeleteMapping("/settlements/{settlementId}")
     public ResponseEntity<?> deleteSettlement(@PathVariable Long settlementId) {
         settlementService.deleteSettlement(settlementId);
         return ResponseEntity.ok("정산 삭제 완료");
     }
 
+    // 정산 상태 변경
     @PutMapping("/settlements/{settlementId}/status")
     public ResponseEntity<?> updateSettlementStatus(
             @PathVariable Long settlementId,
@@ -67,6 +69,7 @@ public class ApiV1FinanceController {
         return ResponseEntity.ok("정산 확정 상태 변경 완료");
     }
 
+    // 정산 통계
     @GetMapping("/summary")
     public ResponseEntity<SettlementSummaryDto> getSettlementSummary() {
         return ResponseEntity.ok(settlementService.getSummary());
