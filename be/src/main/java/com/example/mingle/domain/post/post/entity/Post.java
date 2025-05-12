@@ -1,10 +1,20 @@
 package com.example.mingle.domain.post.post.entity;
 
+import com.example.mingle.domain.post.post.enums.Category;
+import com.example.mingle.domain.user.user.entity.User;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
+@Getter
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@SuperBuilder
 public class Post {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,6 +50,5 @@ public class Post {
     private LocalDateTime updatedAt;
 
     private boolean isDeleted;
-
 
 }
