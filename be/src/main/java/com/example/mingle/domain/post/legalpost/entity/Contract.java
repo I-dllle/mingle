@@ -1,11 +1,18 @@
 package com.example.mingle.domain.post.legalpost.entity;
 
 import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
+import com.example.mingle.domain.post.legalpost.enums.ContractType;
+import com.example.mingle.domain.user.team.entity.ArtistTeam;
+import com.example.mingle.domain.user.team.entity.Department;
+import com.example.mingle.domain.user.user.entity.User;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
 
 @Entity
+@Getter@Setter
 @Table(name = "contract")
 public class Contract {
 
@@ -20,8 +27,8 @@ public class Contract {
 
     // 소속팀
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "team_id", nullable = false)
-    private Team team;
+    @JoinColumn(name = "team_id")
+    private ArtistTeam team;
 
     // 계약서 파일 (업로드 경로 등)
     @Column(length = 500, nullable = false)
@@ -42,4 +49,16 @@ public class Contract {
     @Column(nullable = false)
     private ContractStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ContractType contractType;  // ELECTRONIC or PAPER
+
+    @Column(length = 100)
+    private String signerName;
+
+    @Column(columnDefinition = "TEXT")
+    private String signerMemo;
+
+    @Column(nullable = false)
+    private Boolean isSettlementCreated = false;
 }
