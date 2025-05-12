@@ -1,6 +1,8 @@
 package com.example.mingle.domain.post.post.entity;
 
 import com.example.mingle.domain.post.post.enums.Category;
+import com.example.mingle.domain.user.team.entity.ArtistTeam;
+import com.example.mingle.domain.user.team.entity.Department;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
@@ -17,10 +19,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @SuperBuilder
 public class Post extends BaseEntity{
-    // 소속 팀
+    // 소속 부서
     @ManyToOne
-    @JoinColumn(name = "team_id")
-    private Team team;
+    @JoinColumn(name = "department_id")
+    private Department department;
 
     // 작성자
     @ManyToOne
