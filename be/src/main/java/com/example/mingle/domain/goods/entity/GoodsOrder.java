@@ -3,6 +3,7 @@ package com.example.mingle.domain.goods.entity;
 import com.example.mingle.domain.goods.enums.OrderStatus;
 import com.example.mingle.domain.goods.enums.PaymentMethod;
 import com.example.mingle.domain.user.user.entity.User;
+import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,12 +14,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class GoodsOrder {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long orderId;
-
+public class GoodsOrder extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id", nullable = false)
     private Goods goods;

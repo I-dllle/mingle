@@ -2,6 +2,7 @@ package com.example.mingle.domain.post.post.entity;
 
 import com.example.mingle.domain.post.post.enums.Category;
 import com.example.mingle.domain.user.user.entity.User;
+import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,11 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class Post {
-
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+public class Post extends BaseEntity{
     // 소속 팀
     @ManyToOne
     @JoinColumn(name = "team_id")
@@ -46,9 +43,5 @@ public class Post {
 
     private String imageUrl;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-
     private boolean isDeleted;
-
 }

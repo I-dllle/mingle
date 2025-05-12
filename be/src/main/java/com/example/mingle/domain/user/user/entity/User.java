@@ -1,11 +1,15 @@
 package com.example.mingle.domain.user.user.entity;
 
+import com.example.mingle.domain.goods.entity.Goods;
 import com.example.mingle.domain.user.team.entity.Department;
 import com.example.mingle.global.jpa.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
