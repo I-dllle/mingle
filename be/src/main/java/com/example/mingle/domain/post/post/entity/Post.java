@@ -1,19 +1,28 @@
 package com.example.mingle.domain.post.post.entity;
 
+import com.example.mingle.domain.post.post.enums.Category;
+import com.example.mingle.domain.user.team.entity.ArtistTeam;
+import com.example.mingle.domain.user.team.entity.Department;
+import com.example.mingle.domain.user.user.entity.User;
+import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
+@Getter
 @Entity
-public class Post {
-
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    // 소속 팀
+@NoArgsConstructor
+@AllArgsConstructor
+@SuperBuilder
+public class Post extends BaseEntity{
+    // 소속 부서
     @ManyToOne
-    @JoinColumn(name = "team_id")
-    private Team team;
+    @JoinColumn(name = "department_id")
+    private Department department;
 
     // 작성자
     @ManyToOne
@@ -36,10 +45,5 @@ public class Post {
 
     private String imageUrl;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-
     private boolean isDeleted;
-
-
 }
