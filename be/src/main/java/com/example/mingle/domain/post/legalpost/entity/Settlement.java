@@ -29,6 +29,7 @@ public class Settlement {
     private BigDecimal amount;
 
     @Lob
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String memo;
 
     @Column(nullable = false)

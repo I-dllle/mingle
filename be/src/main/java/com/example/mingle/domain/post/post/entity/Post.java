@@ -31,6 +31,7 @@ public class Post {
     private String title;
 
     @Lob
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
     private String imageUrl;

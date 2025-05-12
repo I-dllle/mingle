@@ -29,6 +29,7 @@ public class Contract {
 
     // 계약 요약 설명
     @Lob
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String summary;
 
     @Column(nullable = false)
