@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class ScheduleRequest {
-    private Long postId; // 이거는 고민
+    private Long postId;
     private String title;
     private String description;
     private LocalDateTime startTime;
