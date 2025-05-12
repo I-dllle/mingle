@@ -8,7 +8,7 @@ spring:
     active: dev
     include: secret
   datasource:
-    url: jdbc:mysql://localhost:3307/blog_prod
+    url: jdbc:mysql://localhost:3307/mingle_dev
     username: su
     password: sususu1234
     driver-class-name: com.mysql.cj.jdbc.Driver
