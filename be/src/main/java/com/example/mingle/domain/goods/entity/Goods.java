@@ -1,6 +1,7 @@
 package com.example.mingle.domain.goods.entity;
 
-import com.example.mingle.domain.user.entity.User;
+import com.example.mingle.domain.user.user.entity.User;
+import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,12 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Goods {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long itemId;
-
+public class Goods extends BaseEntity {
     @Column(nullable = false, length = 100)
     private String itemName;
 
@@ -31,9 +27,6 @@ public class Goods {
 
     @Column(nullable = false)
     private Boolean isActive;
-
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
