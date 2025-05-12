@@ -1,0 +1,18 @@
+name: "Auto Label PR by Title"
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Label by PR title prefix
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          labels: |
+            ${{ startsWith(github.event.pull_request.title, '[Feat]') && '💜feature' }}
+            ${{ startsWith(github.event.pull_request.title, '[Bug]') && '🐞bug' }}
+            ${{ startsWith(github.event.pull_request.title, '[Refactor]') && '🔄refactor' }}
