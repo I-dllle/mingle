@@ -27,6 +27,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ContractService {
+
     private final ContractRepository contractRepository;
     private final SettlementRatioRepository ratioRepository;
     private final UserRepository userRepository;
@@ -44,7 +45,7 @@ public class ContractService {
         contract.setStartDate(req.getStartDate());
         contract.setEndDate(req.getEndDate());
         contract.setStatus(ContractStatus.DRAFT);
-        contract.setContractType(ContractType.ELECTRONIC);
+        contract.setContractType(req.getContractType()); // ELECTRONIC or PAPER
         contract.setIsSettlementCreated(false);
 
         contractRepository.save(contract);
@@ -72,6 +73,10 @@ public class ContractService {
     public void signContract(Long id, SignContractRequest req) {
         Contract contract = contractRepository.findById(id).orElseThrow();
 
+        if (contract.getContractType() != ContractType.ELECTRONIC) {
+            throw new IllegalStateException("전자 서명 계약이 아닙니다.");
+        }
+
         if (contract.getStatus() != ContractStatus.REVIEW) {
             throw new IllegalStateException("검토 상태만 서명 가능");
         }
@@ -83,10 +88,29 @@ public class ContractService {
         contractRepository.save(contract);
     }
 
+    public void signOffline(Long id, SignContractRequest req) {
+        Contract contract = contractRepository.findById(id).orElseThrow();
+
+        if (contract.getContractType() != ContractType.PAPER) {
+            throw new IllegalStateException("종이 계약이 아닙니다.");
+        }
+
+        if (contract.getStatus() != ContractStatus.REVIEW) {
+            throw new IllegalStateException("검토 상태만 종이 서명 가능");
+        }
+
+        contract.setSignerName(req.getSignerName());
+        contract.setSignerMemo(req.getSignerMemo());
+        contract.setStatus(ContractStatus.SIGNED_OFFLINE);
+
+        contractRepository.save(contract);
+    }
+
     private boolean canTransition(ContractStatus current, ContractStatus next) {
         return switch (current) {
             case DRAFT -> next == ContractStatus.REVIEW;
-            case REVIEW -> next == ContractStatus.CONFIRMED;
+            case REVIEW -> next == ContractStatus.CONFIRMED || next == ContractStatus.SIGNED_OFFLINE;
+            case SIGNED_OFFLINE -> next == ContractStatus.CONFIRMED;
             default -> false;
         };
     }
