@@ -2,9 +2,12 @@ package com.example.mingle.domain.post.legalpost.entity;
 
 import com.example.mingle.domain.post.legalpost.enums.RatioType;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
+@Getter@Setter
 @Entity
 @Table(name = "settlement_ratio")
 public class SettlementRatio {
