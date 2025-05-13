@@ -1,6 +1,8 @@
 package com.example.mingle.domain.attendance.entity;
 
 import com.example.mingle.domain.attendance.enums.AttendanceStatus;
+import com.example.mingle.domain.attendance.enums.HalfDayType;
+import com.example.mingle.domain.attendance.enums.VacationType;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
@@ -18,10 +20,17 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @SuperBuilder
 @ToString
-@Table(name = "attendance")
+@Table(
+        name = "attendance",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_user_date",
+                columnNames = {"user_id", "date"}
+        )
+)
+
 public class Attendance extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
@@ -46,9 +55,19 @@ public class Attendance extends BaseEntity {
     @Column(name = "overtime_hours")
     private Double overtimeHours;
 
+    private String reason;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, name = "attendance_status")
     private AttendanceStatus attendanceStatus;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "vacation_type")
+    private VacationType vacationType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "half_day_type")
+    private HalfDayType halfDayType;
 
 }
 
