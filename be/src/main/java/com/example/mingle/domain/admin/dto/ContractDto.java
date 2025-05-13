@@ -18,7 +18,7 @@ public class ContractDto {
         return ContractDto.builder()
                 .id(contract.getId())
                 .title(contract.getTitle())
-                .artistName(contract.getArtist().getName())
+                .artistName(contract.getUser().getName())
                 .endDate(contract.getEndDate())
                 .build();
     }

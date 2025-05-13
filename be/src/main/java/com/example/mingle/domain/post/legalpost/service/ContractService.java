@@ -1,5 +1,6 @@
 package com.example.mingle.domain.post.legalpost.service;
 
+import com.docusign.esign.client.ApiException;
 import com.example.mingle.domain.post.legalpost.dto.contract.CreateContractRequest;
 import com.example.mingle.domain.post.legalpost.entity.Contract;
 import com.example.mingle.domain.post.legalpost.entity.SettlementRatio;
@@ -13,7 +14,8 @@ import com.example.mingle.domain.user.team.repository.ArtistTeamRepository;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.domain.user.user.repository.UserRepository;
 import com.example.mingle.global.aws.AwsS3Uploader;
-import com.example.mingle.global.auth.CustomUser;
+
+import com.example.mingle.global.security.SecurityUser;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -82,7 +84,7 @@ public class ContractService {
         contractRepository.save(contract);
     }
 
-    public String signContract(Long contractId, CustomUser user) throws IOException {
+    public String signContract(Long contractId, SecurityUser user) throws IOException, ApiException {
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new IllegalArgumentException("계약 없음"));
 
@@ -101,7 +103,7 @@ public class ContractService {
             fos.write(fileBytes);
         }
 
-        String signatureUrl = docusignService.sendEnvelope(tempFile, user.getName(), user.getEmail());
+        String signatureUrl = docusignService.sendEnvelope(tempFile, user.getNickname(), user.getEmail());
 
         contract.setDocusignUrl(signatureUrl);
         contract.setStatus(ContractStatus.SIGNED);
@@ -134,7 +136,7 @@ public class ContractService {
         return url.substring(url.lastIndexOf("/") + 1);
     }
 
-    public void signOffline(Long id, CustomUser user) throws IOException{
+    public void signOffline(Long id, SecurityUser user) throws IOException{
         Contract contract = contractRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("계약 없음"));
 
@@ -150,7 +152,7 @@ public class ContractService {
             throw new AccessDeniedException("본인의 계약만 서명할 수 있습니다.");
         }
 
-        contract.setSignerName(user.getName());
+        contract.setSignerName(user.getNickname());
         contract.setSignerMemo("오프라인 서명 완료: " + LocalDateTime.now());
         contract.setStatus(ContractStatus.SIGNED_OFFLINE);
 

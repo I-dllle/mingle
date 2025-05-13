@@ -4,6 +4,7 @@ import com.example.mingle.domain.post.legalpost.dto.contract.ChangeStatusRequest
 import com.example.mingle.domain.post.legalpost.dto.copyright.CopyrightContractDto;
 import com.example.mingle.domain.post.legalpost.dto.copyright.CreateCopyrightContractRequest;
 import com.example.mingle.domain.post.legalpost.service.CopyrightService;
+import com.example.mingle.global.security.SecurityUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -45,7 +46,7 @@ public class ApiV1CopyrightController {
     @PreAuthorize("hasRole('USER') or hasRole('ARTIST')")
     public ResponseEntity<?> sign(
             @PathVariable Long id,
-            @AuthenticationPrincipal CustomUser user
+            @AuthenticationPrincipal SecurityUser user
     ) {
         copyrightService.signContract(id, user);
         return ResponseEntity.ok("서명 완료");
@@ -56,7 +57,7 @@ public class ApiV1CopyrightController {
     @PreAuthorize("hasRole('USER') or hasRole('ARTIST')")
     public ResponseEntity<?> signOffline(
             @PathVariable Long id,
-            @AuthenticationPrincipal CustomUser user
+            @AuthenticationPrincipal SecurityUser user
     ) {
         copyrightService.signOffline(id, user);
         return ResponseEntity.ok("오프라인 서명 완료");

@@ -4,6 +4,7 @@ import com.example.mingle.domain.post.legalpost.dto.contract.*;
 import com.example.mingle.domain.post.legalpost.entity.Contract;
 import com.example.mingle.domain.post.legalpost.repository.ContractRepository;
 import com.example.mingle.domain.post.legalpost.service.ContractService;
+import com.example.mingle.global.security.SecurityUser;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +49,7 @@ public class ApiV1LegalController {
     @PreAuthorize("hasRole('USER') or hasRole('ARTIST')")
     public ResponseEntity<String> sign(
             @PathVariable Long id,
-            @AuthenticationPrincipal CustomUser user
+            @AuthenticationPrincipal SecurityUser user
     ) throws IOException{
         String signatureUrl = contractService.signContract(id, user);
         return ResponseEntity.ok(signatureUrl);
@@ -59,7 +60,7 @@ public class ApiV1LegalController {
     @PreAuthorize("hasRole('USER') or hasRole('ARTIST')")
     public ResponseEntity<?> signOffline(
             @PathVariable Long id,
-            @AuthenticationPrincipal CustomUser user
+            @AuthenticationPrincipal SecurityUser user
     ) throws IOException{
         contractService.signOffline(id, user);
         return ResponseEntity.ok("오프라인 서명 완료");

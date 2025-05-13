@@ -3,6 +3,7 @@ package com.example.mingle.domain.admin.service;
 import com.example.mingle.domain.admin.dto.ContractDto;
 import com.example.mingle.domain.post.legalpost.repository.ContractRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;

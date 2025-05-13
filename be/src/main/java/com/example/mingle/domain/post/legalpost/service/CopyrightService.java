@@ -14,12 +14,15 @@ import com.example.mingle.domain.user.team.repository.ArtistTeamRepository;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.domain.user.user.repository.UserRepository;
 import com.example.mingle.global.aws.AwsS3Uploader;
+import com.example.mingle.global.security.SecurityUser;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -77,7 +80,7 @@ public class CopyrightService {
         contractRepository.save(contract);
     }
 
-    public void signContract(Long id, CustomUser user) {
+    public void signContract(Long id, SecurityUser user) {
         CopyrightContract contract = contractRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("계약 없음"));
 
@@ -94,14 +97,14 @@ public class CopyrightService {
             throw new AccessDeniedException("본인의 계약만 서명할 수 있습니다.");
         }
 
-        contract.setSignerName(user.getName());
+        contract.setSignerName(user.getNickname());
         contract.setSignerMemo("전자 서명 완료: " + LocalDateTime.now());
         contract.setStatus(ContractStatus.SIGNED);
 
         contractRepository.save(contract);
     }
 
-    public void signOffline(Long id, CustomUser user) {
+    public void signOffline(Long id, SecurityUser user) {
         CopyrightContract contract = contractRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("계약 없음"));
 
@@ -117,7 +120,7 @@ public class CopyrightService {
             throw new AccessDeniedException("본인의 계약만 서명할 수 있습니다.");
         }
 
-        contract.setSignerName(user.getName());
+        contract.setSignerName(user.getNickname());
         contract.setSignerMemo("오프라인 서명 완료: " + LocalDateTime.now());
         contract.setStatus(ContractStatus.SIGNED_OFFLINE);
 

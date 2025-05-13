@@ -6,6 +6,7 @@ import com.example.mingle.domain.post.legalpost.enums.ContractType;
 import com.example.mingle.domain.user.team.entity.ArtistTeam;
 import com.example.mingle.domain.user.team.entity.Department;
 import com.example.mingle.domain.user.user.entity.User;
+import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,11 +16,7 @@ import java.time.LocalDate;
 @Entity
 @Getter@Setter
 @Table(name = "contract")
-public class Contract {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long contractId;
+public class Contract extends BaseEntity {
 
     // 계약 당사자: 아티스트 또는 일반 유저
     @ManyToOne(fetch = FetchType.LAZY)
