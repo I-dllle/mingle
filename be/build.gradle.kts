@@ -55,6 +55,8 @@ dependencies {
 	// swagger
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5")
 
+	// docusign
+	implementation ("com.docusign:docusign-esign-java:3.16.1")
 }
 
 tasks.withType<Test> {

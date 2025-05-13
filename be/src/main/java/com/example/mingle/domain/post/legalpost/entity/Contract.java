@@ -73,9 +73,6 @@ public class Contract {
     @Column(length = 100)
     private String companyName; // 서명 발신자 or 회사명 (ex. Mingle엔터)
 
-    @Column(name = "modusign_document_id")
-    private String modusignDocumentId;
-
-    @Column(name = "modusign_signature_url")
-    private String modusignSignedUrl;
+    private String docusignEnvelopeId;
+    private String docusignUrl;
 }

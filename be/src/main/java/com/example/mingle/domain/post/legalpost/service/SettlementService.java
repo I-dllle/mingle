@@ -42,14 +42,15 @@ public class SettlementService {
             BigDecimal amount = totalRevenue.multiply(ratio.getPercentage())
                     .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
 
-            Settlement s = new Settlement();
-            s.setUser(contract.getUser()); // 또는 ratio.getUser() 등 실제 정산 대상
-            s.setAmount(amount);
-            s.setDate(LocalDate.now());
-            s.setCategory(SettlementCategory.계약);
-            s.setMemo(contract.getSummary());
-            s.setContract(contract);
-            s.setIsSettled(false);
+            Settlement s = Settlement.builder()
+                    .user(contract.getUser())
+                    .amount(amount)
+                    .date(LocalDate.now())
+                    .category(SettlementCategory.계약)
+                    .memo(contract.getSummary())
+                    .contract(contract)
+                    .isSettled(false)
+                    .build();
 
             settlementRepository.save(s);
         }

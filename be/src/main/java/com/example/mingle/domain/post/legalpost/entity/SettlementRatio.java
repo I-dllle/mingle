@@ -1,6 +1,7 @@
 package com.example.mingle.domain.post.legalpost.entity;
 
 import com.example.mingle.domain.post.legalpost.enums.RatioType;
+import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,11 +11,7 @@ import java.math.BigDecimal;
 @Getter@Setter
 @Entity
 @Table(name = "settlement_ratio")
-public class SettlementRatio {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long ratioId;
+public class SettlementRatio extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contract_id", nullable = false)

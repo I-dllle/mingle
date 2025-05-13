@@ -60,7 +60,7 @@ public class ApiV1LegalController {
     public ResponseEntity<?> signOffline(
             @PathVariable Long id,
             @AuthenticationPrincipal CustomUser user
-    ) {
+    ) throws IOException{
         contractService.signOffline(id, user);
         return ResponseEntity.ok("오프라인 서명 완료");
     }

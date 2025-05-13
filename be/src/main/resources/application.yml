@@ -61,3 +61,39 @@ admin:
     email: admin@admin.com
     password: Admin1234!
     nickname: ???
+
+
+docusign:
+  integration-key: c5176a94-2482-4f79-8b73-a9dd5e01ad81
+  user-id: 37d04cb7-e75f-4e2b-8de2-3973d319fa19
+  account-id: 38675561
+  base-path: https://demo.docusign.net/restapi
+  return-url: http://localhost:3000/contract/signed
+  private-key: |
+    -----BEGIN RSA PRIVATE KEY-----
+    MIIEpAIBAAKCAQEAudaq0JT8HhWV6rL2mSi1c8FhdIblVop9EoUZ9atC/v6KHShr
+    gEXP+Ke/lcj9PehVu+P8IyG8dyZ3NlPxK64lEfBeKFI/KSb5e1DSaEdRMketZMp+
+    g/dMiNqAELuyw9cSKjQ3OPyMc039oduAI4WbB7Nc06y5OSIIknNNRqq4QOrk/RrN
+    N2uBdbcuyO99E9l2BDmjABzEZhjlngwn62iBZiR8h7mX5YVyAEQU1PO/OeZ0La8Y
+    o3EO/jVbFwmrpnvOwXtvNfnx4UmUPYqkNy4MM7fqnWa5sAsSSCAqp8BbbpHDB5CP
+    QALUgRsuvLeoitNpP8rEU3TlYDZKWo4LCwILRQIDAQABAoIBAALGrSiOgTGl2uZ1
+    o+9nx0YiZmVKOpTPXszvBhNAarDKdp+24dw5rsClKNyA8x+An/89iZ+wulMBVRiP
+    qnOfl1gsQgvSJrVjqqhn7ay3HARnQ7TUvY0VHaSRtwYI98OrK89LlmOYijSSvq4z
+    TDe7oDQ+Pq2+z8mFs6EUbdwXYsc9dHKiB5LQ68EMZ4pVYJv+1cfn8BIc2x3aVwvG
+    FtqESCCY9OQcbdYE0aGhn071gB6W+Y+wa9qO8718CG5AxcDhhmYEjeO2QCgaZEk+
+    v1ncRODGcgxq1KdkgmXfyKK/xEk4vS71clMuqotkiijCr3mPLAI7JGRqjSVuP+yz
+    VRE5saUCgYEA/+5Z+qjRxbIjxxqNBbt93XkFu0EfuEqm9zZ7jZUEi98HjXpK8uhl
+    wQZELf2MUjM+hnuKodmB7UUbbqpZ9v0DFe1cYWiKj+CbGg2vRNvGmWPeK5aEXJOl
+    /inx09QpcZomF54el7ghVtYFMWRENUoEzbsY9cg/9E6jJTxGJkHG428CgYEAueN7
+    eSrX0by8Th+hwxSD7IzYY64CvXl2Zy8MH80Sd4VCuOf0irj2/XnNcxw55+dAmZVi
+    CLTN2CE78Iic4Gvyw+5IZM86mI/V3FdVVULsWr4+/Uw2Bbbkvbm4iOS+IL74xNsH
+    dzxP6WMnXX7uSiKRAi3XCX6rgvxKW4WAsrIFUosCgYEA0vygWTCLnzt4m0+cKrmi
+    zc5Tl0fc6oVAmFTmDpZnJRg8lbnXx+Em4bZUxsVbxPhR93QpmbxCjGSIdPcjK6bx
+    wEXp/rO8Z1h3BUd60n2MgDAAnFZ90AQ4uAvEPSmO8QRvmtDTz6gQdBIEPe+2+2eG
+    BkTUEut/Ld0WSkAiZK+dUykCgYBWr5DLBoGym1MtE286K/0BeQUIJwO8HEJtB/Gd
+    euKbvhdJZ1IQxwTXW8/FWGpgjOUBOjqHWNmNaqIrH2oY9f42BI7aBBGNR7YxlMCE
+    jDrwbjutn7apn4q4Nz2pCRLo7mXQV1v57LRPYB/hZ+nzxH7fB0V6dgnBgamjWHSV
+    4JK+1QKBgQCTCIw1qF8rEpjww8THr83q2U1UeIpRG7Fyb0O6lFAPi9fGtp8d5fnz
+    yPZ8eTNAo68X1yvdmFLc9THSywV7bD9nJPjRuL5bXmMOFkYeFTye5uKNVAPNBdVE
+    gRfRoSEa9C7SClSSLN/xTgtnnd2M/NONKviQYrJ2qc53ZOscI9X5mg==
+    -----END RSA PRIVATE KEY-----

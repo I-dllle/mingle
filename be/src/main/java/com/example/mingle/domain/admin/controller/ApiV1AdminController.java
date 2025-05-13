@@ -1,14 +1,18 @@
 package com.example.mingle.domain.admin.controller;
 
+import com.example.mingle.domain.admin.dto.ContractDto;
+import com.example.mingle.domain.admin.dto.DashboardSummaryDto;
+import com.example.mingle.domain.admin.service.AdminDashboardService;
+import com.example.mingle.domain.admin.service.LegalDashboardService;
 import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
 import com.example.mingle.domain.post.legalpost.service.ContractService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/admin")
@@ -16,6 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 @PreAuthorize("hasRole('ADMIN')")
 public class ApiV1AdminController {
     private final ContractService contractService;
+    private final AdminDashboardService dashboardService;
+    private final LegalDashboardService legalDashboardService;
 
     // 관리자가 계약서 최종 확정
     @PostMapping("/{id}/confirm")
@@ -24,5 +30,31 @@ public class ApiV1AdminController {
         return ResponseEntity.ok().build();
     }
 
+    // 요약
+    @GetMapping("/summary")
+    public DashboardSummaryDto getSummary() {
+        return dashboardService.getSummary();
+    }
 
+    // 법무
+    // 계약 유형별 현황
+    @GetMapping("/contract-types")
+    public Map<String, Long> getContractTypes() {
+        return legalDashboardService.getContractTypeStats();
+    }
+
+    @GetMapping("/contract-status")
+    public Map<String, Long> getContractStatus() {
+        return legalDashboardService.getContractStatusStats();
+    }
+
+    @GetMapping("/signature-status")
+    public Map<String, Long> getSignatureStatus() {
+        return legalDashboardService.getSignatureStatusStats();
+    }
+
+    @GetMapping("/expiring-contracts")
+    public List<ContractDto> getExpiringContracts() {
+        return legalDashboardService.getExpiringContracts();
+    }
 }
