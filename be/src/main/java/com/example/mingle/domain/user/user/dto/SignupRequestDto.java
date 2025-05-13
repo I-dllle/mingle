@@ -1,7 +1,6 @@
 package com.example.mingle.domain.user.user.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,8 +16,8 @@ public class SignupRequestDto {
     @NotBlank(message = "역할은 필수 입력값입니다. (예: ARTIST, STAFF)")
     private String role;
 
-    @NotNull(message = "부서 ID는 필수 입력값입니다.")
-    private Long departmentId;
+    @NotBlank(message = "부서이름은 필수 입력값입니다.")
+    private String departmentName;
 
     private String nickname;
     private String email;

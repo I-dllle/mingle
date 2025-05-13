@@ -45,7 +45,7 @@ public class UserService {
         }
 
         // 부서 조회
-        Department department = departmentRepository.findById(request.getDepartmentId())
+        Department department = departmentRepository.findByDepartmentName(request.getDepartmentName())
                 .orElseThrow(() -> new IllegalArgumentException("부서를 찾을 수 없습니다."));
 
         // 유저 생성

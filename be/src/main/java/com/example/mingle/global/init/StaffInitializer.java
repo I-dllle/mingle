@@ -8,6 +8,7 @@ import com.example.mingle.domain.user.user.entity.UserStatus;
 import com.example.mingle.domain.user.user.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.IntStream;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class StaffInitializer {
@@ -27,9 +29,17 @@ public class StaffInitializer {
 
     @PostConstruct
     public void init() {
+        // 1. 중복 유저 존재 확인
         boolean alreadyExists = userRepository.existsByLoginId("staff001");
         if (alreadyExists) return;
 
+        // 2. 부서 존재 여부 선방어 처리
+        if (departmentRepository.count() == 0) {
+            log.warn("[StaffInitializer] 부서가 아직 생성되지 않아 스태프 유저 생성을 건너뜁니다.");
+            return;
+        }
+
+        // 3. 부서 목록 조회
         List<Department> departments = departmentRepository.findAll();
 
         if (departments.isEmpty()) {
