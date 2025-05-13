@@ -25,5 +25,5 @@ public class ScheduleResponse {
     @Schema(description = "종료 시간", example = "2025-05-13T11:00:00") private LocalDateTime endTime;
     @Schema(description = "메모", example = "회의 자료 준비") private String memo;
     @Schema(description = "일정 타입", example = "DEPARTMENT") private ScheduleType scheduleType;
-    @Schema(description = "일정 상태", example = "중요 회의") private ScheduleStatus scheduleStatus;
+    @Schema(description = "일정 상태", example = "중요회의") private ScheduleStatus scheduleStatus;
 }
