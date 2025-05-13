@@ -33,7 +33,13 @@ public class UserService {
      */
     @Transactional
     public User signup(SignupRequestDto request) {
-        // 닉네임 중복 체크 (loginId, email)
+        // 이메일 자동 복사: loginId가 이메일 형식인데 email이 비어 있으면 복사
+        if ((request.getEmail() == null || request.getEmail().isBlank())
+                && request.getLoginId().contains("@")) {
+            request.setEmail(request.getLoginId());
+        }
+
+        // 이메일 중복 체크
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
         }
