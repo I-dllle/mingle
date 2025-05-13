@@ -26,16 +26,16 @@ public class Schedule extends BaseEntity {
     @JoinColumn(name = "post_id")
     private Post post;
 
-    @Column(name = "title")
+    @Column(name = "title", nullable = false)
     private String title;
 
     @Column(name = "description")
     private String description;
 
-    @Column(name = "start_time")
+    @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
 
-    @Column(name = "end_time")
+    @Column(name = "end_time", nullable = false)
     private LocalDateTime endTime;
 
     @Column(name = "memo")
@@ -46,6 +46,6 @@ public class Schedule extends BaseEntity {
     private ScheduleStatus scheduleStatus;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "schedule_type")
+    @Column(name = "schedule_type", nullable = false)
     private ScheduleType scheduleType;
 }

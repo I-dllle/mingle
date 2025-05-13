@@ -13,8 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -32,11 +30,12 @@ public class ApiV1ScheduleController {
     @Operation(summary = "일정 생성", description = "새 일정을 생성하고 생성된 일정을 반환합니다.")
     @PostMapping
     public ResponseEntity<ScheduleResponse> createSchedule(
-            @AuthenticationPrincipal CustomUser user,
+            @RequestParam Long userId,
             @Parameter(description = "생성할 일정 정보", required = true)
             @Valid @RequestBody ScheduleRequest request
+            //            ,@AuthenticationPrincipal CustomUser customUser
     ) {
-        Long userId = user.getId();
+//        Long userId = user.getId();
         ScheduleResponse response = scheduleService.createSchedule(request, userId, request.getPostId());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -48,9 +47,10 @@ public class ApiV1ScheduleController {
     public ResponseEntity<List<ScheduleResponse>> getSchedulesByStatus(
             @Parameter(description = "조회할 일정 상태", example = "중요회의, 휴가, 출장 등")
             @PathVariable ScheduleStatus status,
-            @AuthenticationPrincipal CustomUser customUser
+            //            @AuthenticationPrincipal CustomUser customUser
+            @RequestParam Long userId
     ) {
-        Long userId = customUser.getId();
+//        Long userId = customUser.getId();
         List<ScheduleResponse> responses = scheduleService.getSchedulesByStatus(userId, status);
         return ResponseEntity.ok(responses);
     }
@@ -63,12 +63,13 @@ public class ApiV1ScheduleController {
             @RequestParam(required = false) ScheduleType type,
             @Parameter(description = "조회 기준 날짜(ISO)", example = "2025-05-13")
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @AuthenticationPrincipal CustomUser customUser
+            @RequestParam Long userId
+//            @AuthenticationPrincipal CustomUser customUser
     ) {
-        if (customUser == null) {
-            throw new UsernameNotFoundException("인증된 사용자를 찾을 수 없습니다.");
-        }
-        Long userId = customUser.getId();
+//        if (customUser == null) {
+//            throw new UsernameNotFoundException("인증된 사용자를 찾을 수 없습니다.");
+//        }
+//        Long userId = customUser.getId();
 
         List<ScheduleResponse> list = scheduleService.getMonthlyView(userId, type, date);
 
@@ -83,9 +84,11 @@ public class ApiV1ScheduleController {
             @RequestParam(required = false) ScheduleType type,
             @Parameter(description = "조회 기준 날짜(ISO)", example = "2025-05-13")
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @AuthenticationPrincipal CustomUser customUser
+//            @AuthenticationPrincipal CustomUser customUser
+            @RequestParam Long userId
+
     ) {
-        Long userId = customUser.getId();
+//        Long userId = customUser.getId();
         List<ScheduleResponse> responses = scheduleService.getWeeklyView(userId, date, type);
         return ResponseEntity.ok(responses);
     }
@@ -98,9 +101,10 @@ public class ApiV1ScheduleController {
             @RequestParam(required = false) ScheduleType type,
             @Parameter(description = "조회 기준 날짜(ISO)", example = "2025-05-13")
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @AuthenticationPrincipal CustomUser customUser
+            @RequestParam Long userId
+//            @AuthenticationPrincipal CustomUser customUser
     ) {
-        Long userId = customUser.getId();
+//        Long userId = customUser.getId();
         List<ScheduleResponse> responses = scheduleService.getDailyView(userId, date, type);
         return ResponseEntity.ok(responses);
     }
@@ -111,10 +115,11 @@ public class ApiV1ScheduleController {
     public ResponseEntity<ScheduleResponse> updateSchedule(
             @Parameter(description = "수정할 일정 ID", example = "1")
             @PathVariable(name = "scheduleId") Long scheduleId,
-            @AuthenticationPrincipal CustomUser customUser,
+//            @AuthenticationPrincipal CustomUser customUser,
+            @RequestParam Long userId,
             @Valid @RequestBody ScheduleRequest request
     ) {
-        Long userId = customUser.getId();
+//        Long userId = customUser.getId();
         ScheduleResponse response = scheduleService.updateSchedule(request, scheduleId, userId);
         return ResponseEntity.ok(response);
     }
@@ -125,9 +130,11 @@ public class ApiV1ScheduleController {
     public ResponseEntity<Void> deleteSchedule(
             @Parameter(description = "삭제할 일정 ID", example = "1")
             @PathVariable(name = "scheduleId") Long scheduleId,
-            @AuthenticationPrincipal CustomUser customUser
+//            @AuthenticationPrincipal CustomUser customUser
+            @RequestParam Long userId
+
     ) {
-        Long userId = customUser.getId();
+//        Long userId = customUser.getId();
         scheduleService.deleteSchedule(scheduleId, userId);
         return ResponseEntity.noContent().build();
     }
