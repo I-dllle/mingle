@@ -16,10 +16,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByLoginId(String loginId);
 
     //부서id로 사용자 목록 찾기
-    List<User> findByDeptId(Long departmentId);
+    List<User> findByDepartment_Id(Long departmentId);
 
     //부서명으로 사용자 목록 찾기
-    List<User> findByDeptName(Long departmentName);
+    List<User> findByDepartment_DepartmentName(String departmentName);
 
     //사용자를 이름으로 찾기
     Optional<User> findByName(String name);

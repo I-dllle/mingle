@@ -6,6 +6,7 @@ import com.example.mingle.domain.user.user.dto.LoginRequestDto;
 import com.example.mingle.domain.user.user.dto.UserResponseDto;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.domain.user.user.service.UserService;
+import com.example.mingle.global.rq.Rq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -13,7 +14,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 // 인증 관련 API 컨트롤러
 @RestController
@@ -23,6 +28,8 @@ public class ApiV1AuthController {
 
     // service쪽에 태워서 가입시킴
     private final UserService userService;
+
+    private final Rq rq;
 
     /**
      * 회원가입
@@ -77,9 +84,19 @@ public class ApiV1AuthController {
      */
     @Operation(summary = "로그아웃", description = "로그아웃 처리를 합니다.")
     @ApiResponse(responseCode = "200", description = "로그아웃 성공")
-    @GetMapping("/logout")
-    public void logout() {
-        System.out.println("logout");
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout() {
+        User user = rq.getActor();
+        if (user != null) {
+            user.setRefreshToken(null); // refreshToken 무효화
+            userService.updateUser(user); // 저장 필요 시
+        }
+        rq.deleteCookie("accessToken");
+        rq.deleteCookie("refreshToken");
+        rq.deleteCookie("JSESSIONID");
+        SecurityContextHolder.clearContext();
+
+        return ResponseEntity.ok("로그아웃 되었습니다.");
     }
 
 
@@ -93,4 +110,40 @@ public class ApiV1AuthController {
     public void me() {
         System.out.println("me");
     }
+
+
+
+    /**
+     * 관리자 페이지 조회
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin-only")
+    public ResponseEntity<String> adminPage() {
+        return ResponseEntity.ok("관리자만 접근 가능합니다.");
+    }
+
+
+
+    /**
+     * 특정 권한 페이지(추후 수정 가능)
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @GetMapping("/staff-or-admin")
+    public ResponseEntity<String> staffOrAdminPage() {
+        return ResponseEntity.ok("관리자 또는 스태프만 접근 가능합니다.");
+    }
+
+
+
+    @GetMapping("/users/by-department")
+    public ResponseEntity<List<UserResponseDto>> getUsersByDepartment(@RequestParam String name) {
+        List<User> users = userService.getUsersByDepartmentName(name);
+
+        List<UserResponseDto> response = users.stream()
+                .map(UserResponseDto::fromEntity)
+                .toList();
+
+        return ResponseEntity.ok(response);
+    }
+
 }
