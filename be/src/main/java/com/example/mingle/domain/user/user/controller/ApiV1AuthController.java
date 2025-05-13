@@ -120,6 +120,19 @@ public class ApiV1AuthController {
 
 
     /**
+     * 특정 유저 정보 조회
+     */
+    @Operation(summary = "유저 프로필 조회", description = "특정 유저의 ID를 통해 프로필 정보를 조회합니다.")
+    @ApiResponse(responseCode = "200", description = "조회 성공")
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserResponseDto> getUserProfile(@PathVariable Long userId) {
+        User user = userService.findById(userId);
+        return ResponseEntity.ok(UserResponseDto.fromEntity(user));
+    }
+
+
+
+    /**
      * 관리자 페이지 조회
      */
     @PreAuthorize("hasRole('ADMIN')")

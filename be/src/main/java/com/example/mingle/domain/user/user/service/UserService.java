@@ -186,4 +186,18 @@ public class UserService {
     public List<User> getUsersByDepartmentName(String name) {
         return userRepository.findByDepartment_DepartmentName(name);
     }
+
+
+
+    /**
+     * 특정 유저 ID로 유저 조회
+     * → UserController에서 프로필 조회 등에 사용
+     * → 존재하지 않으면 USER_NOT_FOUND 예외 발생
+     */
+    @Transactional(readOnly = true)
+    public User findById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
+    }
+
 }
