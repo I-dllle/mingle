@@ -2,7 +2,8 @@ name: Gemini Code Review
 
 on:
   push:
-    branches: [feature/gemini]
+    branches:
+      - '**'
     paths:
       - 'be/**'
   pull_request:
