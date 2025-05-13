@@ -15,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -165,5 +166,18 @@ public class UserService {
     @Transactional(readOnly = true)
     public Optional<User> findByRefreshToken(String refreshToken) {
         return userRepository.findByRefreshToken(refreshToken);
+    }
+
+
+
+    @Transactional
+    public void updateUser(User user) {
+        userRepository.save(user);
+    }
+
+
+
+    public List<User> getUsersByDepartmentName(String name) {
+        return userRepository.findByDepartment_DepartmentName(name);
     }
 }
