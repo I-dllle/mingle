@@ -1,5 +1,6 @@
 package com.example.mingle.domain.post.legalpost.entity;
 
+import com.example.mingle.domain.post.legalpost.enums.ContractCategory;
 import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
 import com.example.mingle.domain.post.legalpost.enums.ContractType;
 import com.example.mingle.domain.user.team.entity.ArtistTeam;
@@ -51,6 +52,10 @@ public class Contract {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    private ContractCategory contractCategory;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private ContractType contractType;  // ELECTRONIC or PAPER
 
     @Column(length = 100)
@@ -61,4 +66,16 @@ public class Contract {
 
     @Column(nullable = false)
     private Boolean isSettlementCreated = false;
+
+    @Column(length = 200)
+    private String title; // 계약서 제목 (ex. "홍길동 저작권 계약서")
+
+    @Column(length = 100)
+    private String companyName; // 서명 발신자 or 회사명 (ex. Mingle엔터)
+
+    @Column(name = "modusign_document_id")
+    private String modusignDocumentId;
+
+    @Column(name = "modusign_signature_url")
+    private String modusignSignedUrl;
 }

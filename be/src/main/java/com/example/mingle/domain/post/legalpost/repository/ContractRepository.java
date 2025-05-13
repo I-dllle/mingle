@@ -18,4 +18,6 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
 
     @Query("SELECT c FROM Contract c JOIN FETCH c.user WHERE c.contractId = :id")
     Optional<Contract> findByIdWithUser(@Param("id") Long id);
+
+    Optional<Contract> findByModusignDocumentId(String documentId);
 }

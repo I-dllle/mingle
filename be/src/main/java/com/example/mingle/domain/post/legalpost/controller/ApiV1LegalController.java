@@ -1,18 +1,16 @@
 package com.example.mingle.domain.post.legalpost.controller;
 
-import com.example.mingle.domain.post.legalpost.dto.*;
+import com.example.mingle.domain.post.legalpost.dto.contract.*;
 import com.example.mingle.domain.post.legalpost.entity.Contract;
-import com.example.mingle.domain.post.legalpost.entity.Settlement;
 import com.example.mingle.domain.post.legalpost.repository.ContractRepository;
-import com.example.mingle.domain.post.legalpost.repository.SettlementRepository;
 import com.example.mingle.domain.post.legalpost.service.ContractService;
-import com.example.mingle.domain.post.legalpost.service.SettlementService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -45,12 +43,28 @@ public class ApiV1LegalController {
         return ResponseEntity.ok("상태 변경 완료");
     }
 
-    // 계약서 서명
+    // 계약서 서명 (전자)
     @PostMapping("/contracts/{id}/sign")
-    public ResponseEntity<?> sign(@PathVariable Long id, @RequestBody SignContractRequest request) {
-        contractService.signContract(id, request);
-        return ResponseEntity.ok("서명 완료");
+    @PreAuthorize("hasRole('USER') or hasRole('ARTIST')")
+    public ResponseEntity<String> sign(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUser user
+    ) throws IOException{
+        String signatureUrl = contractService.signContract(id, user);
+        return ResponseEntity.ok(signatureUrl);
     }
+
+    // 계약서 서명 (종이)
+    @PostMapping("/contracts/{id}/sign-offline")
+    @PreAuthorize("hasRole('USER') or hasRole('ARTIST')")
+    public ResponseEntity<?> signOffline(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUser user
+    ) {
+        contractService.signOffline(id, user);
+        return ResponseEntity.ok("오프라인 서명 완료");
+    }
+
 
     // 특정 유저 계약서 리스트 조회
     @GetMapping("/contracts/by-user")

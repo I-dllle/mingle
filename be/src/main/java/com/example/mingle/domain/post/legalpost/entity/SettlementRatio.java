@@ -20,6 +20,10 @@ public class SettlementRatio {
     @JoinColumn(name = "contract_id", nullable = false)
     private Contract contract;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "copyrightContract_id", nullable = false)
+    private CopyrightContract copyrightContract;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private RatioType ratioType; // Artist, Agency, Producer 등

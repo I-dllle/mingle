@@ -1,6 +1,6 @@
 package com.example.mingle.domain.post.legalpost.controller;
 
-import com.example.mingle.domain.post.legalpost.dto.*;
+import com.example.mingle.domain.post.legalpost.dto.settlement.*;
 import com.example.mingle.domain.post.legalpost.entity.Settlement;
 import com.example.mingle.domain.post.legalpost.repository.SettlementRepository;
 import com.example.mingle.domain.post.legalpost.service.SettlementService;

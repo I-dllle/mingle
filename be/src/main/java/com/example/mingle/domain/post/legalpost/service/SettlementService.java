@@ -1,7 +1,7 @@
 package com.example.mingle.domain.post.legalpost.service;
 
-import com.example.mingle.domain.post.legalpost.dto.SettlementSummaryDto;
-import com.example.mingle.domain.post.legalpost.dto.UpdateSettlementRequest;
+import com.example.mingle.domain.post.legalpost.dto.settlement.SettlementSummaryDto;
+import com.example.mingle.domain.post.legalpost.dto.settlement.UpdateSettlementRequest;
 import com.example.mingle.domain.post.legalpost.entity.Contract;
 import com.example.mingle.domain.post.legalpost.entity.Settlement;
 import com.example.mingle.domain.post.legalpost.entity.SettlementRatio;

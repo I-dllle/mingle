@@ -1,5 +1,7 @@
 package com.example.mingle.domain.post.legalpost.service;
 
+import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
+import com.example.mingle.domain.post.legalpost.repository.ContractRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -121,25 +123,26 @@ public class ModusignService {
         return response;
     }
 
-    // Webhook 콜백 처리용 예시 컨트롤러
-    @RestController
-    @RequestMapping("/webhook")
-    public static class ModusignWebhookController {
 
-        @PostMapping("/callback")
-        public ResponseEntity<String> handleCallback(@RequestBody Map<String, Object> payload) {
-            // 예: signature.completed 이벤트 처리
-            String event = (String) payload.get("event");
-            String documentId = (String) payload.get("documentId");
-            String signedUrl = (String) payload.get("signedUrl");
+    public String uploadDocumentAsFile(File file) throws IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        headers.setBearerAuth(accessToken);
 
-            if ("signature.completed".equals(event)) {
-                // TODO: DB 업데이트 등 후처리 로직
-                System.out.println("서명 완료: " + documentId);
-                System.out.println("서명된 문서: " + signedUrl);
-            }
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("file", new FileSystemResource(file));
+        body.add("title", "아티스트 계약서");
 
-            return ResponseEntity.ok("ok");
-        }
+        HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(
+                "https://api.modusign.co.kr/api/v1/documents",
+                request,
+                String.class
+        );
+
+        JsonNode jsonNode = objectMapper.readTree(response.getBody());
+        return jsonNode.get("documentId").asText();
     }
+
 }
