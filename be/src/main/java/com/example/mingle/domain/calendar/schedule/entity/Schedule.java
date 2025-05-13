@@ -1,5 +1,7 @@
 package com.example.mingle.domain.calendar.schedule.entity;
 
+import com.example.mingle.domain.post.post.entity.Post;
+import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -16,11 +18,13 @@ import java.time.LocalDateTime;
 @ToString
 @Table(name = "schedule")
 public class Schedule extends BaseEntity {
+    @ManyToOne
     @JoinColumn(name = "user_id")
-    private Long userId;
+    private User user;
 
+    @ManyToOne
     @JoinColumn(name = "post_id")
-    private Long postId;
+    private Post post;
 
     @Column(name = "title")
     private String title;

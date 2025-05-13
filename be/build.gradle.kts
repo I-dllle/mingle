@@ -51,6 +51,10 @@ dependencies {
 
 	// Amazon s3
 	implementation ("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
+
+	// swagger
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5")
+
 }
 
 tasks.withType<Test> {

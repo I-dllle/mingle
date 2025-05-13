@@ -7,6 +7,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ScheduleType {
     PERSONAL,   // 개인 일정
-    TEAM,       // 팀 일정
+    DEPARTMENT,       // 부서 일정
     COMPANY     // 회사 공통 일정
 }
