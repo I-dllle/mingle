@@ -27,6 +27,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     //사용자를 닉네임으로 찾기
     Optional<User> findByNickname(String nickname);
 
+    // refreshToken으로 사용자 조회
+    Optional<User> findByRefreshToken(String refreshToken);
+
     //역할에 해당하는 사용자 목록 찾기
     List<User> findByRole(String role);
 
