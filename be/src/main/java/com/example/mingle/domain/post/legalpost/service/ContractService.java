@@ -19,6 +19,9 @@ import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.domain.user.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.time.LocalDate;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -33,19 +36,21 @@ public class ContractService {
     private final UserRepository userRepository;
     private final ArtistTeamRepository teamRepository;
 
-    public Long createContract(CreateContractRequest req) {
+    public Long createContract(CreateContractRequest req, MultipartFile file) throws IOException {
         User user = userRepository.findById(req.getUserId()).orElseThrow();
         ArtistTeam team = teamRepository.findById(req.getTeamId()).orElse(null);
 
+        String fileUrl = s3Uploader.uploadFile(file, "contracts");
+        
         Contract contract = new Contract();
         contract.setUser(user);
         contract.setTeam(team);
-        contract.setFileUrl("https://example.com/files/contract1.pdf");
+        contract.setFileUrl(fileUrl); // 실제 S3 업로드된 경로
         contract.setSummary(req.getSummary());
         contract.setStartDate(req.getStartDate());
         contract.setEndDate(req.getEndDate());
         contract.setStatus(ContractStatus.DRAFT);
-        contract.setContractType(req.getContractType()); // ELECTRONIC or PAPER
+        contract.setContractType(req.getContractType());
         contract.setIsSettlementCreated(false);
 
         contractRepository.save(contract);
@@ -83,7 +88,7 @@ public class ContractService {
 
         contract.setSignerName(req.getSignerName());
         contract.setSignerMemo(req.getSignerMemo());
-        contract.setStatus(ContractStatus.CONFIRMED);
+        contract.setStatus(ContractStatus.SIGNED);
 
         contractRepository.save(contract);
     }

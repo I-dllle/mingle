@@ -10,10 +10,13 @@ import com.example.mingle.domain.post.legalpost.service.SettlementService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -23,14 +26,15 @@ import java.util.List;
 @Tag(name = "legal", description = "법무팀 API")
 public class ApiV1LegalController {
     private final ContractService contractService;
-    private final SettlementService settlementService;
     private final ContractRepository contractRepository;
-    private final SettlementRepository settlementRepository;
 
     // 계약서 생성
-    @PostMapping("/contract")
-    public ResponseEntity<Long> createContract(@RequestBody CreateContractRequest request) {
-        Long contractId = contractService.createContract(request);
+    @PostMapping(value = "/contracts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Long> createContract(
+            @RequestPart("request") CreateContractRequest request,
+            @RequestPart("file") MultipartFile file
+    ) throws IOException {
+        Long contractId = contractService.createContract(request, file);
         return ResponseEntity.ok(contractId);
     }
 
