@@ -5,13 +5,15 @@ import com.example.mingle.domain.user.team.repository.DepartmentRepository;
 import com.example.mingle.domain.user.user.entity.*;
 import com.example.mingle.domain.user.user.repository.UserPositionRepository;
 import com.example.mingle.domain.user.user.repository.UserRepository;
-import com.github.javafaker.Faker;
-import jakarta.annotation.PostConstruct;
+import net.datafaker.Faker;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -21,7 +23,8 @@ import java.util.stream.IntStream;
 @Profile("dev") // !!!dev 환경에서만 실행!!!
 @Component
 @RequiredArgsConstructor
-public class StaffInitializer {
+@Transactional
+public class StaffInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final DepartmentRepository departmentRepository;
@@ -31,8 +34,8 @@ public class StaffInitializer {
     private final Random random = new Random();
     private final Faker faker = new Faker();
 
-    @PostConstruct
-    public void init() {
+    @Override
+    public void run(String... args) {
         // 1. staff001 계정이 이미 있으면 skip
         boolean alreadyExists = userRepository.existsByLoginId("staff001");
         if (alreadyExists) return;

@@ -8,23 +8,30 @@ import com.example.mingle.domain.user.user.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Profile({"dev", "prod"})
 @Component
 @RequiredArgsConstructor
-public class AdminInitializer {
+@Transactional
+public class AdminInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final DepartmentRepository departmentRepository;
     private final UserPositionRepository userPositionRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @PostConstruct
-    public void init() {
+
+
+    @Override
+    public void run(String... args) {
         // 이미 존재하면 중복 생성 방지
         if (userRepository.existsByLoginId("admin@admin.com")) return;
 

@@ -1,19 +1,22 @@
-package com.example.mingle.init;
+package com.example.mingle.global.init;
 
 import com.example.mingle.domain.user.team.entity.Department;
 import com.example.mingle.domain.user.team.repository.DepartmentRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+@Profile({"dev", "prod"})
 @Component
 @RequiredArgsConstructor
-public class DepartmentInitializer {
+public class DepartmentInitializer implements CommandLineRunner {
 
     private final DepartmentRepository departmentRepository;
 
-    @PostConstruct
-    public void init() {
+    @Override
+    public void run(String... args) {
         // 부서가 이미 존재하면 실행하지 않음
         if (departmentRepository.count() > 0) return;
 
