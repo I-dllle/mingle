@@ -3,11 +3,14 @@ package com.example.mingle.domain.user.user.service;
 import com.example.mingle.domain.user.team.entity.Department;
 import com.example.mingle.domain.user.team.repository.DepartmentRepository;
 import com.example.mingle.domain.user.user.dto.LoginRequestDto;
+import com.example.mingle.domain.user.user.dto.ProfileUpdateRequestDto;
 import com.example.mingle.domain.user.user.dto.SignupRequestDto;
 import com.example.mingle.domain.user.user.dto.TokenResponseDto;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.domain.user.user.entity.UserRole;
+import com.example.mingle.domain.user.user.entity.UserPosition;
 import com.example.mingle.domain.user.user.repository.UserRepository;
+import com.example.mingle.domain.user.user.repository.UserPositionRepository;
 import com.example.mingle.global.exception.ApiException;
 import com.example.mingle.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +28,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final DepartmentRepository departmentRepository;
+    private final UserPositionRepository userPositionRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthTokenService authTokenService;
 
@@ -48,6 +52,10 @@ public class UserService {
         Department department = departmentRepository.findByDepartmentName(request.getDepartmentName())
                 .orElseThrow(() -> new IllegalArgumentException("부서를 찾을 수 없습니다."));
 
+        // 직급 조회
+        UserPosition position = userPositionRepository.findById(request.getPositionId())
+                .orElseThrow(() -> new IllegalArgumentException("포지션을 찾을 수 없습니다."));
+
         // 유저 생성
         User user = User.builder()
                 .loginId(request.getLoginId())
@@ -58,6 +66,7 @@ public class UserService {
                 .imageUrl(request.getImageUrl())
                 .role(UserRole.valueOf(request.getRole()))
                 .department(department)
+                .position(position)
                 .build();
 
         return userRepository.save(user);
@@ -185,6 +194,28 @@ public class UserService {
 
     public List<User> getUsersByDepartmentName(String name) {
         return userRepository.findByDepartment_DepartmentName(name);
+    }
+
+
+
+    /**
+     * 현재 로그인한 유저의 프로필 수정
+     * → nickname, email, phoneNum, imageUrl 필드만 업데이트
+     * → null 값은 무시하고 기존 값 유지
+     */
+    @Transactional
+    public User updateMyProfile(User actor, ProfileUpdateRequestDto dto) {
+        // 기존 사용자 다시 조회 (loginId, password 등 필드 포함된 진짜 엔티티)
+        User user = userRepository.findById(actor.getId())
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
+
+        if (dto.getNickname() != null) user.setNickname(dto.getNickname());
+        if (dto.getEmail() != null) user.setEmail(dto.getEmail());
+        if (dto.getPosition() != null) user.setPosition(dto.getPosition()); // 직책 수정
+        if (dto.getPhoneNum() != null) user.setPhoneNum(dto.getPhoneNum());
+        if (dto.getImageUrl() != null) user.setImageUrl(dto.getImageUrl());
+
+        return userRepository.save(user);
     }
 
 
