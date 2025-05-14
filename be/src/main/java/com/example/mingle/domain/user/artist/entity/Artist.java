@@ -36,4 +36,7 @@ public class Artist extends BaseEntity {
 
     @Column(name = "bio")
     private String bio;
+
+    @Builder.Default
+    private boolean isDeleted = false;
 }
