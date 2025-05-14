@@ -1,0 +1,63 @@
+server:
+  port: 8080
+spring:
+  output:
+    ansi:
+      enabled: ALWAYS
+  profiles:
+    active: dev
+    include: secret
+  datasource:
+    url: jdbc:mysql://localhost:3307/mingle_dev
+    username: su
+    password: sususu1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+logging:
+  level:
+    com.dd.blog: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+    org.hibernate.orm.jdbc.extract: TRACE
+    org.springframework.transaction.interceptor: TRACE
+custom:
+  dev:
+    cookieDomain: localhost
+    frontUrl: "http://${custom.dev.cookieDomain}:3000"
+    backUrl: "http://${custom.dev.cookieDomain}:${server.port}"
+  prod:
+    cookieDomain: mingleservice.site
+    frontUrl: "https://www.${custom.prod.cookieDomain}"
+    backUrl: "https://api.blog.${custom.prod.cookieDomain}"
+  site:
+    name: "MINGLE DEV"
+    cookieDomain: "${custom.dev.cookieDomain}"
+    frontUrl: "${custom.dev.frontUrl}"
+    backUrl: "${custom.dev.backUrl}"
+cloud:
+  aws:
+    s3:
+      bucket: mingle-images
+    credentials:
+      accessKey: ${cloud.aws.credentials.access-key}
+      secretKey: ${cloud.aws.credentials.secret-key}
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
+
+admin:
+  initial:
+    email: admin@admin.com
+    password: Admin1234!
+    nickname: ???
