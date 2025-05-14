@@ -36,6 +36,10 @@ dependencies {
 	testImplementation("org.springframework.security:spring-security-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
+	// 더미 데이터 생성을 위한 라이브러리
+	implementation("com.github.javafaker:javafaker:1.0.1")
+	implementation("org.yaml:snakeyaml:1.33") // 안정적인 버전
+
 	//db관련
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	runtimeOnly("com.mysql:mysql-connector-j")

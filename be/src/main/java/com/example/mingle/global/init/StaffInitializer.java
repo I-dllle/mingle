@@ -5,9 +5,11 @@ import com.example.mingle.domain.user.team.repository.DepartmentRepository;
 import com.example.mingle.domain.user.user.entity.*;
 import com.example.mingle.domain.user.user.repository.UserPositionRepository;
 import com.example.mingle.domain.user.user.repository.UserRepository;
+import com.github.javafaker.Faker;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Slf4j
+@Profile("dev") // !!!dev 환경에서만 실행!!!
 @Component
 @RequiredArgsConstructor
 public class StaffInitializer {
@@ -26,6 +29,7 @@ public class StaffInitializer {
     private final PasswordEncoder passwordEncoder;
 
     private final Random random = new Random();
+    private final Faker faker = new Faker();
 
     @PostConstruct
     public void init() {
@@ -36,6 +40,12 @@ public class StaffInitializer {
         // 2. 부서 또는 직책 없으면 skip
         if (departmentRepository.count() == 0 || userPositionRepository.count() == 0) {
             log.warn("[StaffInitializer] 부서가 아직 생성되지 않아 스태프 유저 생성을 건너뜁니다.");
+            return;
+        }
+
+        // 2-1. Planning & A&R 부서 필수 확인
+        if (!departmentRepository.existsByDepartmentName("Planning & A&R")) {
+            log.warn("[StaffInitializer] 'Planning & A&R' 부서가 없어 staff001 계정을 건너뜁니다.");
             return;
         }
 
@@ -95,13 +105,19 @@ public class StaffInitializer {
 
             UserPosition selected = deptPositions.get(random.nextInt(deptPositions.size()));
 
+            String loginId = "staff%03d".formatted(i);
+            String nickname = faker.name().firstName(); // 무작위 이름
+            String email = faker.internet().emailAddress(); // 무작위 이메일
+            String phoneNum = "010-%04d-%04d".formatted(faker.number().numberBetween(1000, 9999), faker.number().numberBetween(1000, 9999));
+            String imageUrl = faker.avatar().image(); // 무작위 아바타
+
             userRepository.save(User.builder()
-                    .loginId("staff%03d".formatted(i))  // staff002 ~ staff031
+                    .loginId(loginId)  // staff002 ~ staff031
                     .password(passwordEncoder.encode("staff1234!"))
-                    .nickname("스태프 %d".formatted(i))
-                    .email("staff%03d@mingle.com".formatted(i))
-                    .phoneNum("010-0000-%04d".formatted(i))
-                    .imageUrl("https://api.dicebear.com/7.x/miniavs/svg?seed=" + UUID.randomUUID())
+                    .nickname(nickname)
+                    .email(email)
+                    .phoneNum(phoneNum)
+                    .imageUrl(imageUrl)
                     .role(UserRole.STAFF)
                     .department(randomDept)
                     .position(selected)
