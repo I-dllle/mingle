@@ -1,9 +1,6 @@
 package com.example.mingle.domain.user.user.controller;
 
-import com.example.mingle.domain.user.user.dto.SignupRequestDto;
-import com.example.mingle.domain.user.user.dto.TokenResponseDto;
-import com.example.mingle.domain.user.user.dto.LoginRequestDto;
-import com.example.mingle.domain.user.user.dto.UserResponseDto;
+import com.example.mingle.domain.user.user.dto.*;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.domain.user.user.service.UserService;
 import com.example.mingle.global.rq.Rq;
@@ -116,6 +113,28 @@ public class ApiV1AuthController {
 
         return ResponseEntity.ok(UserResponseDto.fromEntity(user)); // DTO 변환 후 반환
     }
+
+
+
+    /**
+     * 내 프로필 수정
+     * → 현재 로그인한 사용자가 자신의 닉네임, 이메일, 전화번호, 이미지URL을 수정
+     */
+    @Operation(summary = "내 프로필 수정", description = "로그인한 사용자의 프로필 정보를 수정합니다.")
+    @ApiResponse(responseCode = "200", description = "수정 성공")
+    @PatchMapping("/me")
+    public ResponseEntity<ProfileResponseDto> updateMyProfile(
+            @RequestBody ProfileUpdateRequestDto requestDto
+    ) {
+        User actor = rq.getActor(); // 현재 로그인한 사용자 조회
+        if (actor == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        User updated = userService.updateMyProfile(actor, requestDto);
+        return ResponseEntity.ok(ProfileResponseDto.fromEntity(updated));
+    }
+
 
 
 

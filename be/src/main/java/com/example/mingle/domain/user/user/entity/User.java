@@ -37,6 +37,25 @@ public class User extends BaseEntity {
     @Column(name = "email", length = 100)
     private String email;
 
+    // 어떤 권한 갖고 있는지
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private UserRole role;
+
+    // 어느 팀 소속인지
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_id")
+    private Department department;
+
+    // 어떤 직책 맡고 있는지
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "position_id")
+    private UserPosition position;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private UserStatus status;
+
     @Column(name = "phone_num", length = 20)
     private String phoneNum;
 
@@ -45,18 +64,6 @@ public class User extends BaseEntity {
 
     @Column(name = "refresh_token", length = 255)
     private String refreshToken;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
-    private UserRole role;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private UserStatus status;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "department_id")
-    private Department department;
 
     // 권한 반환
     public Collection<? extends GrantedAuthority> getAuthorities() {
