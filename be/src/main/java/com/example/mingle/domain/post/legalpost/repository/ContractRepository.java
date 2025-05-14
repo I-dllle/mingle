@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -15,10 +17,14 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
 
     List<Contract> findByUserId(Long userId);
 
-    Optional<Contract> findByModusignDocumentId(String documentId);
+    @Query("""
+    SELECT COUNT(c)
+    FROM Contract c
+    WHERE c.status <> 'CONFIRMED'
+    AND c.endDate BETWEEN :startDate AND :endDate
+""")
+    long countExpiringContracts(@Param("startDate") LocalDate start, @Param("endDate") LocalDate end);
 
-    @Query("SELECT COUNT(c) FROM Contract c WHERE c.status <> 'CONFIRMED' AND c.endDate BETWEEN CURRENT_DATE AND CURRENT_DATE + 7")
-    long countExpiringContracts();
 
     long countByStatus(ContractStatus status);
 

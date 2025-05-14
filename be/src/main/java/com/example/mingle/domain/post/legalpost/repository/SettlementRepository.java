@@ -11,8 +11,8 @@ import java.util.List;
 @Repository
 public interface SettlementRepository extends JpaRepository<Settlement, Long> {
 
-    @Query("SELECT s FROM Settlement s WHERE s.contract.contractId = :contractId")
-    List<Settlement> findByContractId(@Param("contractId") Long contractId);
+    List<Settlement> findByContractId(Long contractId);
+
 
     @Query("""
     SELECT 

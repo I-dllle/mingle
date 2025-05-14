@@ -8,6 +8,8 @@ import com.example.mingle.domain.user.artist.repository.ArtistRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+
 @Service
 @RequiredArgsConstructor
 public class AdminDashboardService {
@@ -21,15 +23,23 @@ public class AdminDashboardService {
         long totalArtist = artistRepository.count();
         long draftContracts = contractRepository.countByStatus(ContractStatus.DRAFT);
         long signedContracts = contractRepository.countByStatus(ContractStatus.SIGNED);
-        long expiringContracts = contractRepository.countExpiringContracts(); // 커스텀 쿼리 필요
-        double settlementCompletionRate = settlementRepository.calculateThisMonthCompletionRate(); // 커스텀 로직
+
+        // 변경된 부분: 기간 계산
+        LocalDate today = LocalDate.now();
+        LocalDate oneWeekLater = today.plusDays(7);
+        long expiringContracts = contractRepository.countExpiringContracts(today, oneWeekLater);
+
+        double settlementCompletionRate = settlementRepository.calculateThisMonthCompletionRate();
 
         return new DashboardSummaryDto(
                 totalArtist,
-                draftContracts, signedContracts, expiringContracts,
+                draftContracts,
+                signedContracts,
+                expiringContracts,
                 settlementCompletionRate
         );
     }
+
 
     // 두 번째 탭 : 법무
 

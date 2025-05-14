@@ -18,7 +18,7 @@ public class SettlementRatio extends BaseEntity {
     private Contract contract;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "copyrightContract_id", nullable = false)
+    @JoinColumn(name = "copyrightContract_id", nullable = true)
     private CopyrightContract copyrightContract;
 
     @Enumerated(EnumType.STRING)

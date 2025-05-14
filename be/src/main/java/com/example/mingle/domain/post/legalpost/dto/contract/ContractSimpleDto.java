@@ -14,7 +14,7 @@ public record ContractSimpleDto(
 ) {
     public static ContractSimpleDto from(Contract c) {
         return new ContractSimpleDto(
-                c.getContractId(), c.getSummary(), c.getStatus(),
+                c.getId(), c.getSummary(), c.getStatus(),
                 c.getStartDate(), c.getEndDate()
         );
     }

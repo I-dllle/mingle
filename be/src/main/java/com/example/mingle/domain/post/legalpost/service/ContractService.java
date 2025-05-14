@@ -70,7 +70,7 @@ public class ContractService {
         ratio.setPercentage(req.getSettlementRatio());
         ratioRepository.save(ratio);
 
-        return contract.getContractId();
+        return contract.getId();
     }
 
     public void changeStatus(Long id, ContractStatus next) {
@@ -103,7 +103,7 @@ public class ContractService {
             fos.write(fileBytes);
         }
 
-        String signatureUrl = docusignService.sendEnvelope(tempFile, user.getNickname(), user.getEmail());
+        String signatureUrl = docusignService.sendEnvelope(tempFile, user.getUsername(), user.getEmail());
 
         contract.setDocusignUrl(signatureUrl);
         contract.setStatus(ContractStatus.SIGNED);
@@ -152,7 +152,7 @@ public class ContractService {
             throw new AccessDeniedException("본인의 계약만 서명할 수 있습니다.");
         }
 
-        contract.setSignerName(user.getNickname());
+        contract.setSignerName(user.getUsername());
         contract.setSignerMemo("오프라인 서명 완료: " + LocalDateTime.now());
         contract.setStatus(ContractStatus.SIGNED_OFFLINE);
 

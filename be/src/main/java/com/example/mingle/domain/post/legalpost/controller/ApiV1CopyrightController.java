@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/legal/copyrights")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('LEGAL')")
+@PreAuthorize("hasRole('ADMIN')")
 public class ApiV1CopyrightController {
 
     private final CopyrightService copyrightService;

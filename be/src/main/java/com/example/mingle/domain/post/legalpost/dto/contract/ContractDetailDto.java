@@ -17,7 +17,7 @@ public record ContractDetailDto(
 ) {
     public static ContractDetailDto from(Contract c) {
         return new ContractDetailDto(
-                c.getContractId(), c.getSummary(), c.getSignerName(), c.getSignerMemo(),
+                c.getId(), c.getSummary(), c.getSignerName(), c.getSignerMemo(),
                 c.getStatus(), c.getStartDate(), c.getEndDate(), c.getFileUrl()
         );
     }

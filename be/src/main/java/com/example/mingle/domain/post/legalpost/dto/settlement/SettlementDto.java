@@ -16,7 +16,7 @@ public record SettlementDto(
 ) {
     public static SettlementDto from(Settlement s) {
         return new SettlementDto(
-                s.getSettlementId(), s.getAmount(), s.getIsSettled(),
+                s.getId(), s.getAmount(), s.getIsSettled(),
                 s.getDate(), s.getMemo(), s.getCategory()
         );
     }
