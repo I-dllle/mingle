@@ -19,6 +19,8 @@ public class SignupRequestDto {
     @NotBlank(message = "부서이름은 필수 입력값입니다.")
     private String departmentName;
 
+    private Long positionId; // 포지션 ID (UserPosition 참조용)
+
     private String nickname;
     private String email;
     private String phoneNum;
