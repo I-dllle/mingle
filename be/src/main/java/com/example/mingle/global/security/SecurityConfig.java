@@ -66,9 +66,9 @@ public class SecurityConfig {
                 // 요청 경로별 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/api/users/signup",
-                                "/api/users/login",
-                                "/api/users/refresh"
+                                "/api/v1/users/signup",
+                                "/api/v1/users/login",
+                                "/api/v1/users/refresh"
                         ).permitAll() // 회원가입, 로그인, 토큰 재발급 : 허용✔️
                         .requestMatchers(HttpMethod.GET, "/api/**").permitAll() // GET 요청 : 모두 허용✔️
                         .requestMatchers("/api/**").authenticated() // 그 외 /api/** 요청 : 인증 필요⚠️
