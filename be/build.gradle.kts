@@ -24,6 +24,7 @@ repositories {
 }
 
 dependencies {
+	implementation("org.springframework.boot:spring-boot-starter")
 	implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-data-redis")
@@ -38,7 +39,7 @@ dependencies {
 
 	// 더미 데이터 생성을 위한 라이브러리
 	implementation("com.github.javafaker:javafaker:1.0.1")
-	implementation("org.yaml:snakeyaml:1.33") // 안정적인 버전
+	implementation("org.yaml:snakeyaml:1.33")  // 안정적인 버전
 
 	//db관련
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -54,7 +55,8 @@ dependencies {
 	implementation("com.google.code.gson:gson")
 
 	// Amazon s3
-	implementation ("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
+	implementation("software.amazon.awssdk:core:2.25.13")
+	implementation ("software.amazon.awssdk:s3:2.25.13")
 
 	// swagger
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5")
