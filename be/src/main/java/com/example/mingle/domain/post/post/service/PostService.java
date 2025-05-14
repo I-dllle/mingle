@@ -65,6 +65,13 @@ public class PostService {
             }
         }
 
+        //사용자가 소속된 부서에만 글을 작성할 수 있도록 권한 제한
+        if (!menu.getName().equals("공지사항")) {
+            if (!user.getDepartment().equals(menu.getDepartment())) {
+                throw new ApiException(ErrorCode.ACCESS_DENIED);
+            }
+        }
+
         String[] uploadedUrls = null;
         if (postImage != null && postImage.length > 0) {
             uploadedUrls = new String[postImage.length];
