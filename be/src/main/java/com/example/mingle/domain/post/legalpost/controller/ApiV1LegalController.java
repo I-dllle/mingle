@@ -1,6 +1,5 @@
 package com.example.mingle.domain.post.legalpost.controller;
 
-import com.docusign.esign.client.ApiException;
 import com.example.mingle.domain.post.legalpost.dto.contract.*;
 import com.example.mingle.domain.post.legalpost.entity.Contract;
 import com.example.mingle.domain.post.legalpost.repository.ContractRepository;
@@ -55,7 +54,7 @@ public class ApiV1LegalController {
     public ResponseEntity<String> sign(
             @PathVariable Long id,
             @AuthenticationPrincipal SecurityUser user
-    ) throws IOException, ApiException {
+    ) throws IOException{
         String signatureUrl = contractService.signContract(id, user);
         return ResponseEntity.ok(signatureUrl);
     }

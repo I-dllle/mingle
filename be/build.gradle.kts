@@ -52,11 +52,8 @@ dependencies {
 	// Amazon s3
 	implementation ("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
 
-	// swagger
-	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5")
 
-	// docusign
-	implementation ("com.docusign:docusign-esign-java:3.16.1")
+	implementation ("org.springframework.boot:spring-boot-starter-webflux")
 }
 
 tasks.withType<Test> {

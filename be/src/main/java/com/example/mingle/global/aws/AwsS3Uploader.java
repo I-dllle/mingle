@@ -44,13 +44,20 @@ public class AwsS3Uploader {
         return uploadImageUrl;      // 업로드된 파일의 S3 URL 주소 반환
     }
 
-    private String putS3(File uploadFile, String fileName) {
-        amazonS3.putObject(
-                new PutObjectRequest(bucket, fileName, uploadFile)
-                        .withCannedAcl(CannedAccessControlList.PublicRead)	// PublicRead 권한으로 업로드 됨
-        );
-        return amazonS3.getUrl(bucket, fileName).toString();
-    }
+//    private String putS3(File uploadFile, String fileName) {
+//        amazonS3.putObject(
+//                new PutObjectRequest(bucket, fileName, uploadFile)
+//                        .withCannedAcl(CannedAccessControlList.PublicRead)	// PublicRead 권한으로 업로드 됨
+//        );
+//        return amazonS3.getUrl(bucket, fileName).toString();
+//    }
+private String putS3(File uploadFile, String fileName) {
+    amazonS3.putObject(new PutObjectRequest(bucket, fileName, uploadFile));
+    String url = amazonS3.getUrl(bucket, fileName).toString();
+    uploadFile.delete(); // 🧼 로컬 파일 삭제
+    return url;
+}
+
 
     private void removeNewFile(File targetFile) {
         if(targetFile.delete()) {

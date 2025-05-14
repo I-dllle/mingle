@@ -1,88 +1,97 @@
 package com.example.mingle.domain.post.legalpost.service;
 
-import com.docusign.esign.api.EnvelopesApi;
-import com.docusign.esign.client.ApiClient;
-import com.docusign.esign.client.ApiException;
-import com.docusign.esign.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class DocusignService {
 
-    private final DocusignAuthProvider authProvider;
+    private final WebClient.Builder webClientBuilder;
+    private final DocusignAuthService docusignAuthService;
+
+    @Value("${docusign.account-id}")
+    private String accountId;
 
     @Value("${docusign.return-url}")
-    private String returnUrl; // 서명 완료 후 리디렉션 URL
+    private String returnUrl;
 
-    public String sendEnvelope(File pdfFile, String userName, String userEmail) throws IOException, ApiException {
-        // 1. 인증된 ApiClient 준비
-        ApiClient apiClient = authProvider.getApiClient();
+    private static final String BASE_URL = "https://demo.docusign.net/restapi/v2.1";
 
-        // 2. 문서 파일 → Base64 인코딩
+    public String sendEnvelope(File pdfFile, String userName, String userEmail) throws IOException {
+        String accessToken = docusignAuthService.generateAccessToken(); // ⬅️ 토큰 동적 발급
+
         String base64Doc = Base64.getEncoder().encodeToString(Files.readAllBytes(pdfFile.toPath()));
 
-        // 3. Document 정의
-        Document doc = new Document();
-        doc.setDocumentBase64(base64Doc);
-        doc.setName("계약서");
-        doc.setFileExtension("pdf");
-        doc.setDocumentId("1");
-
-        // 4. 수신자 및 서명 탭 정의
-        Signer signer = new Signer();
-        signer.setEmail(userEmail);
-        signer.setName(userName);
-        signer.setRecipientId("1");
-        signer.setRoutingOrder("1");
-
-        // PDF 내 서명 위치는 /sign/ 같은 앵커 태그로 정의 (템플릿 기반이 아닌 경우엔 직접 위치 지정 필요)
-        SignHere signHere = new SignHere();
-        signHere.setAnchorString("/sign/");
-        signHere.setAnchorUnits("pixels");
-        signHere.setAnchorXOffset("0");
-        signHere.setAnchorYOffset("0");
-
-        Tabs tabs = new Tabs();
-        tabs.setSignHereTabs(List.of(signHere));
-        signer.setTabs(tabs);
-
-        Recipients recipients = new Recipients();
-        recipients.setSigners(List.of(signer));
-
-        // 5. Envelope 정의
-        EnvelopeDefinition envelope = new EnvelopeDefinition();
-        envelope.setEmailSubject("계약서 서명을 요청드립니다.");
-        envelope.setDocuments(List.of(doc));
-        envelope.setRecipients(recipients);
-        envelope.setStatus("sent");
-
-        // 6. Envelope 생성
-        EnvelopesApi envelopesApi = new EnvelopesApi(apiClient);
-        EnvelopeSummary envelopeSummary = envelopesApi.createEnvelope(authProvider.getAccountId(), envelope);
-
-        // 7. 서명 URL 생성
-        RecipientViewRequest viewRequest = new RecipientViewRequest();
-        viewRequest.setReturnUrl(returnUrl); // 서명 완료 후 이동할 URL
-        viewRequest.setAuthenticationMethod("none");
-        viewRequest.setEmail(userEmail);
-        viewRequest.setUserName(userName);
-        viewRequest.setRecipientId("1");
-
-        ViewUrl viewUrl = envelopesApi.createRecipientView(
-                authProvider.getAccountId(),
-                envelopeSummary.getEnvelopeId(),
-                viewRequest
+        Map<String, Object> requestBody = Map.of(
+                "emailSubject", "계약서 서명을 요청드립니다.",
+                "documents", List.of(Map.of(
+                        "documentBase64", base64Doc,
+                        "name", "계약서",
+                        "fileExtension", "pdf",
+                        "documentId", "1"
+                )),
+                "recipients", Map.of(
+                        "signers", List.of(Map.of(
+                                "email", userEmail,
+                                "name", userName,
+                                "recipientId", "1",
+                                "routingOrder", "1",
+                                "tabs", Map.of(
+                                        "signHereTabs", List.of(Map.of(
+                                                "anchorString", "/sign/",
+                                                "anchorUnits", "pixels",
+                                                "anchorXOffset", "0",
+                                                "anchorYOffset", "0"
+                                        ))
+                                )
+                        ))
+                ),
+                "status", "sent"
         );
 
-        return viewUrl.getUrl(); // 사용자가 서명하러 갈 수 있는 URL
+        WebClient client = webClientBuilder.baseUrl(BASE_URL)
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                .build();
+
+        Map<String, Object> envelopeResponse = client.post()
+                .uri("/accounts/{accountId}/envelopes", accountId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(requestBody)
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                .block();
+
+        String envelopeId = envelopeResponse.get("envelopeId").toString();
+
+        Map<String, Object> recipientViewRequest = Map.of(
+                "returnUrl", returnUrl,
+                "authenticationMethod", "none",
+                "email", userEmail,
+                "userName", userName,
+                "recipientId", "1"
+        );
+
+        Map<String, Object> viewUrl = client.post()
+                .uri("/accounts/{accountId}/envelopes/{envelopeId}/views/recipient", accountId, envelopeId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(recipientViewRequest)
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                .block();
+
+        return viewUrl.get("url").toString();
     }
 }

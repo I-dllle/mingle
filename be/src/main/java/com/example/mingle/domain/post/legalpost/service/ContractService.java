@@ -1,6 +1,6 @@
 package com.example.mingle.domain.post.legalpost.service;
 
-import com.docusign.esign.client.ApiException;
+
 import com.example.mingle.domain.post.legalpost.dto.contract.CreateContractRequest;
 import com.example.mingle.domain.post.legalpost.entity.Contract;
 import com.example.mingle.domain.post.legalpost.entity.SettlementRatio;
@@ -84,7 +84,7 @@ public class ContractService {
         contractRepository.save(contract);
     }
 
-    public String signContract(Long contractId, SecurityUser user) throws IOException, ApiException {
+    public String signContract(Long contractId, SecurityUser user) throws IOException {
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new IllegalArgumentException("계약 없음"));
 
