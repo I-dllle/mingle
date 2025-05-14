@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class SeederRunner implements CommandLineRunner {
 
-    private final DepartmentSeeder departmentSeeder;
+    private final DepartmentInitializer departmentInitializer;
     private final UserPositionSeeder userPositionSeeder;
     private final AdminInitializer adminInitializer;
     private final StaffInitializer staffInitializer;
@@ -21,11 +21,10 @@ public class SeederRunner implements CommandLineRunner {
     public void run(String... args) {
         log.info("[SeederRunner] 데이터 초기화를 시작합니다.");
 
-        departmentSeeder.seed();
-        userPositionSeeder.seed();
-        adminInitializer.init();
-
-        staffInitializer.init(); // 내부 Profile 조건 검사 필요
+        departmentInitializer.run(args);   // 가장 먼저! 부서 기본값 필요
+        userPositionSeeder.seed();      // 포지션 생성
+        adminInitializer.run(args);        // 기본 어드민 생성 (부서·포지션 필요)
+        staffInitializer.run(args);        // 더미 스태프 생성 (부서·포지션 필요)
 
         log.info("[SeederRunner] 데이터 초기화가 완료되었습니다.");
     }
