@@ -17,7 +17,7 @@ public class ProfileResponseDto {
         return ProfileResponseDto.builder()
                 .nickname(user.getNickname())
                 .email(user.getEmail())
-                .position(user.getPosition()) // 직책
+                .position(user.getPosition().getName()) // 직책
                 .phoneNum(user.getPhoneNum())
                 .imageUrl(user.getImageUrl())
                 .build();

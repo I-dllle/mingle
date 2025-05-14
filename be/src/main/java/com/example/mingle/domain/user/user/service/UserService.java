@@ -211,7 +211,11 @@ public class UserService {
 
         if (dto.getNickname() != null) user.setNickname(dto.getNickname());
         if (dto.getEmail() != null) user.setEmail(dto.getEmail());
-        if (dto.getPosition() != null) user.setPosition(dto.getPosition()); // 직책 수정
+        if (dto.getPositionId() != null) {
+            UserPosition position = userPositionRepository.findById(dto.getPositionId())
+                    .orElseThrow(() -> new ApiException(ErrorCode.USER_POSITION_NOT_FOUND));
+            user.setPosition(position);
+        }
         if (dto.getPhoneNum() != null) user.setPhoneNum(dto.getPhoneNum());
         if (dto.getImageUrl() != null) user.setImageUrl(dto.getImageUrl());
 
