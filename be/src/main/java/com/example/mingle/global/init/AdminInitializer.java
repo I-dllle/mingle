@@ -8,10 +8,12 @@ import com.example.mingle.domain.user.user.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Slf4j
+@Profile({"dev", "prod"})
 @Component
 @RequiredArgsConstructor
 public class AdminInitializer {
@@ -26,12 +28,14 @@ public class AdminInitializer {
         // 이미 존재하면 중복 생성 방지
         if (userRepository.existsByLoginId("admin@admin.com")) return;
 
+        if (!departmentRepository.existsByDepartmentName("System Operations")) {
+            log.warn("[AdminInitializer] 'System Operations' 부서가 아직 없어 관리자 계정 생성을 건너뜁니다.");
+            return; // 예외 없이 정상 종료
+        }
+
         // System Operations 부서 조회 또는 예외
         Department sysOps = departmentRepository.findByDepartmentName("System Operations")
-                .orElseThrow(() -> {
-                    log.warn("[AdminInitializer] 'System Operations' 부서가 아직 없어 관리자 계정 생성을 건너뜁니다.");
-                    return new IllegalStateException("System Operations 부서가 먼저 생성되어야 합니다.");
-                });
+                .orElseThrow();
 
         // 포지션 확인: WEBOPS_MANAGER
         UserPosition position = userPositionRepository.findAll().stream()

@@ -5,13 +5,14 @@ import com.example.mingle.domain.user.team.repository.DepartmentRepository;
 import com.example.mingle.domain.user.user.entity.PositionCode;
 import com.example.mingle.domain.user.user.entity.UserPosition;
 import com.example.mingle.domain.user.user.repository.UserPositionRepository;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
 
+@Profile({"dev", "prod"})
 @Component
 @RequiredArgsConstructor
 public class UserPositionSeeder {
@@ -19,7 +20,6 @@ public class UserPositionSeeder {
     private final DepartmentRepository departmentRepository;
     private final UserPositionRepository userPositionRepository;
 
-    @PostConstruct
     public void seed() {
         // 이미 데이터가 있다면 실행하지 않음
         if (userPositionRepository.count() > 0) return;
