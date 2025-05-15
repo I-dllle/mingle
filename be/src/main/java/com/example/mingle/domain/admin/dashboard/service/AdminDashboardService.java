@@ -1,6 +1,6 @@
-package com.example.mingle.domain.admin.service;
+package com.example.mingle.domain.admin.dashboard.service;
 
-import com.example.mingle.domain.admin.dto.DashboardSummaryDto;
+import com.example.mingle.domain.admin.dashboard.dto.DashboardSummaryDto;
 import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
 import com.example.mingle.domain.post.legalpost.repository.ContractRepository;
 import com.example.mingle.domain.post.legalpost.repository.SettlementRepository;
