@@ -22,7 +22,6 @@ import java.util.List;
 @Table(name = "department")
 public class Department extends BaseEntity {
     @OneToMany(mappedBy = "department")
-    @Builder.Default
     private List<User> users = new ArrayList<>();
 
     @Column(name = "department_name", length=50)

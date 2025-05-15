@@ -29,7 +29,6 @@ public class Artist extends BaseEntity {
             joinColumns = @JoinColumn(name = "artist_id"),
             inverseJoinColumns = @JoinColumn(name = "team_id")
     )
-    @Builder.Default
     private Set<ArtistTeam> teams = new HashSet<>();
 
     @Column(name = "stage_name")
@@ -37,7 +36,4 @@ public class Artist extends BaseEntity {
 
     @Column(name = "bio")
     private String bio;
-
-    @Builder.Default
-    private boolean isDeleted = false;
 }
