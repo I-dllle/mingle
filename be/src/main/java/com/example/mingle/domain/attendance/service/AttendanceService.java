@@ -254,6 +254,16 @@ public class AttendanceService {
         LocalDate startDate = requestDto.getStartDate();
         LocalDate endDate = requestDto.getEndDate() != null ? requestDto.getEndDate() : startDate;
 
+        LocalDate today = LocalDate.now();
+        if ((requestDto.getType() == LeaveType.HALF_DAY_AM ||
+                requestDto.getType() == LeaveType.HALF_DAY_PM ||
+                requestDto.getType() == LeaveType.EARLY_LEAVE) &&
+                !startDate.equals(today)) {
+            throw new IllegalArgumentException(
+                    "반차, 조퇴는 당일에만 신청 가능합니다.");
+        }
+
+
         if (startDate.isAfter(endDate)) {
             throw new IllegalArgumentException("시작일이 종료일보다 늦을 수 없습니다.");
         }
@@ -283,6 +293,19 @@ public class AttendanceService {
                             .user(user)
                             .date(finalCurrentDate)
                             .build());
+
+            // 이미 출근 처리된 날짜인지 확인
+            if (attendance.getCheckInTime() != null) {
+                throw new IllegalStateException(
+                        currentDate + " 날짜에는 이미 출근 처리되어 휴가를 신청할 수 없습니다.");
+            }
+
+            // 이미 휴가가 신청된 날짜인지 확인
+            if (attendance.getAttendanceStatus() != null) {
+                throw new IllegalStateException(
+                        currentDate + " 날짜에는 이미 휴가/결근 등이 신청되어 있습니다.");
+            }
+
 
 
             // 이미 출근 처리된 날짜인지 확인 (첫날만 체크하지 않고 모든 날짜 체크)
@@ -372,6 +395,12 @@ public class AttendanceService {
         );
 
         LocalDate date = requestDto.getDate();
+
+        // 미래 날짜에 대한 야근 보고 제한
+        if (date.isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("미래 날짜에 대한 야근 보고는 불가능합니다.");
+        }
+
         Attendance attendance = attendanceRepository.findByUser_IdAndDate(userId, date)
                 .orElseThrow(() -> new IllegalArgumentException("해당 날짜의 근태 기록이 없습니다."));
 
