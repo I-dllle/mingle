@@ -87,23 +87,20 @@ public class ContractService {
     public String signContract(Long contractId, SecurityUser user) throws IOException {
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new IllegalArgumentException("계약 없음"));
-
-        if (contract.getDocusignUrl() != null) {
-            throw new IllegalStateException("이미 서명 요청된 계약입니다.");
-        }
-        if (!contract.getUser().getId().equals(user.getId())) {
-            throw new AccessDeniedException("본인의 계약만 서명할 수 있습니다.");
-        }
+        System.out.println("✔ 계약 조회 완료: " + contract.getTitle());
 
         byte[] fileBytes = downloadFileFromUrl(contract.getFileUrl());
-        String fileName = extractFileNameFromUrl(contract.getFileUrl());
+        System.out.println("✔ 파일 다운로드 완료");
 
+        String fileName = extractFileNameFromUrl(contract.getFileUrl());
         File tempFile = new File(System.getProperty("java.io.tmpdir"), fileName);
         try (FileOutputStream fos = new FileOutputStream(tempFile)) {
             fos.write(fileBytes);
         }
+        System.out.println("✔ 임시 파일 생성 완료: " + tempFile.getAbsolutePath());
 
-        String signatureUrl = docusignService.sendEnvelope(tempFile, user.getUsername(), user.getEmail());
+        String signatureUrl = docusignService.sendEnvelope(tempFile, user.getNickname(), user.getEmail());
+        System.out.println("✔ DocuSign 서명 URL 발급 완료");
 
         contract.setDocusignUrl(signatureUrl);
         contract.setStatus(ContractStatus.SIGNED);
@@ -111,6 +108,7 @@ public class ContractService {
 
         return signatureUrl;
     }
+
 
     private byte[] downloadFileFromUrl(String fileUrl) {
         try {

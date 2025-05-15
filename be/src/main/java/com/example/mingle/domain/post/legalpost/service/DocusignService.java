@@ -1,5 +1,6 @@
 package com.example.mingle.domain.post.legalpost.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -35,11 +36,14 @@ public class DocusignService {
 
         String base64Doc = Base64.getEncoder().encodeToString(Files.readAllBytes(pdfFile.toPath()));
 
+        String subject = "계약서 서명을 요청드립니다.";
+        String docName = "계약서";
+
         Map<String, Object> requestBody = Map.of(
-                "emailSubject", "계약서 서명을 요청드립니다.",
+                "emailSubject", subject,
                 "documents", List.of(Map.of(
                         "documentBase64", base64Doc,
-                        "name", "계약서",
+                        "name", docName,
                         "fileExtension", "pdf",
                         "documentId", "1"
                 )),
@@ -52,9 +56,9 @@ public class DocusignService {
                                 "tabs", Map.of(
                                         "signHereTabs", List.of(Map.of(
                                                 "anchorString", "/sign/",
-                                                "anchorUnits", "pixels",
-                                                "anchorXOffset", "0",
-                                                "anchorYOffset", "0"
+                                                "anchorUnits", "inches",
+                                                "anchorXOffset", "0.5",
+                                                "anchorYOffset", "-0.2"
                                         ))
                                 )
                         ))
@@ -62,20 +66,29 @@ public class DocusignService {
                 "status", "sent"
         );
 
-        WebClient client = webClientBuilder.baseUrl(BASE_URL)
+        // ✅ JSON 출력 로그 (디버깅용)
+        ObjectMapper objectMapper = new ObjectMapper();
+        String requestJson = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(requestBody);
+        System.out.println("▶ DocuSign Envelope Request JSON:\n" + requestJson);
+
+        WebClient client = webClientBuilder
+                .baseUrl(BASE_URL)
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                 .build();
 
+        // ✅ Envelope 생성
         Map<String, Object> envelopeResponse = client.post()
                 .uri("/accounts/{accountId}/envelopes", accountId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(requestBody)
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
-                .block();
+                .blockOptional()
+                .orElseThrow(() -> new RuntimeException("DocuSign envelope creation failed"));
 
         String envelopeId = envelopeResponse.get("envelopeId").toString();
 
+        // ✅ 서명 요청 뷰 생성
         Map<String, Object> recipientViewRequest = Map.of(
                 "returnUrl", returnUrl,
                 "authenticationMethod", "none",
@@ -84,14 +97,20 @@ public class DocusignService {
                 "recipientId", "1"
         );
 
+        System.out.println("length: " + userName.length()); // 정확한 길이 체크
+        System.out.println("equals('kim test'): " + "kim test".equals(userName)); // 완전일치 여부
+
+
         Map<String, Object> viewUrl = client.post()
                 .uri("/accounts/{accountId}/envelopes/{envelopeId}/views/recipient", accountId, envelopeId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(recipientViewRequest)
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
-                .block();
+                .blockOptional()
+                .orElseThrow(() -> new RuntimeException("DocuSign view URL creation failed"));
 
         return viewUrl.get("url").toString();
     }
+
 }

@@ -1,10 +1,11 @@
 package com.example.mingle.domain.post.legalpost.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,8 @@ public class DocusignAuthService {
 
     public String generateAccessToken() {
         try {
+            System.out.println("▶ DocuSign accessToken 발급 시작");
+
             PrivateKey privateKey = loadPrivateKeyFromPem();
 
             String jwt = Jwts.builder()
@@ -50,7 +53,7 @@ public class DocusignAuthService {
                     .setAudience("account-d.docusign.com")
                     .setExpiration(Date.from(Instant.now().plusSeconds(3600)))
                     .setIssuedAt(new Date())
-                    .claim("scope", "signature")
+                    .claim("scope", "signature impersonation") // impersonation 스코프 추가 필요할 수 있음
                     .signWith(privateKey, SignatureAlgorithm.RS256)
                     .compact();
 
@@ -60,28 +63,40 @@ public class DocusignAuthService {
 
             WebClient client = webClientBuilder.build();
 
-            Map<String, Object> response = client.post()
+            // 한 번만 요청하고 raw JSON 받아서 파싱
+            String responseBody = client.post()
                     .uri(authUrl)
                     .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                     .bodyValue(formData)
                     .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                    .bodyToMono(String.class)
                     .block();
 
+            System.out.println("DocuSign Token Response: " + responseBody);
+
+            Map<String, Object> response = new ObjectMapper()
+                    .readValue(responseBody, new TypeReference<>() {});
+
             return response.get("access_token").toString();
+
         } catch (Exception e) {
+            e.printStackTrace(); // 로그 꼭 찍자
             throw new RuntimeException("DocuSign access token 발급 실패", e);
         }
     }
 
+
     private PrivateKey loadPrivateKeyFromPem() throws Exception {
         InputStream is = new ClassPathResource(privateKeyPath.replace("classpath:", "")).getInputStream();
         String pem = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+
         String privateKeyContent = pem
                 .replace("-----BEGIN PRIVATE KEY-----", "")
                 .replace("-----END PRIVATE KEY-----", "")
-                .replaceAll("\\s+", "");
+                .replaceAll("\\s+", ""); // 🔥 줄바꿈, 공백 전부 제거
+
         byte[] keyBytes = Base64.getDecoder().decode(privateKeyContent);
-        return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
+        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
+        return KeyFactory.getInstance("RSA").generatePrivate(keySpec);
     }
 }

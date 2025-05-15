@@ -71,5 +71,9 @@ public class Contract extends BaseEntity {
     private String companyName; // 서명 발신자 or 회사명 (ex. Mingle엔터)
 
     private String docusignEnvelopeId;
+
+
+    @Column(name = "docusign_url", columnDefinition = "TEXT")
     private String docusignUrl;
+
 }
