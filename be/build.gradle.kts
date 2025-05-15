@@ -56,9 +56,8 @@ dependencies {
 	// core만
 	implementation("software.amazon.awssdk:s3:2.25.13")
 
-	// swagger
-	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5")
-
+	//전자서명 api
+	implementation ("org.springframework.boot:spring-boot-starter-webflux")
 }
 
 tasks.withType<Test> {
