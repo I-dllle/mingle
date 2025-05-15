@@ -36,7 +36,7 @@ public class Attendance extends BaseEntity {
     @Column(nullable = false)
     private LocalDate date;
 
-    @Column(name = "check_in_time", nullable = false)
+    @Column(name = "check_in_time")
     private LocalDateTime checkInTime;
 
     @Column(name = "check_out_time")
@@ -57,7 +57,7 @@ public class Attendance extends BaseEntity {
     private String reason;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, name = "attendance_status")
+    @Column(name = "attendance_status")
     private AttendanceStatus attendanceStatus;
 
     @Enumerated(EnumType.STRING)

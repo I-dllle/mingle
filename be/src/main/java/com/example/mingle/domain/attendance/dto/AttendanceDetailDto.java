@@ -1,4 +1,4 @@
-package com.example.mingle.domain.attendance.dto.response;
+package com.example.mingle.domain.attendance.dto;
 
 import com.example.mingle.domain.attendance.enums.AttendanceStatus;
 import com.example.mingle.domain.attendance.enums.HalfDayType;
@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AttendanceDetailResponseDto {
+public class AttendanceDetailDto {
     @Schema(description = "근태 ID", example = "1")
     private Long id;
 

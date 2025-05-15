@@ -1,4 +1,4 @@
-package com.example.mingle.domain.attendance.dto.response;
+package com.example.mingle.domain.attendance.dto;
 
 import com.example.mingle.domain.attendance.enums.AttendanceStatus;
 import com.example.mingle.domain.attendance.enums.HalfDayType;
@@ -12,13 +12,15 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CheckInAndOutResponseDto {
+public class AttendanceRecordDto {
     private Long userId;
     private LocalDateTime checkInTime;
     private LocalDateTime checkOutTime;
+    private LocalDateTime overtimeStart;
+    private LocalDateTime overtimeEnd;
     private LocalDate date;
     private AttendanceStatus attendanceStatus;
     private Double workingHours;
+    private Double overtimeHours;
     private HalfDayType halfDayType;
-
 }
