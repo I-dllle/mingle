@@ -1,4 +1,4 @@
-package com.example.mingle.domain.post.legalpost.dto;
+package com.example.mingle.domain.post.legalpost.dto.settlement;
 
 import lombok.Getter;
 import lombok.Setter;

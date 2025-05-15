@@ -1,4 +1,4 @@
-package com.example.mingle.domain.post.legalpost.dto;
+package com.example.mingle.domain.post.legalpost.dto.contract;
 
 import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
 import lombok.Getter;

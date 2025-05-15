@@ -1,9 +1,7 @@
-package com.example.mingle.domain.post.legalpost.dto;
+package com.example.mingle.domain.post.legalpost.dto.contract;
 
 import com.example.mingle.domain.post.legalpost.entity.Contract;
 import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.time.LocalDate;
 
@@ -16,7 +14,7 @@ public record ContractSimpleDto(
 ) {
     public static ContractSimpleDto from(Contract c) {
         return new ContractSimpleDto(
-                c.getContractId(), c.getSummary(), c.getStatus(),
+                c.getId(), c.getSummary(), c.getStatus(),
                 c.getStartDate(), c.getEndDate()
         );
     }

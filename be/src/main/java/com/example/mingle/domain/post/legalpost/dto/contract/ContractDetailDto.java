@@ -1,4 +1,4 @@
-package com.example.mingle.domain.post.legalpost.dto;
+package com.example.mingle.domain.post.legalpost.dto.contract;
 
 import com.example.mingle.domain.post.legalpost.entity.Contract;
 import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
@@ -17,7 +17,7 @@ public record ContractDetailDto(
 ) {
     public static ContractDetailDto from(Contract c) {
         return new ContractDetailDto(
-                c.getContractId(), c.getSummary(), c.getSignerName(), c.getSignerMemo(),
+                c.getId(), c.getSummary(), c.getSignerName(), c.getSignerMemo(),
                 c.getStatus(), c.getStartDate(), c.getEndDate(), c.getFileUrl()
         );
     }

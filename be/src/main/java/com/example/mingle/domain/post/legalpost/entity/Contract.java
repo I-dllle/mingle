@@ -1,10 +1,12 @@
 package com.example.mingle.domain.post.legalpost.entity;
 
+import com.example.mingle.domain.post.legalpost.enums.ContractCategory;
 import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
 import com.example.mingle.domain.post.legalpost.enums.ContractType;
 import com.example.mingle.domain.user.team.entity.ArtistTeam;
 import com.example.mingle.domain.user.team.entity.Department;
 import com.example.mingle.domain.user.user.entity.User;
+import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,11 +16,7 @@ import java.time.LocalDate;
 @Entity
 @Getter@Setter
 @Table(name = "contract")
-public class Contract {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long contractId;
+public class Contract extends BaseEntity {
 
     // 계약 당사자: 아티스트 또는 일반 유저
     @ManyToOne(fetch = FetchType.LAZY)
@@ -51,6 +49,10 @@ public class Contract {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    private ContractCategory contractCategory;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private ContractType contractType;  // ELECTRONIC or PAPER
 
     @Column(length = 100)
@@ -61,4 +63,17 @@ public class Contract {
 
     @Column(nullable = false)
     private Boolean isSettlementCreated = false;
+
+    @Column(length = 200)
+    private String title; // 계약서 제목 (ex. "홍길동 저작권 계약서")
+
+    @Column(length = 100)
+    private String companyName; // 서명 발신자 or 회사명 (ex. Mingle엔터)
+
+    private String docusignEnvelopeId;
+
+
+    @Column(name = "docusign_url", columnDefinition = "TEXT")
+    private String docusignUrl;
+
 }

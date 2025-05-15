@@ -1,4 +1,4 @@
-package com.example.mingle.domain.post.legalpost.dto;
+package com.example.mingle.domain.post.legalpost.dto.settlement;
 
 import com.example.mingle.domain.post.legalpost.enums.SettlementCategory;
 import lombok.Getter;
