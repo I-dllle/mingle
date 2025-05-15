@@ -1,15 +1,17 @@
 package com.example.mingle.domain.attendance.dto.request;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+
+import java.time.LocalDate;
 
 @Getter
-@Setter
-@AllArgsConstructor
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class OvertimeRequestDto {
-    private Long attendanceId;
+    private LocalDate date;
     private String reason;
 }
