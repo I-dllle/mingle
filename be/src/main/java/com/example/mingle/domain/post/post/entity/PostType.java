@@ -20,7 +20,7 @@ import java.util.List;
         uniqueConstraints = @UniqueConstraint(columnNames = {"department_id", "menu_type"})
 )
 public class PostType extends BaseEntity {
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST) 
     @JoinColumn(name = "menu_id", nullable = false)
     private PostMenu menu;
 

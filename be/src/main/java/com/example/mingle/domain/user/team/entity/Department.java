@@ -21,6 +21,7 @@ import java.util.List;
 @ToString
 @Table(name = "department")
 public class Department extends BaseEntity {
+    @Builder.Default
     @OneToMany(mappedBy = "department")
     private List<User> users = new ArrayList<>();
 

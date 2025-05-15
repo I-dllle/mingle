@@ -1,5 +1,6 @@
 package com.example.mingle.global.init;
 
+
 import com.example.mingle.domain.post.post.entity.PostMenu;
 import com.example.mingle.domain.post.post.entity.PostType;
 import com.example.mingle.domain.post.post.repository.MenuRepository;
@@ -48,6 +49,7 @@ public class PostMenuInitializer implements ApplicationRunner {
                         .description(description)
                         .department(null)
                         .build();
+                menu = menuRepository.save(menu);
                 if (!postTypeRepository.existsByMenuAndDepartment(menu, null)) {
                     postTypeRepository.save(PostType.builder()
                             .menu(menu)
