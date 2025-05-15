@@ -44,7 +44,7 @@ public class AwsS3Uploader {
         PutObjectRequest request = PutObjectRequest.builder()
                 .bucket(bucket)
                 .key(fileName)
-                .acl(ObjectCannedACL.PUBLIC_READ)
+//                .acl(ObjectCannedACL.PUBLIC_READ)
                 .build(); // 새로 추가됨
 
         // 실제 업로드 실행
