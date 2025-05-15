@@ -11,16 +11,10 @@ import java.util.List;
 @Repository
 public interface SettlementRepository extends JpaRepository<Settlement, Long> {
 
-    List<Settlement> findByContractId(Long contractId);
+    List<Settlement> findByUserId(Long userId);
 
+    List<Settlement> findByIsSettledFalse();
 
-    @Query("""
-    SELECT 
-        COUNT(s) * 1.0 / 
-        (SELECT COUNT(s2) FROM Settlement s2 WHERE FUNCTION('MONTH', s2.createdAt) = FUNCTION('MONTH', CURRENT_DATE)) 
-    FROM Settlement s
-    WHERE s.isSettled = true 
-      AND FUNCTION('MONTH', s.createdAt) = FUNCTION('MONTH', CURRENT_DATE)
-""")
-    Double calculateThisMonthCompletionRate();
+    @Query("SELECT s FROM Settlement s WHERE s.contract.contractId = :contractId")
+    List<Settlement> findByContractId(@Param("contractId") Long contractId);
 }

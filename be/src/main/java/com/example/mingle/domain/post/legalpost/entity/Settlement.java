@@ -2,10 +2,9 @@ package com.example.mingle.domain.post.legalpost.entity;
 
 import com.example.mingle.domain.post.legalpost.enums.SettlementCategory;
 import com.example.mingle.domain.user.user.entity.User;
-import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.SuperBuilder;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -13,10 +12,11 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "settlement")
 @Getter@Setter
-@SuperBuilder
-@AllArgsConstructor(access = AccessLevel.PUBLIC)
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Settlement extends BaseEntity {
+public class Settlement {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long settlementId;
 
     // 정산 대상 유저
     @ManyToOne(fetch = FetchType.LAZY)

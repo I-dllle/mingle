@@ -1,10 +1,9 @@
 package com.example.mingle.domain.post.legalpost.controller;
 
-import com.example.mingle.domain.post.legalpost.dto.settlement.*;
+import com.example.mingle.domain.post.legalpost.dto.*;
 import com.example.mingle.domain.post.legalpost.entity.Settlement;
 import com.example.mingle.domain.post.legalpost.repository.SettlementRepository;
 import com.example.mingle.domain.post.legalpost.service.SettlementService;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/finance")
 @RequiredArgsConstructor
-//@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasRole('LEGAL')")
 @Tag(name = "finance", description = "회계팀 API")
 public class ApiV1FinanceController {
 
@@ -25,7 +24,6 @@ public class ApiV1FinanceController {
 
     // 관리자/회계팀이 수익 입력 시 호출
     @PostMapping("/contracts/{id}/settlements")
-    @Operation(summary = "정산 생성(확정)")
     public ResponseEntity<?> createSettlement(
             @PathVariable Long id,
             @RequestBody SettlementRequest request
@@ -36,7 +34,6 @@ public class ApiV1FinanceController {
 
     // 특정 계약의 정산 리스트
     @GetMapping("/{id}/settlements")
-    @Operation(summary = "특정 계약의 정산 리스트")
     public ResponseEntity<List<SettlementDto>> getSettlementsByContract(@PathVariable Long id) {
         List<Settlement> settlements = settlementRepository.findByContractId(id);
         List<SettlementDto> result = settlements.stream()
@@ -47,7 +44,6 @@ public class ApiV1FinanceController {
 
     // 정산 수정
     @PutMapping("/settlements/{settlementId}")
-    @Operation(summary = "정산 수정")
     public ResponseEntity<?> updateSettlement(
             @PathVariable Long settlementId,
             @RequestBody UpdateSettlementRequest request
@@ -58,7 +54,6 @@ public class ApiV1FinanceController {
 
     // 정산 삭제
     @DeleteMapping("/settlements/{settlementId}")
-    @Operation(summary = "정산 삭제")
     public ResponseEntity<?> deleteSettlement(@PathVariable Long settlementId) {
         settlementService.deleteSettlement(settlementId);
         return ResponseEntity.ok("정산 삭제 완료");
@@ -66,7 +61,6 @@ public class ApiV1FinanceController {
 
     // 정산 상태 변경
     @PutMapping("/settlements/{settlementId}/status")
-    @Operation(summary = "정산 상태 변경")
     public ResponseEntity<?> updateSettlementStatus(
             @PathVariable Long settlementId,
             @RequestBody ChangeSettlementStatusRequest request
@@ -77,7 +71,6 @@ public class ApiV1FinanceController {
 
     // 정산 통계
     @GetMapping("/summary")
-    @Operation(summary = "정산 통계")
     public ResponseEntity<SettlementSummaryDto> getSettlementSummary() {
         return ResponseEntity.ok(settlementService.getSummary());
     }
