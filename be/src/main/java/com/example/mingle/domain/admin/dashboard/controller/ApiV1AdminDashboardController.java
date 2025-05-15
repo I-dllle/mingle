@@ -19,12 +19,12 @@ public class ApiV1AdminDashboardController {
     private final AdminDashboardService dashboardService;
 //    private final LegalDashboardService legalDashboardService;
 
-    // 관리자가 계약서 최종 확정
-    @PostMapping("/{id}/confirm")
-    public ResponseEntity<Void> confirmContract(@PathVariable Long id) {
-        contractService.changeStatus(id, ContractStatus.CONFIRMED);
-        return ResponseEntity.ok().build();
-    }
+//    // 관리자가 계약서 최종 확정
+//    @PostMapping("/{id}/confirm")
+//    public ResponseEntity<Void> confirmContract(@PathVariable Long id) {
+//        contractService.changeStatus(id, ContractStatus.CONFIRMED);
+//        return ResponseEntity.ok().build();
+//    }
 
     // 요약
     @GetMapping("/summary")
