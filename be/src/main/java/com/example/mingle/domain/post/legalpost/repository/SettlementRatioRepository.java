@@ -1,6 +1,7 @@
 package com.example.mingle.domain.post.legalpost.repository;
 
 import com.example.mingle.domain.post.legalpost.entity.Contract;
+import com.example.mingle.domain.post.legalpost.entity.Settlement;
 import com.example.mingle.domain.post.legalpost.entity.SettlementRatio;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -14,6 +15,5 @@ public interface SettlementRatioRepository extends JpaRepository<SettlementRatio
 
     List<SettlementRatio> findByContract(Contract contract);
 
-    @Query("SELECT r FROM SettlementRatio r WHERE r.contract.contractId = :contractId")
-    List<SettlementRatio> findByContractId(@Param("contractId") Long contractId);
+
 }

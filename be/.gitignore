@@ -41,3 +41,5 @@ out/
 
 ### Custom ###
 application-secret.yml
+
+src/main/resources/keys/*.pem
