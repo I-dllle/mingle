@@ -42,4 +42,5 @@ out/
 ### Custom ###
 application-secret.yml
 
+### 전자서명 API ###
 src/main/resources/keys/*.pem

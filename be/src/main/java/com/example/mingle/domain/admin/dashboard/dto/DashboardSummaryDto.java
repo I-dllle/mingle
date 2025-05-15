@@ -1,4 +1,4 @@
-package com.example.mingle.domain.admin.dto;
+package com.example.mingle.domain.admin.dashboard.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

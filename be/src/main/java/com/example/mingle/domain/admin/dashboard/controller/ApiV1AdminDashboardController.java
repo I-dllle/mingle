@@ -1,9 +1,8 @@
-package com.example.mingle.domain.admin.controller;
+package com.example.mingle.domain.admin.dashboard.controller;
 
-import com.example.mingle.domain.admin.dto.ContractDto;
-import com.example.mingle.domain.admin.dto.DashboardSummaryDto;
-import com.example.mingle.domain.admin.service.AdminDashboardService;
-//import com.example.mingle.domain.admin.service.LegalDashboardService;
+import com.example.mingle.domain.admin.dashboard.dto.DashboardSummaryDto;
+import com.example.mingle.domain.admin.dashboard.service.AdminDashboardService;
+//import com.example.mingle.domain.admin.dashboard.service.LegalDashboardService;
 import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
 import com.example.mingle.domain.post.legalpost.service.ContractService;
 import lombok.RequiredArgsConstructor;
@@ -11,14 +10,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
-
 @RestController
 @RequestMapping("/api/v1/admin")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
-public class ApiV1AdminController {
+public class ApiV1AdminDashboardController {
     private final ContractService contractService;
     private final AdminDashboardService dashboardService;
 //    private final LegalDashboardService legalDashboardService;

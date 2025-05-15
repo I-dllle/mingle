@@ -1,6 +1,6 @@
-//package com.example.mingle.domain.admin.service;
+//package com.example.mingle.domain.admin.dashboard.service;
 //
-//import com.example.mingle.domain.admin.dto.ContractDto;
+//import com.example.mingle.domain.admin.dashboard.dto.ContractDto;
 //import com.example.mingle.domain.post.legalpost.repository.ContractRepository;
 //import lombok.RequiredArgsConstructor;
 //import org.springframework.stereotype.Service;
