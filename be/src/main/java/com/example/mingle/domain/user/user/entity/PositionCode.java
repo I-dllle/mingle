@@ -3,24 +3,24 @@ package com.example.mingle.domain.user.user.entity;
 public enum PositionCode {
 
     // Planning & A&R 부서
-    CONTENTS_STRATEGIST,
     A_AND_R_PLANNER,
-    DEMO_CURATOR,
+    A_AND_R_COORDINATOR,
+    CONTENT_PLANNER,
 
     // Creative Studio 부서
-    VISUAL_DESIGNER,
-    MOTION_CREATOR,
-    CREATIVE_EDITOR,
+    CREATIVE_DIRECTOR,
+    CONTENT_PRODUCER,
+    DESIGN_LEAD,
 
     // Finance & Legal 부서
-    FINANCE_PARTNER,
-    LEGAL_ASSISTANT,
-    CONTRACT_COORDINATOR,
+    FINANCE_MANAGER,
+    LEGAL_COUNSEL,
+    ACCOUNTING_LEAD,
 
     // Marketing & PR 부서
-    SOCIAL_MEDIA_MANAGER,
-    BRAND_DESIGNER,
-    MEDIA_PLANNER,
+    MARKETING_MANAGER,
+    PR_LEAD,
+    SOCIAL_MEDIA_COORDINATOR,
 
     // Artist & Manager 부서
     ARTIST_COORDINATOR,
