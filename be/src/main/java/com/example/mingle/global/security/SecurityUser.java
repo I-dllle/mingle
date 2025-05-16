@@ -1,5 +1,6 @@
 package com.example.mingle.global.security;
 
+import com.example.mingle.domain.user.user.entity.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
@@ -16,6 +17,7 @@ public class SecurityUser implements UserDetails {
     private final String email;
     private final String password;
     private final String nickname;
+    private final UserRole role;
     private final Collection<? extends GrantedAuthority> authorities;
 
     @Override
@@ -41,5 +43,9 @@ public class SecurityUser implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public UserRole getRole() {
+        return role;
     }
 }
