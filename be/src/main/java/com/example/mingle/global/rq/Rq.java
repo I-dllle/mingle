@@ -47,6 +47,7 @@ public class Rq {
                     user.getEmail(),
                     "", // password는 사용하지 않음
                     user.getNickname(),
+                    user.getDepartment().getId(),
                     user.getAuthorities()
             );
 

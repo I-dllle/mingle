@@ -1,7 +1,13 @@
 package com.example.mingle.domain.user.user.repository;
 
+import com.example.mingle.domain.user.user.entity.PositionCode;
 import com.example.mingle.domain.user.user.entity.User;
+import com.example.mingle.domain.user.user.entity.UserRole;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,5 +41,24 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     //역할에 해당하는 사용자 목록 찾기
     List<User> findByRole(String role);
+
+    @Query("""
+    SELECT u FROM User u
+    JOIN u.position p
+    WHERE (:departmentId IS NULL OR u.department.id = :departmentId)
+      AND (:positionCode IS NULL OR p.code = :positionCode)
+""")
+    Page<User> findByDepartmentAndPositionCode(@Param("departmentId") Long departmentId,
+                                               @Param("positionCode") PositionCode positionCode,
+                                               Pageable pageable);
+
+    @Query("""
+    SELECT u FROM User u
+    LEFT JOIN FETCH u.department
+    LEFT JOIN FETCH u.position
+    WHERE u.id = :id
+""")
+    Optional<User> findByIdWithRelations(@Param("id") Long id);
+
 
 }

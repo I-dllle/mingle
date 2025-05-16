@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/legal/copyrights")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("@authService.isInDepartment(authentication, 3L)") // 부서 ID로 판단
 public class ApiV1CopyrightController {
 
     private final CopyrightService copyrightService;
