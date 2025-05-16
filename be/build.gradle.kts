@@ -56,7 +56,7 @@ dependencies {
 	// core만
 	implementation("software.amazon.awssdk:s3:2.25.13")
 
-
+	//전자서명 API
 	implementation ("org.springframework.boot:spring-boot-starter-webflux")
 }
 

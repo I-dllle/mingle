@@ -15,6 +15,7 @@ import com.example.mingle.domain.user.user.repository.UserPositionRepository;
 import com.example.mingle.global.exception.ApiException;
 import com.example.mingle.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
