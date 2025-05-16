@@ -17,7 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-@Order(1)
+@Order(3)
 @Slf4j
 @Profile({"dev", "prod"})
 @Component
