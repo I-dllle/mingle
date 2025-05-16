@@ -11,13 +11,12 @@ public record SettlementDto(
         BigDecimal amount,
         Boolean isSettled,
         LocalDate date,
-        String memo,
-        SettlementCategory category
+        String memo
 ) {
     public static SettlementDto from(Settlement s) {
         return new SettlementDto(
-                s.getId(), s.getAmount(), s.getIsSettled(),
-                s.getDate(), s.getMemo(), s.getCategory()
+                s.getId(), s.getTotalAmount(), s.getIsSettled(),
+                s.getIncomeDate(), s.getMemo()
         );
     }
 }

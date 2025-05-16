@@ -18,24 +18,17 @@ import java.time.LocalDate;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Settlement extends BaseEntity {
 
-    // 정산 대상 유저
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contract_id", nullable = false)
     private Contract contract;
 
     @Column(nullable = false)
-    private LocalDate date;
+    private LocalDate incomeDate; // 수익 입금일
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private SettlementCategory category;
 
     @Column(nullable = false, precision = 15, scale = 2)
-    private BigDecimal amount;
+    private BigDecimal totalAmount; // 입금된 총 수익
+    private String source; // 입금 출처
 
     @Lob
     @Column(columnDefinition = "TEXT", nullable = false)
@@ -43,5 +36,7 @@ public class Settlement extends BaseEntity {
 
     @Column(nullable = false)
     private Boolean isSettled;
+
+
 
 }

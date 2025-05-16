@@ -11,31 +11,32 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/finance")
 @RequiredArgsConstructor
-//@PreAuthorize("hasRole('ADMIN')")
+//@PreAuthorize("@authService.isInDepartment(authentication, 3L)") // 부서 ID로 판단
 @Tag(name = "finance", description = "회계팀 API")
 public class ApiV1FinanceController {
 
     private final SettlementService settlementService;
     private final SettlementRepository settlementRepository;
 
-    // 관리자/회계팀이 수익 입력 시 호출
+    // 정산 생성 (확정된 계약 기준, SettlementRatio 기준으로 Detail 생성)
     @PostMapping("/contracts/{id}/settlements")
     @Operation(summary = "정산 생성(확정)")
     public ResponseEntity<?> createSettlement(
             @PathVariable Long id,
             @RequestBody SettlementRequest request
     ) {
-        settlementService.createSettlement(id, request.getTotalRevenue());
+        settlementService.createSettlement(id, request.getTotalRevenue(), request.getDetails());
         return ResponseEntity.ok("정산 생성 완료");
     }
 
-    // 특정 계약의 정산 리스트
-    @GetMapping("/{id}/settlements")
+    // 특정 계약의 정산 목록 조회
+    @GetMapping("/contracts/{id}/settlements")
     @Operation(summary = "특정 계약의 정산 리스트")
     public ResponseEntity<List<SettlementDto>> getSettlementsByContract(@PathVariable Long id) {
         List<Settlement> settlements = settlementRepository.findByContractId(id);
@@ -64,7 +65,7 @@ public class ApiV1FinanceController {
         return ResponseEntity.ok("정산 삭제 완료");
     }
 
-    // 정산 상태 변경
+    // 정산 상태 변경 (정산 확정 여부만 true/false)
     @PutMapping("/settlements/{settlementId}/status")
     @Operation(summary = "정산 상태 변경")
     public ResponseEntity<?> updateSettlementStatus(
@@ -75,11 +76,24 @@ public class ApiV1FinanceController {
         return ResponseEntity.ok("정산 확정 상태 변경 완료");
     }
 
-    // 정산 통계
+    // 전체 정산 통계 요약 (합계 등)
     @GetMapping("/summary")
     @Operation(summary = "정산 통계")
     public ResponseEntity<SettlementSummaryDto> getSettlementSummary() {
         return ResponseEntity.ok(settlementService.getSummary());
     }
 
+    // 전체 수익
+    @GetMapping("/total-revenue")
+    @Operation(summary = "전체 총 수익 조회")
+    public ResponseEntity<BigDecimal> getTotalRevenue() {
+        return ResponseEntity.ok(settlementService.getTotalRevenue());
+    }
+
+    // 특정 유저 수익
+    @GetMapping("/users/{userId}/total-revenue")
+    @Operation(summary = "특정 유저의 총 수익 조회")
+    public ResponseEntity<BigDecimal> getTotalRevenueByUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(settlementService.getTotalRevenueByUser(userId));
+    }
 }

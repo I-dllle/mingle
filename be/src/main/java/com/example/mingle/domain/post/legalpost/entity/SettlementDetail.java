@@ -12,11 +12,13 @@ import java.math.BigDecimal;
 
 @Getter@Setter
 @Entity
-@Table(name = "settlement_ratio")
+@Table(name = "settlement_Detail")
 @SuperBuilder
+
 public class SettlementDetail extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "settlement_id", nullable = false)
     private Settlement settlement;
 
     @Enumerated(EnumType.STRING)
@@ -24,7 +26,8 @@ public class SettlementDetail extends BaseEntity {
     private RatioType ratioType; // Artist, Agency, Producer 등
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private User user; // 정산 대상자 (nullable 가능: 외부일 경우)
+    @JoinColumn(name = "user_id", nullable = true)
+    private User user;
 
     @Column(nullable = false, precision = 5, scale = 2)
     private BigDecimal percentage;

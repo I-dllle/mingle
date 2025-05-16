@@ -1,18 +1,24 @@
 package com.example.mingle.domain.post.legalpost.service;
 
+import com.example.mingle.domain.post.legalpost.dto.settlement.CreateSettlementDetailRequest;
+import com.example.mingle.domain.post.legalpost.dto.settlement.SettlementDto;
 import com.example.mingle.domain.post.legalpost.dto.settlement.SettlementSummaryDto;
 import com.example.mingle.domain.post.legalpost.dto.settlement.UpdateSettlementRequest;
 import com.example.mingle.domain.post.legalpost.entity.Contract;
 import com.example.mingle.domain.post.legalpost.entity.Settlement;
+import com.example.mingle.domain.post.legalpost.entity.SettlementDetail;
 import com.example.mingle.domain.post.legalpost.entity.SettlementRatio;
 import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
+import com.example.mingle.domain.post.legalpost.enums.RatioType;
 import com.example.mingle.domain.post.legalpost.enums.SettlementCategory;
 import com.example.mingle.domain.post.legalpost.repository.ContractRepository;
+import com.example.mingle.domain.post.legalpost.repository.SettlementDetailRepository;
 import com.example.mingle.domain.post.legalpost.repository.SettlementRatioRepository;
 import com.example.mingle.domain.post.legalpost.repository.SettlementRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -25,58 +31,83 @@ public class SettlementService {
     private final ContractRepository contractRepository;
     private final SettlementRatioRepository ratioRepository;
     private final SettlementRepository settlementRepository;
+    private final SettlementDetailRepository settlementDetailRepository;
 
-    public void createSettlement(Long contractId, BigDecimal totalRevenue) {
-        Contract contract = contractRepository.findById(contractId).orElseThrow();
+    @Transactional
+    public void createSettlement(Long contractId, BigDecimal totalRevenue, List<CreateSettlementDetailRequest> detailRequests)
+    {
+        Contract contract = contractRepository.findById(contractId)
+                .orElseThrow(() -> new EntityNotFoundException("계약을 찾을 수 없습니다."));
 
         if (contract.getStatus() != ContractStatus.CONFIRMED) {
-            throw new IllegalStateException("확정된 계약만 정산 가능");
+            throw new IllegalStateException("확정된 계약만 정산할 수 있습니다.");
         }
 
         if (contract.getIsSettlementCreated()) {
-            throw new IllegalStateException("이미 정산이 생성됨");
+            throw new IllegalStateException("이미 정산이 생성되었습니다.");
         }
 
+        // 1. 수익 단위 Settlement 생성
+        Settlement settlement = Settlement.builder()
+                .contract(contract)
+                .incomeDate(LocalDate.now())
+                .totalAmount(totalRevenue)
+                .memo("정산 생성: " + contract.getSummary())
+                .isSettled(false)
+                .build();
+
+        settlementRepository.save(settlement);
+
+        // 2. 비율 기준으로 상세 정산 생성
         List<SettlementRatio> ratios = ratioRepository.findByContract(contract);
+
         for (SettlementRatio ratio : ratios) {
             BigDecimal amount = totalRevenue.multiply(ratio.getPercentage())
                     .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
 
-            Settlement s = Settlement.builder()
-                    .user(contract.getUser())
+            SettlementDetail detail = SettlementDetail.builder()
+                    .settlement(settlement)
+                    .user(ratio.getRatioType() == RatioType.AGENCY ? null : ratio.getUser()) // 회사는 유저 없을 수 있음
+                    .ratioType(ratio.getRatioType())
+                    .percentage(ratio.getPercentage())
                     .amount(amount)
-                    .date(LocalDate.now())
-                    .category(SettlementCategory.계약)
-                    .memo(contract.getSummary())
-                    .contract(contract)
-                    .isSettled(false)
                     .build();
 
-            settlementRepository.save(s);
+            settlementDetailRepository.save(detail);
         }
 
+        // 3. 계약 상태 변경
         contract.setIsSettlementCreated(true);
         contractRepository.save(contract);
     }
+
+
 
     public void updateSettlement(Long id, UpdateSettlementRequest request) {
         Settlement settlement = settlementRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("정산 내역을 찾을 수 없습니다."));
 
-        settlement.setAmount(request.getAmount());
+        settlement.setTotalAmount(request.getTotalAmount());
         settlement.setMemo(request.getMemo());
         settlement.setIsSettled(request.getIsSettled());
-        settlement.setCategory(request.getCategory());
-        settlement.setDate(request.getDate());
+        settlement.setIncomeDate(request.getIncomeDate());
 
         settlementRepository.save(settlement);
+
+        // SettlementDetail도 수정하려면 별도 로직 필요
     }
+
 
     public void deleteSettlement(Long settlementId) {
         Settlement settlement = settlementRepository.findById(settlementId)
                 .orElseThrow(() -> new EntityNotFoundException("정산 내역을 찾을 수 없습니다."));
+
+        // 먼저 하위 SettlementDetail 삭제
+        settlementDetailRepository.deleteBySettlement(settlement);
+
         settlementRepository.delete(settlement);
     }
+
 
     public void updateIsSettled(Long id, Boolean isSettled) {
         Settlement settlement = settlementRepository.findById(id)
@@ -85,13 +116,28 @@ public class SettlementService {
         settlementRepository.save(settlement);
     }
 
+
     public SettlementSummaryDto getSummary() {
         List<Settlement> settlements = settlementRepository.findAll();
         BigDecimal totalAmount = settlements.stream()
-                .map(Settlement::getAmount)
+                .map(Settlement::getTotalAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return new SettlementSummaryDto(totalAmount, settlements.size());
     }
 
+    public List<SettlementDto> getAllSettlements() {
+        return settlementRepository.findAll().stream()
+                .map(SettlementDto::from)
+                .toList();
+    }
+
+
+    public BigDecimal getTotalRevenue() {
+        return settlementRepository.getTotalRevenue();
+    }
+
+    public BigDecimal getTotalRevenueByUser(Long userId) {
+        return settlementDetailRepository.getTotalRevenueByUser(userId);
+    }
 }

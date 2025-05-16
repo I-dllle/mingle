@@ -61,12 +61,15 @@ public class ContractService {
         contract.setStatus(ContractStatus.DRAFT);
         contract.setContractType(req.getContractType());
         contract.setIsSettlementCreated(false);
+        contract.setContractAmount(req.getContractAmount());
 
         contractRepository.save(contract);
+
 
         SettlementRatio ratio = new SettlementRatio();
         ratio.setContract(contract);
         ratio.setRatioType(RatioType.ARTIST);
+        ratio.setUser(user);
         ratio.setPercentage(req.getSettlementRatio());
         ratioRepository.save(ratio);
 
@@ -103,6 +106,7 @@ public class ContractService {
         System.out.println("✔ DocuSign 서명 URL 발급 완료");
 
         contract.setDocusignUrl(signatureUrl);
+        contract.setSignerName(user.getNickname());
         contract.setStatus(ContractStatus.SIGNED);
         contractRepository.save(contract);
 
@@ -134,7 +138,7 @@ public class ContractService {
         return url.substring(url.lastIndexOf("/") + 1);
     }
 
-    public void signOffline(Long id, SecurityUser user) throws IOException{
+    public void signOfflineAsAdmin(Long id, String signerName, String memo) {
         Contract contract = contractRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("계약 없음"));
 
@@ -146,16 +150,13 @@ public class ContractService {
             throw new IllegalStateException("검토 상태만 서명할 수 있습니다.");
         }
 
-        if (!contract.getUser().getId().equals(user.getId())) {
-            throw new AccessDeniedException("본인의 계약만 서명할 수 있습니다.");
-        }
-
-        contract.setSignerName(user.getUsername());
-        contract.setSignerMemo("오프라인 서명 완료: " + LocalDateTime.now());
+        contract.setSignerName(signerName);
+        contract.setSignerMemo("오프라인 서명 메모: " + memo);
         contract.setStatus(ContractStatus.SIGNED_OFFLINE);
 
         contractRepository.save(contract);
     }
+
 
     private boolean canTransition(ContractStatus current, ContractStatus next) {
         return switch (current) {

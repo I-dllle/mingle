@@ -16,6 +16,7 @@ public class SecurityUser implements UserDetails {
     private final String email;
     private final String password;
     private final String nickname;
+    private final Long departmentId;
     private final Collection<? extends GrantedAuthority> authorities;
 
     @Override

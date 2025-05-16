@@ -9,6 +9,7 @@ import com.example.mingle.domain.user.user.dto.TokenResponseDto;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.domain.user.user.entity.UserRole;
 import com.example.mingle.domain.user.user.entity.UserPosition;
+import com.example.mingle.domain.user.user.entity.UserStatus;
 import com.example.mingle.domain.user.user.repository.UserRepository;
 import com.example.mingle.domain.user.user.repository.UserPositionRepository;
 import com.example.mingle.global.exception.ApiException;
@@ -66,6 +67,7 @@ public class UserService {
                 .imageUrl(request.getImageUrl())
                 .role(UserRole.valueOf(request.getRole()))
                 .department(department)
+                .status(UserStatus.ONLINE)
                 .position(position)
                 .build();
 
@@ -154,11 +156,15 @@ public class UserService {
         String roleString = (String) payload.get("role");
         UserRole role = UserRole.valueOf(roleString);
 
+        // 🔧 department 조회 (없을 경우 null 가능)
+        Department department = departmentRepository.findByUserId(id);
+
         return User.builder()
                 .id(id)
                 .email(email)
                 .nickname(nickname)
                 .role(role)
+                .department(department) // ✅ 추가된 부서 정보
                 .build();
     }
 
