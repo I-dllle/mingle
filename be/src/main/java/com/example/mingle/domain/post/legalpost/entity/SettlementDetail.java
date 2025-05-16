@@ -4,31 +4,32 @@ import com.example.mingle.domain.post.legalpost.enums.RatioType;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 
-@Getter
-@Setter
+@Getter@Setter
 @Entity
 @Table(name = "settlement_ratio")
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class SettlementRatio extends BaseEntity {
+@SuperBuilder
+public class SettlementDetail extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "contract_id", nullable = false)
-    private Contract contract;
+    private Settlement settlement;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private RatioType ratioType; // AGENCY, ARTIST, PRODUCER 등
+    private RatioType ratioType; // Artist, Agency, Producer 등
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id") // 회사 몫일 경우 null
-    private User user;
+    private User user; // 정산 대상자 (nullable 가능: 외부일 경우)
 
     @Column(nullable = false, precision = 5, scale = 2)
-    private BigDecimal percentage; // 예: 30.00
+    private BigDecimal percentage;
+
+    @Column(nullable = false, precision = 15, scale = 2)
+    private BigDecimal amount;
+
 }
