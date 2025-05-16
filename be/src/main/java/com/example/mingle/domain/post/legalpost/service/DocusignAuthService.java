@@ -27,16 +27,16 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class DocusignAuthService {
 
-    @Value("${docusign.client-id}")
+    @Value("${external.docusign.client-id}")
     private String clientId;
 
-    @Value("${docusign.user-id}")
+    @Value("${external.docusign.user-id}")
     private String userId;
 
-    @Value("${docusign.private-key-path}")
+    @Value("${external.docusign.private-key-path}")
     private String privateKeyPath;
 
-    @Value("${docusign.auth-url}")
+    @Value("${external.docusign.auth-url}")
     private String authUrl;
 
     private final WebClient.Builder webClientBuilder;
