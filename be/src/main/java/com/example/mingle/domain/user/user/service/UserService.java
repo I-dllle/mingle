@@ -157,7 +157,7 @@ public class UserService {
         String roleString = (String) payload.get("role");
         UserRole role = UserRole.valueOf(roleString);
 
-        // 🔧 department 조회 (없을 경우 null 가능)
+        // department 조회 (없을 경우 null 가능)
         Department department = departmentRepository.findByUserId(id);
 
         return User.builder()
@@ -165,7 +165,7 @@ public class UserService {
                 .email(email)
                 .nickname(nickname)
                 .role(role)
-                .department(department) // ✅ 추가된 부서 정보
+                .department(department) // 추가된 부서 정보
                 .build();
     }
 

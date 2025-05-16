@@ -1,5 +1,6 @@
 package com.example.mingle.domain.post.legalpost.controller;
 
+import com.example.mingle.domain.admin.panel.dto.ContractResponse;
 import com.example.mingle.domain.post.legalpost.dto.contract.*;
 import com.example.mingle.domain.post.legalpost.entity.Contract;
 import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
@@ -109,6 +110,18 @@ public class ApiV1LegalController {
     public ResponseEntity<Void> confirmContract(@PathVariable Long id) {
         contractService.changeStatus(id, ContractStatus.CONFIRMED);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{id}/file")
+    @Operation(summary = "계약서 파일 링크 조회")
+    public ResponseEntity<String> getContractFileUrl(@PathVariable Long id) {
+        return ResponseEntity.ok(contractService.getContractFileUrl(id));
+    }
+
+    @GetMapping("/expiring")
+    @Operation(summary = "30일 이내 만료 예정 계약 조회")
+    public ResponseEntity<List<ContractResponse>> getExpiringContracts() {
+        return ResponseEntity.ok(contractService.getExpiringContracts());
     }
 
 }

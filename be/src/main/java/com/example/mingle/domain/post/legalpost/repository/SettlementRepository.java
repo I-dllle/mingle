@@ -27,4 +27,6 @@ public interface SettlementRepository extends JpaRepository<Settlement, Long> {
 
     @Query("SELECT COALESCE(SUM(s.totalAmount), 0) FROM Settlement s")
     BigDecimal getTotalRevenue();  // 외부 수익 총합
+
+
 }

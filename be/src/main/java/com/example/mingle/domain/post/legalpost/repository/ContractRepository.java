@@ -28,4 +28,12 @@ public interface ContractRepository extends JpaRepository<Contract, Long>, JpaSp
 
     long countByStatus(ContractStatus status);
 
+    @Query("""
+    SELECT c FROM Contract c
+    WHERE c.endDate BETWEEN CURRENT_DATE AND :deadline
+      AND c.status != :terminated
+""")
+    List<Contract> findExpiringContracts(@Param("deadline") LocalDate deadline,
+                                         @Param("terminated") ContractStatus terminated);
+
 }

@@ -1,6 +1,10 @@
 package com.example.mingle.domain.post.legalpost.service;
 
 
+import com.example.mingle.domain.admin.panel.dto.ContractConditionResponse;
+import com.example.mingle.domain.admin.panel.dto.ContractResponse;
+import com.example.mingle.domain.admin.panel.dto.ContractSearchCondition;
+import com.example.mingle.domain.admin.panel.service.ContractSpecification;
 import com.example.mingle.domain.post.legalpost.dto.contract.CreateContractRequest;
 import com.example.mingle.domain.post.legalpost.entity.Contract;
 import com.example.mingle.domain.post.legalpost.entity.SettlementRatio;
@@ -15,9 +19,13 @@ import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.domain.user.user.repository.UserRepository;
 import com.example.mingle.global.aws.AwsS3Uploader;
 
+import com.example.mingle.global.exception.ApiException;
+import com.example.mingle.global.exception.ErrorCode;
 import com.example.mingle.global.security.SecurityUser;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,7 +37,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.AccessDeniedException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -166,4 +176,32 @@ public class ContractService {
             default -> false;
         };
     }
+
+    public String getContractFileUrl(Long id) {
+        Contract contract = contractRepository.findById(id)
+                .orElseThrow(() -> new ApiException(ErrorCode.CONTRACT_NOT_FOUND));
+
+        return contract.getFileUrl();
+    }
+
+    public Page<ContractResponse> getContractsByFilter(ContractSearchCondition condition, Pageable pageable) {
+        return contractRepository.findAll(
+                ContractSpecification.build(condition), pageable
+        ).map(ContractResponse::from);
+    }
+
+    public ContractConditionResponse getContractConditions(Long id) {
+        Contract contract = contractRepository.findById(id)
+                .orElseThrow(() -> new ApiException(ErrorCode.CONTRACT_NOT_FOUND));
+        return ContractConditionResponse.from(contract);
+    }
+
+    public List<ContractResponse> getExpiringContracts() {
+        LocalDate deadline = LocalDate.now().plusDays(30);
+        List<Contract> contracts = contractRepository.findExpiringContracts(deadline, ContractStatus.TERMINATED);
+        return contracts.stream()
+                .map(ContractResponse::from)
+                .toList();
+    }
+
 }

@@ -1,9 +1,6 @@
 package com.example.mingle.domain.post.legalpost.service;
 
-import com.example.mingle.domain.post.legalpost.dto.settlement.CreateSettlementDetailRequest;
-import com.example.mingle.domain.post.legalpost.dto.settlement.SettlementDto;
-import com.example.mingle.domain.post.legalpost.dto.settlement.SettlementSummaryDto;
-import com.example.mingle.domain.post.legalpost.dto.settlement.UpdateSettlementRequest;
+import com.example.mingle.domain.post.legalpost.dto.settlement.*;
 import com.example.mingle.domain.post.legalpost.entity.Contract;
 import com.example.mingle.domain.post.legalpost.entity.Settlement;
 import com.example.mingle.domain.post.legalpost.entity.SettlementDetail;
@@ -23,7 +20,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.EnumMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -140,4 +141,61 @@ public class SettlementService {
     public BigDecimal getTotalRevenueByUser(Long userId) {
         return settlementDetailRepository.getTotalRevenueByUser(userId);
     }
+
+    public BigDecimal getAgencyRevenue() {
+        BigDecimal result = settlementDetailRepository.calculateTotalByRatioType(RatioType.AGENCY);
+        return result != null ? result : BigDecimal.ZERO;
+    }
+
+    public Map<YearMonth, BigDecimal> getMonthlyRevenueSummary() {
+        List<Object[]> rows = settlementDetailRepository.findMonthlyRevenueSummary();
+
+        Map<YearMonth, BigDecimal> result = new LinkedHashMap<>();
+        for (Object[] row : rows) {
+            String monthStr = (String) row[0]; // 예: "2024-05"
+            BigDecimal amount = (BigDecimal) row[1];
+            YearMonth ym = YearMonth.parse(monthStr);
+            result.put(ym, amount);
+        }
+        return result;
+    }
+
+    public List<ArtistRevenueDto> getTopArtistsByRevenue(int limit) {
+        List<Object[]> rows = settlementDetailRepository.findTopArtistRevenue();
+
+        return rows.stream()
+                .limit(limit)
+                .map(row -> ArtistRevenueDto.builder()
+                        .artistId((Long) row[0])
+                        .artistName((String) row[1])
+                        .totalRevenue((BigDecimal) row[2])
+                        .build())
+                .toList();
+    }
+
+    public Map<RatioType, BigDecimal> getRevenueByRatioType() {
+        List<Object[]> rows = settlementDetailRepository.getRevenueGroupedByRatioType();
+
+        Map<RatioType, BigDecimal> result = new EnumMap<>(RatioType.class);
+        for (Object[] row : rows) {
+            RatioType type = (RatioType) row[0];
+            BigDecimal amount = (BigDecimal) row[1];
+            result.put(type, amount);
+        }
+        return result;
+    }
+
+
+    public BigDecimal getRevenueByContract(Long contractId) {
+        BigDecimal result = settlementDetailRepository.getTotalRevenueByContract(contractId);
+        return result != null ? result : BigDecimal.ZERO;
+    }
+
+    public List<SettlementDetailResponse> getSettlementDetailsByContract(Long contractId) {
+        List<SettlementDetail> details = settlementDetailRepository.findAllByContractId(contractId);
+        return details.stream()
+                .map(SettlementDetailResponse::from)
+                .toList();
+    }
+
 }
