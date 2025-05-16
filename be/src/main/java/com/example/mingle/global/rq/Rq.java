@@ -47,6 +47,7 @@ public class Rq {
                     user.getEmail(),
                     "", // password는 사용하지 않음
                     user.getNickname(),
+                    user.getRole(),
                     user.getDepartment().getId(),
                     user.getAuthorities()
             );
@@ -73,6 +74,7 @@ public class Rq {
                         .id(su.getId())
                         .email(su.getUsername())
                         .nickname(su.getNickname())
+                        .role(su.getRole())
                         .build())
                 .orElse(null);
     }
