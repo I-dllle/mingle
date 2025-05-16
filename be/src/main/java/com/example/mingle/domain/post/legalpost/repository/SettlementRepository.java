@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Repository
@@ -23,4 +24,9 @@ public interface SettlementRepository extends JpaRepository<Settlement, Long> {
       AND FUNCTION('MONTH', s.createdAt) = FUNCTION('MONTH', CURRENT_DATE)
 """)
     Double calculateThisMonthCompletionRate();
+
+    @Query("SELECT COALESCE(SUM(s.totalAmount), 0) FROM Settlement s")
+    BigDecimal getTotalRevenue();  // 외부 수익 총합
+
+
 }

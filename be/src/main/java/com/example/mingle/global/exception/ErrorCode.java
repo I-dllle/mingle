@@ -51,7 +51,10 @@ public enum ErrorCode {
     RESERVATION_TIME_CONFLICT(HttpStatus.CONFLICT, "해당 시간에 이미 예약이 존재합니다."),
 
     // 500 INTERNAL_SERVER_ERROR
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다."), INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "파일 형식이 올바르지 않습니다.");
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다."), INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "파일 형식이 올바르지 않습니다."),
+
+    // 계약서 없을 때 에러 코드
+    CONTRACT_NOT_FOUND(HttpStatus.NOT_FOUND,"계약서를 찾을 수 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

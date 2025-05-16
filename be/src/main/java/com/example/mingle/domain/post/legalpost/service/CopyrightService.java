@@ -61,7 +61,6 @@ public class CopyrightService {
         contractRepository.save(contract);
 
         SettlementRatio ratio = new SettlementRatio();
-        ratio.setCopyrightContract(contract);
         ratio.setRatioType(RatioType.ARTIST);
         ratio.setPercentage(req.getSettlementRatio());
         ratioRepository.save(ratio);

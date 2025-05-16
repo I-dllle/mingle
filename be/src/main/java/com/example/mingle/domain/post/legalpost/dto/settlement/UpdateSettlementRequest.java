@@ -9,9 +9,9 @@ import java.time.LocalDate;
 
 @Getter @Setter
 public class UpdateSettlementRequest {
-    private BigDecimal amount;
+    private BigDecimal totalAmount;
     private String memo;
     private Boolean isSettled;
     private SettlementCategory category;
-    private LocalDate date;
+    private LocalDate IncomeDate;
 }

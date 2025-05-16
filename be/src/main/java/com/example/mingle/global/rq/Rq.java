@@ -48,6 +48,7 @@ public class Rq {
                     "", // password는 사용하지 않음
                     user.getNickname(),
                     user.getRole(),
+                    user.getDepartment().getId(),
                     user.getAuthorities()
             );
 
