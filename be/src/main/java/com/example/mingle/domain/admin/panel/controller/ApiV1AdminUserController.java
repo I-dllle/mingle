@@ -37,7 +37,7 @@ public class ApiV1AdminUserController {
     }
 
     @PutMapping("/{userId}")
-    @Operation(summary = "유저 정보 변경(부서, 포지션, ...")
+    @Operation(summary = "유저 정보 변경(부서, 포지션, ...)")
     public void updateUser(@PathVariable Long userId, @RequestBody AdminUpdateUser req) {
         adminUserService.updateUser(userId, req);
     }

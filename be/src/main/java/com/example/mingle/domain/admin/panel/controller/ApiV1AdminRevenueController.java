@@ -75,6 +75,7 @@ public class ApiV1AdminRevenueController {
     }
 
     @GetMapping
+    @Operation(summary = "모든 정산 리스트")
     public ResponseEntity<List<SettlementDto>> getAll() {
         return ResponseEntity.ok(settlementService.getAllSettlements());
     }

@@ -68,7 +68,6 @@ public class UserService {
                 .imageUrl(request.getImageUrl())
                 .role(UserRole.valueOf(request.getRole()))
                 .department(department)
-                .status(UserStatus.ONLINE)
                 .position(position)
                 .build();
 
