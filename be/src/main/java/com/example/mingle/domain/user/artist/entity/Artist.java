@@ -23,6 +23,7 @@ public class Artist extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Builder.Default
     @ManyToMany
     @JoinTable(
             name = "artist_team",
