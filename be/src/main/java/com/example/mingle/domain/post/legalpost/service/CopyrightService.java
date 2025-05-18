@@ -57,7 +57,6 @@ public class CopyrightService {
         contract.setStatus(ContractStatus.DRAFT);
         contract.setContractType(req.getContractType());
 
-
         contractRepository.save(contract);
 
         SettlementRatio ratio = new SettlementRatio();
@@ -135,7 +134,6 @@ public class CopyrightService {
             default -> false;
         };
     }
-
 
 
 public List<CopyrightContractDto> getAll() {

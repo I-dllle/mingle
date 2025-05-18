@@ -20,7 +20,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/finance")
 @RequiredArgsConstructor
-@PreAuthorize("@authService.isInDepartment(authentication, 3L)") // 부서 ID로 판단
+//@PreAuthorize("@authService.isInDepartment(authentication, 3L)") // 부서 ID로 판단
 @Tag(name = "finance", description = "회계팀 API")
 public class ApiV1FinanceController {
 

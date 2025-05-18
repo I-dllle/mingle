@@ -12,6 +12,6 @@ public class UpdateSettlementRequest {
     private BigDecimal totalAmount;
     private String memo;
     private Boolean isSettled;
-    private SettlementCategory category;
+    private String source;
     private LocalDate IncomeDate;
 }

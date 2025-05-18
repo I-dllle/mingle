@@ -1,17 +1,18 @@
 package com.example.mingle.domain.post.legalpost.service;
 
-
 import com.example.mingle.domain.admin.panel.dto.ContractConditionResponse;
 import com.example.mingle.domain.admin.panel.dto.ContractResponse;
 import com.example.mingle.domain.admin.panel.dto.ContractSearchCondition;
 import com.example.mingle.domain.admin.panel.service.ContractSpecification;
 import com.example.mingle.domain.post.legalpost.dto.contract.CreateContractRequest;
 import com.example.mingle.domain.post.legalpost.entity.Contract;
+import com.example.mingle.domain.post.legalpost.entity.InternalContract;
 import com.example.mingle.domain.post.legalpost.entity.SettlementRatio;
 import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
 import com.example.mingle.domain.post.legalpost.enums.ContractType;
 import com.example.mingle.domain.post.legalpost.enums.RatioType;
 import com.example.mingle.domain.post.legalpost.repository.ContractRepository;
+import com.example.mingle.domain.post.legalpost.repository.InternalContractRepository;
 import com.example.mingle.domain.post.legalpost.repository.SettlementRatioRepository;
 import com.example.mingle.domain.user.team.entity.ArtistTeam;
 import com.example.mingle.domain.user.team.repository.ArtistTeamRepository;
@@ -32,13 +33,12 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.file.AccessDeniedException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
@@ -54,36 +54,79 @@ public class ContractService {
     private final ArtistTeamRepository teamRepository;
     private final AwsS3Uploader s3Uploader;
     private final DocusignService docusignService;
+    private final InternalContractRepository internalContractRepository;
 
     public Long createContract(CreateContractRequest req, MultipartFile file) throws IOException {
-        User user = userRepository.findById(req.getUserId()).orElseThrow();
-        ArtistTeam team = teamRepository.findById(req.getTeamId()).orElse(null);
-
+        User user1 = userRepository.findById(req.userId()).orElseThrow();
+        ArtistTeam team = teamRepository.findById(req.teamId()).orElse(null);
         String fileUrl = s3Uploader.upload(file, "contracts");
 
         Contract contract = new Contract();
-        contract.setUser(user);
+        contract.setUser(user1);
         contract.setTeam(team);
         contract.setFileUrl(fileUrl);
-        contract.setSummary(req.getSummary());
-        contract.setTitle(req.getTitle());
+        contract.setSummary(req.summary());
+        contract.setTitle(req.title());
         contract.setCompanyName("Mingle");
-        contract.setContractCategory(req.getContractCategory());
-        contract.setStartDate(req.getStartDate());
-        contract.setEndDate(req.getEndDate());
+        contract.setContractCategory(req.contractCategory());
+        contract.setStartDate(req.startDate());
+        contract.setEndDate(req.endDate());
         contract.setStatus(ContractStatus.DRAFT);
-        contract.setContractType(req.getContractType());
-        contract.setContractAmount(req.getContractAmount());
+        contract.setContractType(req.contractType());
+        contract.setContractAmount(req.contractAmount());
 
         contractRepository.save(contract);
 
+        if (req.useManualRatios()) {
+            // 👇 수동 입력 방식
+            for (CreateContractRequest.SettlementRatioDto dto : req.ratios()) {
+                SettlementRatio ratio = new SettlementRatio();
 
-        SettlementRatio ratio = new SettlementRatio();
-        ratio.setContract(contract);
-        ratio.setRatioType(req.getRatioType());
-        ratio.setUser(user);
-        ratio.setPercentage(req.getSettlementRatio());
-        ratioRepository.save(ratio);
+                if (dto.userId() != null) {
+                    User user = userRepository.findById(dto.userId()).orElseThrow();
+                    ratio.setUser(user);
+                } else {
+                    ratio.setUser(null); // 회사 몫
+                }
+                ratio.setContract(contract);
+                ratio.setRatioType(dto.ratioType());
+                ratio.setPercentage(dto.percentage());
+                ratioRepository.save(ratio);
+            }
+        } else {
+            // 👇 내부계약 기반 자동 방식
+            BigDecimal sum = BigDecimal.ZERO;
+
+// 1. 유저 기반 비율 저장 (아티스트/프로듀서)
+            for (Long userId : req.targetUserIds()) {
+                User user = userRepository.findById(userId).orElseThrow();
+
+                InternalContract internal = internalContractRepository
+                        .findValidByUserAndDate(user, LocalDate.now())
+                        .orElseThrow(() -> new IllegalStateException("내부 계약 없음"));
+
+                BigDecimal userRatio = internal.getDefaultRatio();
+                sum = sum.add(userRatio);
+
+                SettlementRatio ratio = new SettlementRatio();
+                ratio.setContract(contract);
+                ratio.setRatioType(internal.getRatioType()); // ARTIST, PRODUCER 등
+                ratio.setUser(user);
+                ratio.setPercentage(userRatio);
+                ratioRepository.save(ratio);
+            }
+
+// 2. 회사 몫 자동 계산 (100 - 참여자 비율 합계)
+            BigDecimal companyRatio = BigDecimal.valueOf(100).subtract(sum);
+            if (companyRatio.compareTo(BigDecimal.ZERO) > 0) {
+                SettlementRatio agencyRatio = new SettlementRatio();
+                agencyRatio.setContract(contract);
+                agencyRatio.setRatioType(RatioType.AGENCY); // 회사 몫
+                agencyRatio.setUser(null); // 유저 없음
+                agencyRatio.setPercentage(companyRatio);
+                ratioRepository.save(agencyRatio);
+            }
+        }
 
         return contract.getId();
     }

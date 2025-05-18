@@ -77,21 +77,41 @@ public class SettlementService {
         contractRepository.save(contract);
     }
 
-
-
     public void updateSettlement(Long id, UpdateSettlementRequest request) {
         Settlement settlement = settlementRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("정산 내역을 찾을 수 없습니다."));
+
+        Contract contract = settlement.getContract();
 
         settlement.setTotalAmount(request.getTotalAmount());
         settlement.setMemo(request.getMemo());
         settlement.setIsSettled(request.getIsSettled());
         settlement.setIncomeDate(request.getIncomeDate());
+        settlement.setSource(request.getSource());
+
+        settlementDetailRepository.deleteBySettlementId(settlement.getId());
+
+        List<SettlementRatio> ratios = ratioRepository.findByContract(contract);
+        BigDecimal totalRevenue = request.getTotalAmount();
+
+        for (SettlementRatio ratio : ratios) {
+            BigDecimal amount = totalRevenue.multiply(ratio.getPercentage())
+                    .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+
+            SettlementDetail detail = SettlementDetail.builder()
+                    .settlement(settlement)
+                    .user(ratio.getRatioType() == RatioType.AGENCY ? null : ratio.getUser())
+                    .ratioType(ratio.getRatioType())
+                    .percentage(ratio.getPercentage())
+                    .amount(amount)
+                    .build();
+
+            settlementDetailRepository.save(detail);
+        }
 
         settlementRepository.save(settlement);
-
-        // SettlementDetail도 수정하려면 별도 로직 필요
     }
+
 
 
     public void deleteSettlement(Long settlementId) {
@@ -186,6 +206,7 @@ public class SettlementService {
         return result != null ? result : BigDecimal.ZERO;
     }
 
+    @Transactional
     public List<SettlementDetailResponse> getSettlementDetailsByContract(Long contractId) {
         List<SettlementDetail> details = settlementDetailRepository.findAllByContractId(contractId);
         return details.stream()
