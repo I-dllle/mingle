@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
-@RequiredArgsConstructor
 public enum ScheduleType {
     PERSONAL,   // 개인 일정
     DEPARTMENT,       // 부서 일정

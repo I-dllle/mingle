@@ -1,12 +1,11 @@
-package com.example.mingle.domain.attendance.dto.response;
+package com.example.mingle.domain.attendance.attendance.dto.response;
 
-import com.example.mingle.domain.attendance.dto.AttendanceRecordDto;
+import com.example.mingle.domain.attendance.attendance.dto.AttendanceRecordDto;
 import lombok.*;
 
 import java.util.List;
 
 @Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder

@@ -1,12 +1,15 @@
 package com.example.mingle.domain.attendance.util;
 
-import com.example.mingle.domain.attendance.dto.AttendanceDetailDto;
-import com.example.mingle.domain.attendance.dto.AttendanceRecordDto;
-import com.example.mingle.domain.attendance.dto.response.WorkHoursChartResponseDto;
-import com.example.mingle.domain.attendance.entity.Attendance;
-import com.example.mingle.domain.attendance.enums.LeaveType;
-import com.example.mingle.domain.attendance.enums.VacationType;
+import com.example.mingle.domain.attendance.attendance.dto.AttendanceDetailDto;
+import com.example.mingle.domain.attendance.attendance.dto.AttendanceRecordDto;
+import com.example.mingle.domain.attendance.attendance.dto.response.WorkHoursChartResponseDto;
+import com.example.mingle.domain.attendance.attendance.entity.Attendance;
+import com.example.mingle.domain.attendance.attendanceRequest.dto.AttendanceRequestDetailDto;
+import com.example.mingle.domain.attendance.attendanceRequest.dto.AttendanceSummaryDto;
+import com.example.mingle.domain.attendance.attendanceRequest.entity.AttendanceRequest;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class AttendanceMapper {
@@ -22,7 +25,6 @@ public class AttendanceMapper {
                 .workingHours(attendance.getWorkingHours())
                 .overtimeHours(attendance.getOvertimeHours())
                 .attendanceStatus(attendance.getAttendanceStatus())
-                .halfDayType(attendance.getHalfDayType())
                 .build();
     }
 
@@ -38,8 +40,6 @@ public class AttendanceMapper {
                 .overtimeEnd(attendance.getOvertimeEnd())
                 .overtimeHours(attendance.getOvertimeHours())
                 .workingHours(attendance.getWorkingHours())
-                .halfDayType(attendance.getHalfDayType())
-                .vacationType(attendance.getVacationType())
                 .reason(attendance.getReason())
                 .build();
     }
@@ -51,16 +51,32 @@ public class AttendanceMapper {
                 .build();
     }
 
-    public VacationType convertToVacationType(LeaveType leaveType) {
-        return switch (leaveType) {
-            case ANNUAL -> VacationType.ANNUAL;
-            case SICK -> VacationType.SICK;
-            case OFFICIAL -> VacationType.OFFICIAL;
-            case MARRIAGE -> VacationType.MARRIAGE;
-            case BEREAVEMENT -> VacationType.BEREAVEMENT;
-            case PARENTAL -> VacationType.PARENTAL;
-            case OTHER -> VacationType.OTHER;
-            default -> VacationType.OTHER; // 기본값
-        };
+    public AttendanceRequestDetailDto toDetailDto(AttendanceRequest attendanceRequest) {
+
+        List<AttendanceSummaryDto> summary = attendanceRequest.getAttendances().stream()
+                .map(attendance -> AttendanceSummaryDto.builder()
+                        .id(attendance.getId())
+                        .date(attendance.getDate())
+                        .status(attendance.getAttendanceStatus())
+                        .userId(attendance.getUser().getId())
+                        .build())
+                .toList();
+
+        return AttendanceRequestDetailDto.builder()
+                .userId(attendanceRequest.getUser().getId())
+                .leaveType(attendanceRequest.getLeaveType())
+                .startDate(attendanceRequest.getStartDate())
+                .endDate(attendanceRequest.getEndDate())
+                .startTime(attendanceRequest.getStartTime())
+                .endTime(attendanceRequest.getEndTime())
+                .reason(attendanceRequest.getReason())
+                .approvalStatus(attendanceRequest.getApprovalStatus())
+                .approvalComment(attendanceRequest.getApprovalComment())
+                .approverId(attendanceRequest.getApprover() != null ? attendanceRequest.getApprover().getId() : null)
+                .appliedAt(attendanceRequest.getAppliedAt())
+                .approvedAt(attendanceRequest.getApprovedAt())
+                .attendances(summary)
+                .build();
     }
+
 }

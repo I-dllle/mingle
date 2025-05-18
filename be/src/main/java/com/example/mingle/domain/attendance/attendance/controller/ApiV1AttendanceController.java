@@ -1,13 +1,13 @@
-package com.example.mingle.domain.attendance.controller;
+package com.example.mingle.domain.attendance.attendance.controller;
 
-import com.example.mingle.domain.attendance.dto.AttendanceDetailDto;
-import com.example.mingle.domain.attendance.dto.AttendanceRecordDto;
-import com.example.mingle.domain.attendance.dto.request.LeaveRequestDto;
-import com.example.mingle.domain.attendance.dto.request.OvertimeRequestDto;
-import com.example.mingle.domain.attendance.dto.response.AttendanceMonthStatsDto;
-import com.example.mingle.domain.attendance.dto.response.AttendancePageResponseDto;
-import com.example.mingle.domain.attendance.dto.response.WorkHoursChartResponseDto;
-import com.example.mingle.domain.attendance.service.AttendanceService;
+import com.example.mingle.domain.attendance.attendance.dto.AttendanceDetailDto;
+import com.example.mingle.domain.attendance.attendance.dto.AttendanceRecordDto;
+import com.example.mingle.domain.attendance.attendanceRequest.dto.AttendanceRequestDto;
+import com.example.mingle.domain.attendance.attendance.dto.request.OvertimeRequestDto;
+import com.example.mingle.domain.attendance.attendance.dto.response.AttendanceMonthStatsDto;
+import com.example.mingle.domain.attendance.attendance.dto.response.AttendancePageResponseDto;
+import com.example.mingle.domain.attendance.attendance.dto.response.WorkHoursChartResponseDto;
+import com.example.mingle.domain.attendance.attendance.service.AttendanceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -43,16 +43,6 @@ public class ApiV1AttendanceController {
             @Parameter(description = "사용자 ID", required = true)
             @PathVariable Long userId) {
         AttendanceRecordDto result = attendanceService.checkOut(userId);
-        return ResponseEntity.ok(result);
-    }
-
-    @Operation(summary = "휴가/반차/조퇴 등 신청", description = "연차, 병가, 반차, 조퇴 등을 신청합니다.")
-    @PostMapping("/leave")
-    public ResponseEntity<List<AttendanceDetailDto>> applyLeave(
-            @Parameter(description = "사용자 ID", required = true)
-            @PathVariable Long userId,
-            @RequestBody LeaveRequestDto requestDto) {
-        List<AttendanceDetailDto> result = attendanceService.applyLeave(userId, requestDto);
         return ResponseEntity.ok(result);
     }
 

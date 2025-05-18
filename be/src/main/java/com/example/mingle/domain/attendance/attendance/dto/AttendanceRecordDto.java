@@ -1,7 +1,6 @@
-package com.example.mingle.domain.attendance.dto;
+package com.example.mingle.domain.attendance.attendance.dto;
 
 import com.example.mingle.domain.attendance.enums.AttendanceStatus;
-import com.example.mingle.domain.attendance.enums.HalfDayType;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -22,5 +21,4 @@ public class AttendanceRecordDto {
     private AttendanceStatus attendanceStatus;
     private Double workingHours;
     private Double overtimeHours;
-    private HalfDayType halfDayType;
 }
