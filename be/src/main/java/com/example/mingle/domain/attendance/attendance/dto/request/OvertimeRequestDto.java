@@ -1,4 +1,4 @@
-package com.example.mingle.domain.attendance.dto.request;
+package com.example.mingle.domain.attendance.attendance.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

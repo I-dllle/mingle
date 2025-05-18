@@ -1,11 +1,10 @@
-package com.example.mingle.domain.attendance.dto.response;
+package com.example.mingle.domain.attendance.attendance.dto.response;
 
 import lombok.*;
 
 import java.time.LocalDate;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

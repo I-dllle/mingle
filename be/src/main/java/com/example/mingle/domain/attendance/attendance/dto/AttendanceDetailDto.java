@@ -1,8 +1,6 @@
-package com.example.mingle.domain.attendance.dto;
+package com.example.mingle.domain.attendance.attendance.dto;
 
 import com.example.mingle.domain.attendance.enums.AttendanceStatus;
-import com.example.mingle.domain.attendance.enums.HalfDayType;
-import com.example.mingle.domain.attendance.enums.VacationType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -48,11 +46,8 @@ public class AttendanceDetailDto {
     @Schema(description = "근태 사유", example = "휴가")
     private String reason;
 
-    @Schema(description = "휴가 유형", example = "연차")
-    private VacationType vacationType;
-
-    @Schema(description = "반차 유형", example = "오전")
-    private HalfDayType halfDayType;
+    @Schema(description = "근태 요청서 ID", example = "1")
+    private Long requestId;
 
 }
 
