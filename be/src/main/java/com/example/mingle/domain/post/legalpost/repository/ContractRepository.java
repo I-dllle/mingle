@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -35,5 +36,14 @@ public interface ContractRepository extends JpaRepository<Contract, Long>, JpaSp
 """)
     List<Contract> findExpiringContracts(@Param("deadline") LocalDate deadline,
                                          @Param("terminated") ContractStatus terminated);
+
+    long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+
+    @Query("SELECT c.status, COUNT(c) " +
+            "FROM Contract c " +
+            "GROUP BY c.status")
+    List<Object[]> countContractsByStatus();
+
+    List<Contract> findByCreatedAtAfterOrderByCreatedAtDesc(LocalDateTime time);
 
 }

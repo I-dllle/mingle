@@ -44,9 +44,6 @@ public class SettlementService {
             throw new IllegalStateException("확정된 계약만 정산할 수 있습니다.");
         }
 
-        if (contract.getIsSettlementCreated()) {
-            throw new IllegalStateException("이미 정산이 생성되었습니다.");
-        }
 
         // 1. 수익 단위 Settlement 생성
         Settlement settlement = Settlement.builder()
@@ -77,8 +74,6 @@ public class SettlementService {
             settlementDetailRepository.save(detail);
         }
 
-        // 3. 계약 상태 변경
-        contract.setIsSettlementCreated(true);
         contractRepository.save(contract);
     }
 
@@ -196,6 +191,14 @@ public class SettlementService {
         return details.stream()
                 .map(SettlementDetailResponse::from)
                 .toList();
+    }
+
+    public BigDecimal getMonthlyTotalRevenue() {
+        YearMonth now = YearMonth.now();
+        LocalDate start = now.atDay(1);
+        LocalDate end = now.atEndOfMonth();
+        return settlementRepository.getTotalRevenueBetween(start, end)
+                .orElse(BigDecimal.ZERO);
     }
 
 }

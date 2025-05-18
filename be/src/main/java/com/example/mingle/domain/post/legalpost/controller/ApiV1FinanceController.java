@@ -20,7 +20,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/finance")
 @RequiredArgsConstructor
-//@PreAuthorize("@authService.isInDepartment(authentication, 3L)") // 부서 ID로 판단
+@PreAuthorize("@authService.isInDepartment(authentication, 3L)") // 부서 ID로 판단
 @Tag(name = "finance", description = "회계팀 API")
 public class ApiV1FinanceController {
 
@@ -28,21 +28,21 @@ public class ApiV1FinanceController {
     private final SettlementRepository settlementRepository;
 
     // 정산 생성 (확정된 계약 기준, SettlementRatio 기준으로 Detail 생성)
-    @PostMapping("/contracts/{id}/settlements")
+    @PostMapping("/contracts/{contractId}/settlements")
     @Operation(summary = "정산 생성(확정)")
     public ResponseEntity<?> createSettlement(
-            @PathVariable Long id,
+            @PathVariable Long contractId,
             @RequestBody SettlementRequest request
     ) {
-        settlementService.createSettlement(id, request.getTotalRevenue(), request.getDetails());
+        settlementService.createSettlement(contractId, request.getTotalRevenue(), request.getDetails());
         return ResponseEntity.ok("정산 생성 완료");
     }
 
     // 특정 계약의 정산 목록 조회
-    @GetMapping("/contracts/{id}/settlements")
+    @GetMapping("/contracts/{contractId}/settlementList")
     @Operation(summary = "특정 계약의 정산 리스트")
-    public ResponseEntity<List<SettlementDto>> getSettlementsByContract(@PathVariable Long id) {
-        List<Settlement> settlements = settlementRepository.findByContractId(id);
+    public ResponseEntity<List<SettlementDto>> getSettlementsByContract(@PathVariable Long contractId) {
+        List<Settlement> settlements = settlementRepository.findByContractId(contractId);
         List<SettlementDto> result = settlements.stream()
                 .map(SettlementDto::from)
                 .toList();
@@ -138,5 +138,6 @@ public class ApiV1FinanceController {
     public ResponseEntity<List<SettlementDetailResponse>> getSettlementDetailsByContract(@PathVariable Long contractId) {
         return ResponseEntity.ok(settlementService.getSettlementDetailsByContract(contractId));
     }
+
 
 }

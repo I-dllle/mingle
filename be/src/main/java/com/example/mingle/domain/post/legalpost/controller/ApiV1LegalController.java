@@ -107,6 +107,7 @@ public class ApiV1LegalController {
 
     // 관리자가 계약서 최종 확정
     @PostMapping("/{id}/confirm")
+    @Operation(summary = "계약서 확정")
     public ResponseEntity<Void> confirmContract(@PathVariable Long id) {
         contractService.changeStatus(id, ContractStatus.CONFIRMED);
         return ResponseEntity.ok().build();

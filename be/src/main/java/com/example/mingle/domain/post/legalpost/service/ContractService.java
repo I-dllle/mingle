@@ -39,7 +39,10 @@ import java.net.http.HttpResponse;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -70,7 +73,6 @@ public class ContractService {
         contract.setEndDate(req.getEndDate());
         contract.setStatus(ContractStatus.DRAFT);
         contract.setContractType(req.getContractType());
-        contract.setIsSettlementCreated(false);
         contract.setContractAmount(req.getContractAmount());
 
         contractRepository.save(contract);
@@ -78,7 +80,7 @@ public class ContractService {
 
         SettlementRatio ratio = new SettlementRatio();
         ratio.setContract(contract);
-        ratio.setRatioType(RatioType.ARTIST);
+        ratio.setRatioType(req.getRatioType());
         ratio.setUser(user);
         ratio.setPercentage(req.getSettlementRatio());
         ratioRepository.save(ratio);
@@ -172,7 +174,7 @@ public class ContractService {
         return switch (current) {
             case DRAFT -> next == ContractStatus.REVIEW;
             case REVIEW -> next == ContractStatus.CONFIRMED || next == ContractStatus.SIGNED_OFFLINE;
-            case SIGNED_OFFLINE -> next == ContractStatus.CONFIRMED;
+            case SIGNED_OFFLINE, SIGNED -> next == ContractStatus.CONFIRMED;
             default -> false;
         };
     }
@@ -202,6 +204,23 @@ public class ContractService {
         return contracts.stream()
                 .map(ContractResponse::from)
                 .toList();
+    }
+
+    public Long getMonthlyContractCount() {
+        LocalDate now = LocalDate.now();
+        LocalDate startOfMonth = now.withDayOfMonth(1);
+        LocalDate endOfMonth = now.withDayOfMonth(now.lengthOfMonth());
+
+        return contractRepository.countByCreatedAtBetween(startOfMonth.atStartOfDay(), endOfMonth.atTime(LocalTime.MAX));
+    }
+
+    public Map<ContractStatus, Long> getContractStatusSummary() {
+        List<Object[]> result = contractRepository.countContractsByStatus();
+        return result.stream()
+                .collect(Collectors.toMap(
+                        row -> (ContractStatus) row[0],
+                        row -> (Long) row[1]
+                ));
     }
 
 }

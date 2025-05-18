@@ -2,6 +2,7 @@ package com.example.mingle.domain.post.legalpost.dto.contract;
 
 import com.example.mingle.domain.post.legalpost.enums.ContractCategory;
 import com.example.mingle.domain.post.legalpost.enums.ContractType;
+import com.example.mingle.domain.post.legalpost.enums.RatioType;
 import lombok.Getter;
 
 import java.math.BigDecimal;
@@ -18,6 +19,7 @@ public class CreateContractRequest {
     private ContractCategory contractCategory;
     private LocalDate startDate;
     private LocalDate endDate;
+    private RatioType ratioType;
     private BigDecimal settlementRatio; // 1명 기준
     private BigDecimal contractAmount; // 계약 약정 금액 (선택사항)
 }
