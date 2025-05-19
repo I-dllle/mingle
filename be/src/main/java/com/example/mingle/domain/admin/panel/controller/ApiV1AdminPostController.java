@@ -5,7 +5,7 @@ package com.example.mingle.domain.admin.panel.controller;
 import com.example.mingle.domain.post.post.dto.PostRequestDto;
 import com.example.mingle.domain.post.post.dto.PostResponseDto;
 import com.example.mingle.domain.post.post.service.PostService;
-import com.example.mingle.global.security.SecurityUser;
+import com.example.mingle.global.security.auth.SecurityUser;
 import io.swagger.v3.oas.annotations.Operation;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
