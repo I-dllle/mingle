@@ -4,11 +4,16 @@ import com.example.mingle.domain.chat.common.dto.ChatMessagePayload;
 import com.example.mingle.domain.chat.group.service.GroupChatMessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
+
+import java.util.Set;
 
 
 @Slf4j
@@ -21,6 +26,9 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     // 수신한 채팅 메시지를 저장하고 브로드캐스트하는 서비스
     private final GroupChatMessageService groupChatMessageService;
+
+    // 유효성 검사를 위한 Validator
+    private final Validator validator;
 
 
 
@@ -46,7 +54,16 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             // 1단계: JSON 문자열을 ChatMessagePayload 객체로 변환
             ChatMessagePayload payload = objectMapper.readValue(message.getPayload(), ChatMessagePayload.class);
 
-            // 2단계: 메시지 저장 + 같은 채팅방 유저에게 전송 (Service에 위임)
+            // 2단계: 유효성 검사
+            Set<ConstraintViolation<ChatMessagePayload>> violations = validator.validate(payload);
+            if (!violations.isEmpty()) {
+                log.warn("유효하지 않은 메시지: {}", violations);
+                session.sendMessage(new TextMessage("메시지 형식 오류"));
+                return;
+            }
+
+
+            // 3단계: 메시지 저장 + 같은 채팅방 유저에게 전송 (Service에 위임)
             groupChatMessageService.saveAndBroadcast(payload);
 
         } catch (Exception e) {
