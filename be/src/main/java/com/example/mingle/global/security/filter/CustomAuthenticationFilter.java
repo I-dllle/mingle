@@ -1,4 +1,4 @@
-package com.example.mingle.global.security;
+package com.example.mingle.global.security.filter;
 
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.global.rq.Rq;
