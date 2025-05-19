@@ -1,4 +1,4 @@
-package com.example.mingle.global.security;
+package com.example.mingle.global.security.auth;
 
 import com.example.mingle.domain.user.user.entity.UserRole;
 import lombok.AllArgsConstructor;

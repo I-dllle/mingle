@@ -1,6 +1,7 @@
-package com.example.mingle.global.security;
+package com.example.mingle.global.security.config;
 
 import com.example.mingle.global.rq.Rq;
+import com.example.mingle.global.security.filter.CustomAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

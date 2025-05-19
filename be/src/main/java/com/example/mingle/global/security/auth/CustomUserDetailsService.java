@@ -1,4 +1,4 @@
-package com.example.mingle.global.security;
+package com.example.mingle.global.security.auth;
 
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.domain.user.user.repository.UserRepository;

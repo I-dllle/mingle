@@ -14,7 +14,7 @@ import com.example.mingle.domain.user.team.repository.ArtistTeamRepository;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.domain.user.user.repository.UserRepository;
 import com.example.mingle.global.aws.AwsS3Uploader;
-import com.example.mingle.global.security.SecurityUser;
+import com.example.mingle.global.security.auth.SecurityUser;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;

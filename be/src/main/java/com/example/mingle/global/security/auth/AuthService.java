@@ -1,6 +1,5 @@
-package com.example.mingle.global.security;
+package com.example.mingle.global.security.auth;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
