@@ -1,14 +1,15 @@
 package com.example.mingle.domain.post.legalpost.repository;
 
-import com.example.mingle.domain.post.legalpost.entity.Contract;
+
 import com.example.mingle.domain.post.legalpost.entity.Settlement;
 import com.example.mingle.domain.post.legalpost.entity.SettlementDetail;
-import com.example.mingle.domain.post.legalpost.entity.SettlementRatio;
 import com.example.mingle.domain.post.legalpost.enums.RatioType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.jpa.repository.Modifying;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -66,5 +67,10 @@ public interface SettlementDetailRepository extends JpaRepository<SettlementDeta
     WHERE sd.settlement.contract.id = :contractId
 """)
     List<SettlementDetail> findAllByContractId(@Param("contractId") Long contractId);
+
+    @Transactional
+    @Modifying
+    @Query("DELETE FROM SettlementDetail d WHERE d.settlement.id = :settlementId")
+    void deleteBySettlementId(@Param("settlementId") Long settlementId);
 
 }

@@ -5,6 +5,7 @@ import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
@@ -14,7 +15,7 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "settlement_Detail")
 @SuperBuilder
-
+@RequiredArgsConstructor
 public class SettlementDetail extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)

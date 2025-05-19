@@ -72,6 +72,11 @@ public class PostService {
                 log.error("Access denied: User department doesn't match postType department for department notice");
                 throw new ApiException(ErrorCode.ACCESS_DENIED);
             }
+
+            if (requestDto.getNoticeType() == NoticeType.COMPANY_NEWS && user.getRole() != UserRole.ADMIN) {
+                throw new ApiException(ErrorCode.ACCESS_DENIED);
+
+            }
         }
 
         //사용자가 소속된 부서에만 글을 작성할 수 있도록 권한 제한
@@ -83,6 +88,7 @@ public class PostService {
                 throw new ApiException(ErrorCode.ACCESS_DENIED);
             }
         }
+
 
         String[] uploadedUrls = null;
         if (postImage != null && postImage.length > 0) {

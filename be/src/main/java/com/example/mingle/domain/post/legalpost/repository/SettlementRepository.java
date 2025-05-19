@@ -7,7 +7,10 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface SettlementRepository extends JpaRepository<Settlement, Long> {
@@ -29,4 +32,11 @@ public interface SettlementRepository extends JpaRepository<Settlement, Long> {
     BigDecimal getTotalRevenue();  // 외부 수익 총합
 
 
+    @Query("SELECT SUM(s.totalAmount) " +
+            "FROM Settlement s " +
+            "WHERE s.incomeDate BETWEEN :start AND :end")
+    Optional<BigDecimal> getTotalRevenueBetween(@Param("start") LocalDate start,
+                                                @Param("end") LocalDate end);
+
+    List<Settlement> findByCreatedAtAfterOrderByCreatedAtDesc(LocalDateTime time);
 }

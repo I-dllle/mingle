@@ -41,7 +41,7 @@ public class AdminApprovalController {
 
     @PostMapping("/{id}/confirm")
     public ResponseEntity<Void> confirmContract(@PathVariable Long id) {
-        contractService.changeStatus(id, ContractStatus.CONFIRMED);
+        contractService.changeStatus(id, ContractStatus.CONFIRMED, null);
         return ResponseEntity.ok().build();
     }
 }
