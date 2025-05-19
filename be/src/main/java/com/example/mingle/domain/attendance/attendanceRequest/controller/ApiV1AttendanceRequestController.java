@@ -27,7 +27,7 @@ import java.time.YearMonth;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/attendance-requests")
-public class AttendanceRequestController {
+public class ApiV1AttendanceRequestController {
     private final AttendanceRequestService attendanceRequestService;
     private final AttendanceMapper mapper;
     private final Rq rq;

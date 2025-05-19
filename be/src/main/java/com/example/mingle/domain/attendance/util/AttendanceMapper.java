@@ -2,6 +2,7 @@ package com.example.mingle.domain.attendance.util;
 
 import com.example.mingle.domain.attendance.attendance.dto.AttendanceDetailDto;
 import com.example.mingle.domain.attendance.attendance.dto.AttendanceRecordDto;
+import com.example.mingle.domain.attendance.attendance.dto.response.AttendanceAdminDto;
 import com.example.mingle.domain.attendance.attendance.dto.response.WorkHoursChartResponseDto;
 import com.example.mingle.domain.attendance.attendance.entity.Attendance;
 import com.example.mingle.domain.attendance.attendanceRequest.dto.AttendanceRequestDetailDto;
@@ -9,6 +10,7 @@ import com.example.mingle.domain.attendance.attendanceRequest.dto.AttendanceSumm
 import com.example.mingle.domain.attendance.attendanceRequest.entity.AttendanceRequest;
 import org.springframework.stereotype.Component;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Component
@@ -76,6 +78,37 @@ public class AttendanceMapper {
                 .appliedAt(attendanceRequest.getAppliedAt())
                 .approvedAt(attendanceRequest.getApprovedAt())
                 .attendances(summary)
+                .build();
+    }
+
+    public AttendanceAdminDto toAdminDto(Attendance attendance) {
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+
+        String userName = attendance.getUser() != null
+                ? attendance.getUser().getName()
+                : "알 수 없음";
+
+        String departmentName = (attendance.getUser() != null && attendance.getUser().getDepartment() != null)
+                ? attendance.getUser().getDepartment().getDepartmentName()
+                : "미지정";
+
+        String checkIn = attendance.getCheckInTime() != null
+                ? attendance.getCheckInTime().toLocalTime().format(timeFormatter)
+                : null;
+
+        String checkOut = attendance.getCheckOutTime() != null
+                ? attendance.getCheckOutTime().toLocalTime().format(timeFormatter)
+                : null;
+
+
+        return AttendanceAdminDto.builder()
+                .id(attendance.getId())
+                .date(attendance.getDate())
+                .userName(userName)
+                .departmentName(departmentName)
+                .attendanceStatus(attendance.getAttendanceStatus())
+                .checkIn(checkIn)
+                .checkOut(checkOut)
                 .build();
     }
 
