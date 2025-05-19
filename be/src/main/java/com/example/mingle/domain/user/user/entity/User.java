@@ -62,6 +62,14 @@ public class User extends BaseEntity {
     @Column(name = "image_url", length = 255)
     private String imageUrl;
 
+    // 특정 팀(부서 or 프로젝트)의 리더인지 확인하는 메서드
+    public boolean isProjectLeader(Long teamId) {
+        // 현재는 부서 정보만 있기 때문에, 프로젝트 리더 판별은 따로 구현 필요
+        return position != null &&
+                position.isProjectLeader() &&
+                position.getTeamId().equals(teamId);
+    }
+
     @Column(name = "refresh_token", length = 255)
     private String refreshToken;
 

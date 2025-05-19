@@ -18,6 +18,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+        // /ws/chat 경로로 WebSocket 연결 허용
         registry.addHandler(chatWebSocketHandler, "/ws/chat/{roomId}")
                 .addInterceptors(jwtHandshakeInterceptor)
                 .setAllowedOrigins("*")
