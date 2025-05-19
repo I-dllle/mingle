@@ -12,6 +12,8 @@ import com.example.mingle.domain.user.user.service.UserService;
 import com.example.mingle.global.exception.ApiException;
 import com.example.mingle.global.exception.ErrorCode;
 import com.example.mingle.global.security.auth.SecurityUser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -67,23 +69,33 @@ public class ApiV1TossWidgetController {
     )
     @GetMapping("/payment/{goodsId}")
     public String showPaymentPage(
-            @Parameter(description = "상품 ID", required = true) @PathVariable Long goodsId,
-            @Parameter(description = "사용자 ID", required = true) @AuthenticationPrincipal SecurityUser user,
-            Model model) {
+        @Parameter(description = "상품 ID", required = true) @PathVariable Long goodsId,
+        @Parameter(description = "사용자 ID", required = true) @AuthenticationPrincipal SecurityUser user,
+        @Parameter(description = "뷰 모델") Model model) throws JsonProcessingException {
         
+
         // 상품 정보 조회
         Goods goods = goodsRepository.findById(goodsId)
                 .orElseThrow(() -> new ApiException(ErrorCode.GOODS_NOT_FOUND));
-        
+            
         // 주문 ID 생성 (UUID 사용)
         String orderId = UUID.randomUUID().toString();
-        
+
+        // ObjectMapper를 이용해 goods 객체를 JSON 문자열로 변환
+        ObjectMapper objectMapper = new ObjectMapper();
+        String goodsJson = objectMapper.writeValueAsString(goods);
+        String userJson = objectMapper.writeValueAsString(user);
+
         // 모델에 데이터 추가
-        model.addAttribute("goods", goods);
-        model.addAttribute("user", user);
+//        model.addAttribute("goods", goods);
+//        model.addAttribute("user", user);
+//        model.addAttribute("orderId", orderId);
+        model.addAttribute("goodsJson", goodsJson);
+        model.addAttribute("userJson", userJson);
         model.addAttribute("orderId", orderId);
-        
-        return "templates"; // templates.html 템플릿을 렌더링
+            
+        return "checkout"; // checkout.html 템플릿을 렌더링
+
     }
 
     // 주문 생성용 API (결제 전 호출)
@@ -119,7 +131,7 @@ public class ApiV1TossWidgetController {
             @ApiResponse(responseCode = "404", description = "주문을 찾을 수 없음")
         }
     )
-    @RequestMapping(value = "/confirm")
+    @PostMapping(value = "/confirm")
     public ResponseEntity<JSONObject> confirmPayment(
             @Parameter(description = "결제 승인 정보", required = true) @RequestBody String jsonBody) throws Exception {
 
@@ -186,40 +198,11 @@ public class ApiV1TossWidgetController {
             @ApiResponse(responseCode = "200", description = "결제 성공 페이지 조회")
         }
     )
-    @RequestMapping(value = "/success", method = RequestMethod.GET)
+    @GetMapping(value = "/success")
     public String paymentRequest(
             @Parameter(description = "HTTP 요청 정보") HttpServletRequest request,
             @Parameter(description = "뷰 모델") Model model) throws Exception {
-        return "/success";
-    }
-
-    @Operation(
-        summary = "결제 페이지",
-        description = "결제를 진행할 수 있는 메인 페이지입니다.",
-        responses = {
-            @ApiResponse(responseCode = "200", description = "결제 페이지 조회")
-        }
-    )
-    @RequestMapping(value = "/", method = RequestMethod.GET)
-    public String index(
-            @Parameter(description = "상품 ID", required = true) @RequestParam Long goodsId,
-            @Parameter(description = "사용자 ID", required = true) @AuthenticationPrincipal SecurityUser user,
-            @Parameter(description = "HTTP 요청 정보") HttpServletRequest request,
-            @Parameter(description = "뷰 모델") Model model) throws Exception {
-        
-        // 상품 정보 조회
-        Goods goods = goodsRepository.findById(goodsId)
-                .orElseThrow(() -> new ApiException(ErrorCode.GOODS_NOT_FOUND));
-        
-        // 주문 ID 생성 (UUID 사용)
-        String orderId = UUID.randomUUID().toString();
-        
-        // 모델에 데이터 추가
-        model.addAttribute("goods", goods);
-        model.addAttribute("user", user);
-        model.addAttribute("orderId", orderId);
-        
-        return "checkout";
+        return "success";
     }
 
     @Operation(
@@ -229,7 +212,7 @@ public class ApiV1TossWidgetController {
             @ApiResponse(responseCode = "200", description = "결제 실패 페이지 조회")
         }
     )
-    @RequestMapping(value = "/fail", method = RequestMethod.GET)
+    @GetMapping(value = "/fail")
     public String failPayment(
             @Parameter(description = "HTTP 요청 정보") HttpServletRequest request,
             @Parameter(description = "뷰 모델") Model model) throws Exception {
@@ -239,7 +222,7 @@ public class ApiV1TossWidgetController {
         model.addAttribute("code", failCode);
         model.addAttribute("message", failMessage);
 
-        return "/fail";
+        return "fail";
     }
 
 }

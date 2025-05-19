@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,8 +41,16 @@ public class ApiV1GoodsController {
     )
     @GetMapping
     public ResponseEntity<Page<GoodsResponseDto>> getAllGoods(
-            @PageableDefault(size = 10) Pageable pageable) {
-        Page<GoodsResponseDto> goods = goodsService.getAllGoodsPageable(pageable);
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt,desc") String sort) {
+        String[] sortParams = sort.split(",");
+        String sortField = sortParams[0];
+        Sort.Direction direction = sortParams.length > 1 && sortParams[1].equalsIgnoreCase("asc")
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
+
+        Page<GoodsResponseDto> goods = goodsService.getAllGoodsPageable(page, size, sortField, direction);
         return ResponseEntity.ok(goods);
     }
 
@@ -58,7 +67,7 @@ public class ApiV1GoodsController {
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<GoodsResponseDto> registerGoods(
             @RequestPart(value = "dto", required = true) @Valid GoodsRequestDto dto,
-            @RequestPart(value = "imgUrl", required = false) MultipartFile[] imageFiles,
+            @RequestPart(value = "imgFiles", required = false) MultipartFile[] imageFiles,
             @Parameter(description = "사용자 ID", required = true) @AuthenticationPrincipal SecurityUser user
     ) throws IOException {
         GoodsResponseDto responseDto = goodsService.registerGoods(user.getId(), dto, imageFiles);
@@ -80,7 +89,7 @@ public class ApiV1GoodsController {
     public ResponseEntity<GoodsResponseDto> modifyGoods(
             @PathVariable Long goodsId,
             @RequestPart(value = "dto", required = true) @Valid GoodsRequestDto dto,
-            @RequestPart(value = "imgUrl", required = false) MultipartFile[] imageFiles,
+            @RequestPart(value = "imgFiles", required = false) MultipartFile[] imageFiles,
             @Parameter(description = "인증된 사용자 정보", required = true)
             @AuthenticationPrincipal SecurityUser user
     ) throws IOException {
@@ -93,7 +102,7 @@ public class ApiV1GoodsController {
             summary = "상품 삭제",
             description = "특정 상품을 삭제합니다.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "삭제 성공"),
+                    @ApiResponse(responseCode = "204", description = "삭제 성공"),
                     @ApiResponse(responseCode = "403", description = "권한이 없는 사용자"),
                     @ApiResponse(responseCode = "404", description = "해당 상품 없음")
             }
@@ -111,19 +120,6 @@ public class ApiV1GoodsController {
     //상품검색
 
 
-    //상품주문
-
-
-    //상품결제
-
-
-    //결제취소
-
-
-    //결제리스트
-
-
     //결제내역 상세보기(주문서조회)
-
 
 }

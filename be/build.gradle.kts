@@ -59,6 +59,9 @@ dependencies {
 
 	//전자서명 API
 	implementation ("org.springframework.boot:spring-boot-starter-webflux")
+
+	//thymeleaf
+	implementation ("org.springframework.boot:spring-boot-starter-thymeleaf")
 }
 
 tasks.withType<Test> {
