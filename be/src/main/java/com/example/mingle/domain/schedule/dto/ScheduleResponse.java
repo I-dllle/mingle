@@ -1,7 +1,7 @@
-package com.example.mingle.domain.calendar.schedule.dto;
+package com.example.mingle.domain.schedule.dto;
 
-import com.example.mingle.domain.calendar.schedule.entity.ScheduleStatus;
-import com.example.mingle.domain.calendar.schedule.entity.ScheduleType;
+import com.example.mingle.domain.schedule.entity.ScheduleStatus;
+import com.example.mingle.domain.schedule.entity.ScheduleType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,4 +26,5 @@ public class ScheduleResponse {
     @Schema(description = "메모", example = "회의 자료 준비") private String memo;
     @Schema(description = "일정 타입", example = "DEPARTMENT") private ScheduleType scheduleType;
     @Schema(description = "일정 상태", example = "중요회의") private ScheduleStatus scheduleStatus;
+    @Schema(description = "부서 ID", example = "1") private Long departmentId;
 }

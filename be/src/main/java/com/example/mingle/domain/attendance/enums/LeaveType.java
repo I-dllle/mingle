@@ -1,9 +1,12 @@
 package com.example.mingle.domain.attendance.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
+@RequiredArgsConstructor
 public enum LeaveType {
     // 일반 휴가
     ANNUAL("연차"),
@@ -28,13 +31,19 @@ public enum LeaveType {
 
     private final String displayName;
 
-    LeaveType(String displayName) {
-        this.displayName = displayName;
-    }
-
     @JsonValue
     public String getDisplayName() {
         return displayName;
+    }
+
+    @JsonCreator
+    public static LeaveType fromDisplayName(String displayName) {
+        for (LeaveType status : values()) {
+            if (status.displayName.equals(displayName)) {
+                return status;
+            }
+        }
+        throw new IllegalArgumentException("Unknown displayName: " + displayName);
     }
 
     // 상태 연결

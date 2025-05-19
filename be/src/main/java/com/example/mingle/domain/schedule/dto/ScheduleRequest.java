@@ -1,7 +1,7 @@
-package com.example.mingle.domain.calendar.schedule.dto;
+package com.example.mingle.domain.schedule.dto;
 
-import com.example.mingle.domain.calendar.schedule.entity.ScheduleStatus;
-import com.example.mingle.domain.calendar.schedule.entity.ScheduleType;
+import com.example.mingle.domain.schedule.entity.ScheduleStatus;
+import com.example.mingle.domain.schedule.entity.ScheduleType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -41,5 +41,8 @@ public class ScheduleRequest {
 
     @Schema(description = "일정 상태", example = "휴가")
     private ScheduleStatus scheduleStatus; // 중요회의, 출장, 일정완료, 일정취소, 휴가
+
+    @Schema(description = "부서 ID", example = "1")
+    private Long departmentId;
 }
 

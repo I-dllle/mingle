@@ -1,6 +1,7 @@
-package com.example.mingle.domain.calendar.schedule.entity;
+package com.example.mingle.domain.schedule.entity;
 
 import com.example.mingle.domain.post.post.entity.Post;
+import com.example.mingle.domain.user.team.entity.Department;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
@@ -48,4 +49,9 @@ public class Schedule extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "schedule_type", nullable = false)
     private ScheduleType scheduleType;
+
+    // 팀 일정일 때만 사용
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_id")
+    private Department department;
 }

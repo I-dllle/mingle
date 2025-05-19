@@ -1,4 +1,4 @@
-package com.example.mingle.domain.admin.approval.entity;
+package com.example.mingle.domain.schedule.entity;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -7,10 +7,12 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum ApprovalStatus {
-    PENDING("대기"),
-    APPROVED("승인"),
-    REJECTED("반려");
+public enum ScheduleStatus {
+    IMPORTANT_MEETING("중요회의"),
+    BUSINESS_TRIP("출장"),
+    COMPLETED("일정완료"),
+    CANCELED("일정취소"),
+    VACATION("휴가");
 
     private final String displayName;
 
@@ -20,8 +22,8 @@ public enum ApprovalStatus {
     }
 
     @JsonCreator
-    public static ApprovalStatus fromDisplayName(String displayName) {
-        for (ApprovalStatus status : values()) {
+    public static ScheduleStatus fromDisplayName(String displayName) {
+        for (ScheduleStatus status : values()) {
             if (status.displayName.equals(displayName)) {
                 return status;
             }
