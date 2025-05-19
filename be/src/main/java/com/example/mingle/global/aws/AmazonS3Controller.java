@@ -29,6 +29,10 @@ public class AmazonS3Controller {
     public ResponseEntity<String> uploadProfileImage(@RequestParam("file") MultipartFile multipartFile) {
         return uploadWithFolder(multipartFile, "profile_images");
     }
+    @PostMapping("/upload/goods")
+    public ResponseEntity<String> uploadGoodsImage(@RequestParam("file") MultipartFile multipartFile) {
+        return uploadWithFolder(multipartFile, "goods_images");
+    }
 
     private ResponseEntity<String> uploadWithFolder(MultipartFile file, String folder) {
         try {

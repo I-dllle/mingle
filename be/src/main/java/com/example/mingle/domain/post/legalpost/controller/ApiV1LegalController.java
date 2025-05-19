@@ -9,7 +9,7 @@ import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
 import com.example.mingle.domain.post.legalpost.repository.ContractRepository;
 import com.example.mingle.domain.post.legalpost.repository.InternalContractRepository;
 import com.example.mingle.domain.post.legalpost.service.ContractService;
-import com.example.mingle.global.security.SecurityUser;
+import com.example.mingle.global.security.auth.SecurityUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;

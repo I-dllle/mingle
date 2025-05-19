@@ -12,5 +12,4 @@ public class MingleApplication {
 		} catch (Exception e) {
 			e.printStackTrace(); // 예외 로그 직접 출력
 		}	}
-
 }

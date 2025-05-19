@@ -6,8 +6,10 @@ import com.example.mingle.domain.post.post.entity.BusinessDocumentCategory;
 import com.example.mingle.domain.post.post.entity.NoticeType;
 import com.example.mingle.domain.post.post.entity.Post;
 import com.example.mingle.domain.post.post.entity.PostMenu;
+import com.example.mingle.domain.post.post.entity.PostType;
 import com.example.mingle.domain.post.post.repository.MenuRepository;
 import com.example.mingle.domain.post.post.repository.PostRepository;
+import com.example.mingle.domain.post.post.repository.PostTypeRepository;
 import com.example.mingle.domain.user.team.entity.Department;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.domain.user.user.entity.UserRole;
@@ -18,6 +20,7 @@ import com.example.mingle.global.exception.ApiException;
 import com.example.mingle.global.exception.ErrorCode;
 import io.jsonwebtoken.io.IOException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +35,7 @@ import java.util.stream.Collectors;
 
 import static com.example.mingle.global.exception.ErrorCode.USER_NOT_FOUND;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -40,27 +44,32 @@ public class PostService {
     private final UserRepository userRepository;
     private final AwsS3Uploader awsS3Uploader;
     private final MenuRepository menuRepository;
+    private final PostTypeRepository postTypeRepository;
 
     //TODO : 글쓰기 권한 체크 (사용자 인증/인가 필요)
 
     //게시글 CREATE
     @Transactional
-    public PostResponseDto createPost(Long postMenuId, Long userId, PostRequestDto requestDto, MultipartFile[] postImage)
+    public PostResponseDto createPost(Long postTypeId, Long userId, PostRequestDto requestDto, MultipartFile[] postImage)
             throws IOException, java.io.IOException {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(USER_NOT_FOUND));
-        PostMenu menu = menuRepository.findById(postMenuId).
-                orElseThrow(() -> new ApiException(ErrorCode.POST_MENU_NOT_FOUND));
+        
+        PostType postType = postTypeRepository.findById(postTypeId)
+                .orElseThrow(() -> new ApiException(ErrorCode.POST_MENU_NOT_FOUND));
+        PostMenu menu = postType.getMenu();
         Department department = user.getDepartment();
 
         // 이 글이 '공지사항'이라면 -> 작성 권한 체크
         if (menu.getName().equals("공지사항")) {
             if (requestDto.getNoticeType() == NoticeType.GENERAL_NOTICE && user.getRole() != UserRole.ADMIN) {
+                log.error("Access denied: User is not admin for general notice");
                 throw new ApiException(ErrorCode.ACCESS_DENIED);
             }
 
             if (requestDto.getNoticeType() == NoticeType.DEPARTMENT_NOTICE &&
-                    !user.getDepartment().equals(menu.getDepartment())) {
+                    !user.getDepartment().equals(postType.getDepartment())) {
+                log.error("Access denied: User department doesn't match postType department for department notice");
                 throw new ApiException(ErrorCode.ACCESS_DENIED);
             }
 
@@ -72,7 +81,10 @@ public class PostService {
 
         //사용자가 소속된 부서에만 글을 작성할 수 있도록 권한 제한
         if (!menu.getName().equals("공지사항")) {
-            if (!user.getDepartment().equals(menu.getDepartment())) {
+            if (!user.getDepartment().equals(postType.getDepartment())) {
+                log.error("Access denied: User department doesn't match postType department");
+                log.error("User Department: {}", user.getDepartment().getDepartmentName());
+                log.error("PostType Department: {}", postType.getDepartment().getDepartmentName());
                 throw new ApiException(ErrorCode.ACCESS_DENIED);
             }
         }
