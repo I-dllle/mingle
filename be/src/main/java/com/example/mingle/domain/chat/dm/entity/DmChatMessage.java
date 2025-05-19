@@ -1,22 +1,28 @@
 package com.example.mingle.domain.chat.dm.entity;
 
-import com.example.mingle.domain.chat.common.enums.MessageType;
+import com.example.mingle.domain.chat.common.enums.MessageFormat;
 import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 public class DmChatMessage extends BaseEntity {
 
-    @Id
-    @GeneratedValue
-    private Long id;
+    private Long dmRoomId;      // DM 채팅방 ID
 
-    private Long dmRoomId;
+    private Long senderId;      // 보낸 사람
 
-    private Long senderId;
+    private Long receiverId;
 
     @Enumerated(EnumType.STRING)
-    private MessageType messageType;
+    private MessageFormat format;        // 메시지 타입
 
-    private String content;
+    private String content;     // 본문
 }

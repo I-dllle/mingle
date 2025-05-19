@@ -24,7 +24,7 @@ public class GroupChatMessageServiceImpl implements GroupChatMessageService {
         GroupChatMessage message = GroupChatMessage.builder()
                 .chatRoomId(payload.getRoomId())
                 .content(payload.getContent())
-                .messageType(payload.getType())
+                .format(payload.getFormat())
                 .senderId(payload.getSenderId())
                 .build();
         groupChatMessageRepository.save(message);

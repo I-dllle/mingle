@@ -1,7 +1,9 @@
 package com.example.mingle.domain.chat.common.socket;
 
 import com.example.mingle.domain.chat.common.dto.ChatMessagePayload;
+import com.example.mingle.domain.chat.common.enums.ChatRoomType;
 import com.example.mingle.domain.chat.group.service.GroupChatMessageService;
+import com.example.mingle.domain.chat.dm.service.DmChatMessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.validation.ConstraintViolation;
@@ -26,6 +28,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     // 수신한 채팅 메시지를 저장하고 브로드캐스트하는 서비스
     private final GroupChatMessageService groupChatMessageService;
+
+    private final DmChatMessageService dmChatMessageService;
 
     // 유효성 검사를 위한 Validator
     private final Validator validator;
@@ -62,9 +66,13 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 return;
             }
 
-
             // 3단계: 메시지 저장 + 같은 채팅방 유저에게 전송 (Service에 위임)
-            groupChatMessageService.saveAndBroadcast(payload);
+            // 메시지 타입에 따라 서비스 위임
+            if (payload.getRoomType() == ChatRoomType.DIRECT) {
+                dmChatMessageService.saveAndSend(payload);
+            } else {
+                groupChatMessageService.saveAndBroadcast(payload);
+            }
 
         } catch (Exception e) {
             log.error("메시지 처리 중 예외 발생", e);
