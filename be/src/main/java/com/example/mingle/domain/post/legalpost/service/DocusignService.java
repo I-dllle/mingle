@@ -23,10 +23,10 @@ public class DocusignService {
     private final WebClient.Builder webClientBuilder;
     private final DocusignAuthService docusignAuthService;
 
-    @Value("${docusign.account-id}")
+    @Value("${external.docusign.account-id}")
     private String accountId;
 
-    @Value("${docusign.return-url}")
+    @Value("${external.docusign.return-url}")
     private String returnUrl;
 
     private static final String BASE_URL = "https://demo.docusign.net/restapi/v2.1";

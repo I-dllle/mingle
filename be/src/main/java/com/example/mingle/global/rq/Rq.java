@@ -2,7 +2,7 @@ package com.example.mingle.global.rq;
 
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.domain.user.user.service.UserService;
-import com.example.mingle.global.security.SecurityUser;
+import com.example.mingle.global.security.auth.SecurityUser;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -47,6 +47,8 @@ public class Rq {
                     user.getEmail(),
                     "", // password는 사용하지 않음
                     user.getNickname(),
+                    user.getRole(),
+                    user.getDepartment().getId(),
                     user.getAuthorities()
             );
 
@@ -72,6 +74,7 @@ public class Rq {
                         .id(su.getId())
                         .email(su.getUsername())
                         .nickname(su.getNickname())
+                        .role(su.getRole())
                         .build())
                 .orElse(null);
     }

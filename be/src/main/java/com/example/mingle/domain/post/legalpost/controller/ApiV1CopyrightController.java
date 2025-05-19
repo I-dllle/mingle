@@ -4,7 +4,7 @@ import com.example.mingle.domain.post.legalpost.dto.contract.ChangeStatusRequest
 import com.example.mingle.domain.post.legalpost.dto.copyright.CopyrightContractDto;
 import com.example.mingle.domain.post.legalpost.dto.copyright.CreateCopyrightContractRequest;
 import com.example.mingle.domain.post.legalpost.service.CopyrightService;
-import com.example.mingle.global.security.SecurityUser;
+import com.example.mingle.global.security.auth.SecurityUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/legal/copyrights")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("@authService.isInDepartment(authentication, 3L)") // 부서 ID로 판단
 public class ApiV1CopyrightController {
 
     private final CopyrightService copyrightService;

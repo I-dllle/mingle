@@ -19,4 +19,5 @@ public class CreateContractRequest {
     private LocalDate startDate;
     private LocalDate endDate;
     private BigDecimal settlementRatio; // 1명 기준
+    private BigDecimal contractAmount; // 계약 약정 금액 (선택사항)
 }

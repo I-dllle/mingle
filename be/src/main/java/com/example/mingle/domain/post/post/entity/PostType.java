@@ -1,9 +1,8 @@
 package com.example.mingle.domain.post.post.entity;
 
-import com.example.mingle.domain.post.post.enums.MenuType;
-import com.example.mingle.domain.user.team.entity.ArtistTeam;
 import com.example.mingle.domain.user.team.entity.Department;
 import com.example.mingle.domain.user.user.entity.User;
+import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,13 +16,13 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class PostType {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private MenuType type; // 업무, 자료 등
+@Table(
+        uniqueConstraints = @UniqueConstraint(columnNames = {"department_id", "menu_type"})
+)
+public class PostType extends BaseEntity {
+    @ManyToOne(cascade = CascadeType.PERSIST) 
+    @JoinColumn(name = "menu_id", nullable = false)
+    private PostMenu menu;
 
     // 게시판 생성자
     @ManyToOne
@@ -34,9 +33,6 @@ public class PostType {
     @ManyToOne
     @JoinColumn(name = "department_id")
     private Department department;
-
-    @Column(nullable = false, length = 100)
-    private String posttypeName;
 
     @OneToMany(mappedBy = "postType")
     private List<Post> posts;

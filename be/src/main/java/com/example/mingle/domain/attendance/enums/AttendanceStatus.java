@@ -3,9 +3,9 @@ package com.example.mingle.domain.attendance.enums;
 public enum AttendanceStatus {
     PRESENT("정상"),
     LATE("지각"),
-    EARLY_LEAVE("조퇴"),
     ABSENT("결근"),
     OVERTIME("연장근무"),
+    EARLY_LEAVE("조퇴"),
     VACATION("휴가"),
     HALF_DAY("반차"),
     BUSINESS_TRIP("출장");

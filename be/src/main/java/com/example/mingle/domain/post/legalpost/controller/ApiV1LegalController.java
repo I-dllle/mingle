@@ -1,10 +1,12 @@
 package com.example.mingle.domain.post.legalpost.controller;
 
+import com.example.mingle.domain.admin.panel.dto.ContractResponse;
 import com.example.mingle.domain.post.legalpost.dto.contract.*;
 import com.example.mingle.domain.post.legalpost.entity.Contract;
+import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
 import com.example.mingle.domain.post.legalpost.repository.ContractRepository;
 import com.example.mingle.domain.post.legalpost.service.ContractService;
-import com.example.mingle.global.security.SecurityUser;
+import com.example.mingle.global.security.auth.SecurityUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
@@ -22,7 +24,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/legal")
 @RequiredArgsConstructor
-//@PreAuthorize("hasRole('ADMIN')")
+//@PreAuthorize("@authService.isInDepartment(authentication, 3L)") // 부서 ID로 판단
 @Tag(name = "legal", description = "법무팀 API")
 public class ApiV1LegalController {
     private final ContractService contractService;
@@ -59,15 +61,15 @@ public class ApiV1LegalController {
         return ResponseEntity.ok(signatureUrl);
     }
 
-    // 계약서 서명 (종이)
+    // 계약서 서명 (종이 방식 - 외부 계약자용)
     @PostMapping("/contracts/{id}/sign-offline")
-    @PreAuthorize("hasRole('USER') or hasRole('ARTIST')")
-    @Operation(summary = "계약서 종이 서명")
-    public ResponseEntity<?> signOffline(
+    @PreAuthorize("hasRole('ADMIN')") // 내부 관리자만 서명 처리 가능
+    @Operation(summary = "외부 계약서 종이 서명 처리")
+    public ResponseEntity<?> signOfflineAsAdmin(
             @PathVariable Long id,
-            @AuthenticationPrincipal SecurityUser user
-    ) throws IOException{
-        contractService.signOffline(id, user);
+            @RequestBody OfflineSignRequest request // signerName + memo 포함
+    ) {
+        contractService.signOfflineAsAdmin(id, request.getSignerName(), request.getMemo());
         return ResponseEntity.ok("오프라인 서명 완료");
     }
 
@@ -101,6 +103,25 @@ public class ApiV1LegalController {
                 .map(ContractSimpleDto::from)
                 .toList();
         return ResponseEntity.ok(result);
+    }
+
+    // 관리자가 계약서 최종 확정
+    @PostMapping("/{id}/confirm")
+    public ResponseEntity<Void> confirmContract(@PathVariable Long id) {
+        contractService.changeStatus(id, ContractStatus.CONFIRMED);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{id}/file")
+    @Operation(summary = "계약서 파일 링크 조회")
+    public ResponseEntity<String> getContractFileUrl(@PathVariable Long id) {
+        return ResponseEntity.ok(contractService.getContractFileUrl(id));
+    }
+
+    @GetMapping("/expiring")
+    @Operation(summary = "30일 이내 만료 예정 계약 조회")
+    public ResponseEntity<List<ContractResponse>> getExpiringContracts() {
+        return ResponseEntity.ok(contractService.getExpiringContracts());
     }
 
 }
