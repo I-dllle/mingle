@@ -11,6 +11,7 @@ import com.example.mingle.domain.user.user.repository.UserRepository;
 import com.example.mingle.domain.user.user.service.UserService;
 import com.example.mingle.global.exception.ApiException;
 import com.example.mingle.global.exception.ErrorCode;
+import com.example.mingle.global.security.auth.SecurityUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -28,6 +29,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.ui.Model;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -65,16 +68,12 @@ public class ApiV1TossWidgetController {
     @GetMapping("/payment/{goodsId}")
     public String showPaymentPage(
             @Parameter(description = "상품 ID", required = true) @PathVariable Long goodsId,
-            @Parameter(description = "사용자 ID", required = true) @RequestParam Long userId,
+            @Parameter(description = "사용자 ID", required = true) @AuthenticationPrincipal SecurityUser user,
             Model model) {
         
         // 상품 정보 조회
         Goods goods = goodsRepository.findById(goodsId)
                 .orElseThrow(() -> new ApiException(ErrorCode.GOODS_NOT_FOUND));
-        
-        // 사용자 정보 조회
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
         
         // 주문 ID 생성 (UUID 사용)
         String orderId = UUID.randomUUID().toString();
@@ -98,13 +97,16 @@ public class ApiV1TossWidgetController {
     )
     @PostMapping("/api/orders")
     public ResponseEntity<GoodsOrderResponseDto> createOrder(
-            @Parameter(description = "주문 정보", required = true) @RequestBody GoodsOrderRequestDto requestDto) {
-        User user = userRepository.findById(requestDto.getUser().getId())
+            @Parameter(description = "주문 정보", required = true) @RequestBody GoodsOrderRequestDto requestDto,
+            @Parameter(description = "사용자 ID", required = true)
+            @AuthenticationPrincipal SecurityUser user
+    ) {
+        User orderUser = userRepository.findById(user.getId())
                 .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
         Goods goods = goodsRepository.findById(requestDto.getGoods().getId())
                 .orElseThrow(() -> new ApiException(ErrorCode.GOODS_NOT_FOUND));
 
-        GoodsOrderResponseDto responseDto = orderService.createOrder(requestDto, user, goods);
+        GoodsOrderResponseDto responseDto = orderService.createOrder(requestDto, orderUser, goods);
         return ResponseEntity.ok(responseDto);
     }
 
@@ -201,17 +203,13 @@ public class ApiV1TossWidgetController {
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public String index(
             @Parameter(description = "상품 ID", required = true) @RequestParam Long goodsId,
-            @Parameter(description = "사용자 ID", required = true) @RequestParam Long userId,
+            @Parameter(description = "사용자 ID", required = true) @AuthenticationPrincipal SecurityUser user,
             @Parameter(description = "HTTP 요청 정보") HttpServletRequest request,
             @Parameter(description = "뷰 모델") Model model) throws Exception {
         
         // 상품 정보 조회
         Goods goods = goodsRepository.findById(goodsId)
                 .orElseThrow(() -> new ApiException(ErrorCode.GOODS_NOT_FOUND));
-        
-        // 사용자 정보 조회
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
         
         // 주문 ID 생성 (UUID 사용)
         String orderId = UUID.randomUUID().toString();

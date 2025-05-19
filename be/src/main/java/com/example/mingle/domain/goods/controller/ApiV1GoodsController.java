@@ -4,7 +4,9 @@ import com.example.mingle.domain.goods.dto.GoodsRequestDto;
 import com.example.mingle.domain.goods.dto.GoodsResponseDto;
 import com.example.mingle.domain.goods.service.GoodsService;
 import com.example.mingle.domain.user.user.entity.User;
+import com.example.mingle.global.security.auth.SecurityUser;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -57,9 +59,9 @@ public class ApiV1GoodsController {
     public ResponseEntity<GoodsResponseDto> registerGoods(
             @RequestPart(value = "dto", required = true) @Valid GoodsRequestDto dto,
             @RequestPart(value = "imgUrl", required = false) MultipartFile[] imageFiles,
-            @RequestParam Long userId
+            @Parameter(description = "사용자 ID", required = true) @AuthenticationPrincipal SecurityUser user
     ) throws IOException {
-        GoodsResponseDto responseDto = goodsService.registerGoods(userId, dto, imageFiles);
+        GoodsResponseDto responseDto = goodsService.registerGoods(user.getId(), dto, imageFiles);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
@@ -77,11 +79,12 @@ public class ApiV1GoodsController {
     @PutMapping(value = "/{goodsId}", consumes = "multipart/form-data")
     public ResponseEntity<GoodsResponseDto> modifyGoods(
             @PathVariable Long goodsId,
-            @RequestParam Long userId,
             @RequestPart(value = "dto", required = true) @Valid GoodsRequestDto dto,
-            @RequestPart(value = "imgUrl", required = false) MultipartFile[] imageFiles
+            @RequestPart(value = "imgUrl", required = false) MultipartFile[] imageFiles,
+            @Parameter(description = "인증된 사용자 정보", required = true)
+            @AuthenticationPrincipal SecurityUser user
     ) throws IOException {
-        GoodsResponseDto updatedDto = goodsService.modifyGoods(goodsId, userId, dto, imageFiles);
+        GoodsResponseDto updatedDto = goodsService.modifyGoods(goodsId, user.getId(), dto, imageFiles);
         return ResponseEntity.ok(updatedDto);
     }
 
@@ -98,9 +101,11 @@ public class ApiV1GoodsController {
     @DeleteMapping("/{goodsId}")
     public ResponseEntity<Void> deleteGoods(
             @PathVariable Long goodsId,
-            @RequestParam Long userId) {
-        goodsService.deleteGoods(goodsId, userId);
-        return ResponseEntity.ok().build();
+            @Parameter(description = "인증된 사용자 정보", required = true)
+            @AuthenticationPrincipal SecurityUser user
+    ) {
+        goodsService.deleteGoods(goodsId, user.getId());
+        return ResponseEntity.noContent().build();
     }
 
     //상품검색
