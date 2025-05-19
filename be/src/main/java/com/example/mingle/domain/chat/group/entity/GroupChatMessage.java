@@ -1,6 +1,6 @@
 package com.example.mingle.domain.chat.group.entity;
 
-import com.example.mingle.domain.chat.common.enums.MessageType;
+import com.example.mingle.domain.chat.common.enums.MessageFormat;
 import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -20,7 +20,7 @@ public class GroupChatMessage extends BaseEntity {
     private Long senderId;
 
     @Enumerated(EnumType.STRING)
-    private MessageType messageType;
+    private MessageFormat format;
 
     private String content;
 }
