@@ -57,10 +57,12 @@ public class DocusignService {
                                 "clientUserId", "1234",
                                 "tabs", Map.of(
                                         "signHereTabs", List.of(Map.of(
-                                                "documentId", "1",
-                                                "pageNumber", "1",
-                                                "xPosition", "100",
-                                                "yPosition", "400"
+                                                "anchorString", "/sign/",
+                                                "anchorUnits", "pixels",
+                                                "anchorXOffset", "0",
+                                                "anchorYOffset", "0",
+                                                "anchorIgnoreIfNotPresent", "false",
+                                                "anchorCaseSensitive", "false"
                                         ))
                                 )
                         ))

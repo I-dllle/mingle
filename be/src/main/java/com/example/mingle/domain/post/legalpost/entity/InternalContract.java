@@ -1,5 +1,6 @@
 package com.example.mingle.domain.post.legalpost.entity;
 
+import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
 import com.example.mingle.domain.post.legalpost.enums.RatioType;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.global.jpa.BaseEntity;
@@ -19,7 +20,29 @@ public class InternalContract extends BaseEntity {
     private LocalDate endDate;
     private BigDecimal defaultRatio;
 
+    @Column(length = 200)
+    private String title;
+
+    @Column(length = 100)
+    private String signerName;
+
+    @Column(columnDefinition = "TEXT")
+    private String signerMemo;
+
+    // 계약서 파일 (업로드 경로 등)
+    @Column(length = 500, nullable = false)
+    private String fileUrl;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ContractStatus status;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private RatioType ratioType;
+
+    private String docusignEnvelopeId;
+
+    @Column(name = "docusign_url", columnDefinition = "TEXT")
+    private String docusignUrl;
 }

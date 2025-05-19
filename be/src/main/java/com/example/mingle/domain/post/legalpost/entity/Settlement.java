@@ -37,6 +37,4 @@ public class Settlement extends BaseEntity {
     @Column(nullable = false)
     private Boolean isSettled;
 
-
-
 }

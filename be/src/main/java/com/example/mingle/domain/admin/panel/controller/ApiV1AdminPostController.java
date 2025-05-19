@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -30,7 +29,7 @@ import java.util.List;
 @RequestMapping("/api/v1/admin/posts")
 @PreAuthorize("hasRole('ADMIN')")
 @Tag(name = "AdminPost", description = "관리자 전용 게시글 관리 API")
-public class AdminPostController {
+public class ApiV1AdminPostController {
 
     private final PostService postService;
 

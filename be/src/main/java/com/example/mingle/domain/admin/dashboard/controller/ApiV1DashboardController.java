@@ -6,6 +6,7 @@ import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
 import com.example.mingle.domain.post.legalpost.service.ContractService;
 import com.example.mingle.domain.post.legalpost.service.SettlementService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,6 +20,7 @@ import java.util.Map;
 @RequestMapping("/api/v1/admin/dashboard")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
+@Tag(name = "AdminDashboard", description = "관리자 대쉬보드")
 public class ApiV1DashboardController {
         private final SettlementService settlementService;
         private final ContractService contractService;

@@ -48,7 +48,7 @@ public class ApprovalService {
 
         // 승인 대상 처리 (예: 계약 상태 변경)
         switch (approval.getType()) {
-            case CONTRACT -> contractService.changeStatus(approval.getTargetId(), ContractStatus.CONFIRMED);
+            case CONTRACT -> contractService.changeStatus(approval.getTargetId(), ContractStatus.CONFIRMED, null);
 //            case LEAVE -> leaveRequestService.changeStatus(approval.getTargetId(), LeaveStatus.APPROVED);
 //            case SETTLEMENT -> settlementService.approve(approval.getTargetId()); // 정산 승인 처리
 //            case POST -> postService.publish(approval.getTargetId()); // 게시물 게시 처리

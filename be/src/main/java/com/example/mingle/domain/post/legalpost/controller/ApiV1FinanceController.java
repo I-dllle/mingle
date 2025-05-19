@@ -34,7 +34,7 @@ public class ApiV1FinanceController {
             @PathVariable Long contractId,
             @RequestBody SettlementRequest request
     ) {
-        settlementService.createSettlement(contractId, request.getTotalRevenue(), request.getDetails());
+        settlementService.createSettlement(contractId, request.getTotalRevenue());
         return ResponseEntity.ok("정산 생성 완료");
     }
 

@@ -1,6 +1,7 @@
 package com.example.mingle.domain.post.legalpost.repository;
 
 import com.example.mingle.domain.post.legalpost.entity.Contract;
+import com.example.mingle.domain.post.legalpost.enums.ContractCategory;
 import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -16,7 +17,6 @@ import java.util.List;
 @Repository
 public interface ContractRepository extends JpaRepository<Contract, Long>, JpaSpecificationExecutor<Contract> {
 
-    List<Contract> findByUserId(Long userId);
 
     @Query("""
     SELECT COUNT(c)
@@ -45,5 +45,7 @@ public interface ContractRepository extends JpaRepository<Contract, Long>, JpaSp
     List<Object[]> countContractsByStatus();
 
     List<Contract> findByCreatedAtAfterOrderByCreatedAtDesc(LocalDateTime time);
+
+    List<Contract> findByParticipants_IdAndContractCategory(Long userId, ContractCategory category);
 
 }

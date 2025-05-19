@@ -12,6 +12,8 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter@Setter
@@ -76,4 +78,11 @@ public class Contract extends BaseEntity {
     @Column(name = "docusign_url", columnDefinition = "TEXT")
     private String docusignUrl;
 
+    @ManyToMany
+    @JoinTable(
+            name = "contract_participant",
+            joinColumns = @JoinColumn(name = "contract_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> participants = new ArrayList<>();
 }

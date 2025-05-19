@@ -35,7 +35,7 @@ public class SettlementService {
     private final SettlementDetailRepository settlementDetailRepository;
 
     @Transactional
-    public void createSettlement(Long contractId, BigDecimal totalRevenue, List<CreateSettlementDetailRequest> detailRequests)
+    public void createSettlement(Long contractId, BigDecimal totalRevenue)
     {
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new EntityNotFoundException("계약을 찾을 수 없습니다."));
