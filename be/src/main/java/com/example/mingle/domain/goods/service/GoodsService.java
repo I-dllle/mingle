@@ -120,17 +120,6 @@ public class GoodsService {
         goodsRepository.delete(goods);
     }
 
-
-//주문 crud
-    //상품 주문
-
-
-    //주문내역 확인(+배송상태까지)
-
-
-    //주문취소
-
-
 //TODO : 상품검색
 
 

@@ -51,6 +51,7 @@ dependencies {
 	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
 	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
 	implementation("com.google.code.gson:gson")
+	implementation("com.googlecode.json-simple:json-simple:1.1.1")
 
 	// Amazon s3
 	// core만
