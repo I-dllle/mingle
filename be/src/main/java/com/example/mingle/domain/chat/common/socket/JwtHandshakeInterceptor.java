@@ -39,7 +39,7 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
                 String email = (String) payload.get("email");
 
                 attributes.put("auth", new WebSocketAuthDto(userId, email));
-                log.info("✅ WebSocket 인증 성공 - userId={}, email={}", userId, email);
+                log.info("WebSocket 인증 성공 - userId={}, email={}", userId, email);
                 return true;
             }
 
