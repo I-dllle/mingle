@@ -69,11 +69,13 @@ public class ReservationService {
         }
 
         // 예약 시간이 겹치는지 검사
-        boolean overlap = reservationRepository.existsByRoomIdAndDateAndStartTimeLessThanAndEndTimeGreaterThan(
-                room.getId(), date, end, start);
+        boolean overlap = reservationRepository
+                .existsByRoomIdAndDateAndStartTimeLessThanAndEndTimeGreaterThanAndReservationStatus(
+                        room.getId(), date, end, start, ReservationStatus.CONFIRMED);
         if (overlap) {
             throw new ApiException(ErrorCode.RESERVATION_TIME_CONFLICT);
         }
+
 
         // 엔티티 생성 및 저장
         Reservation reservation = Reservation.builder()
@@ -158,12 +160,13 @@ public class ReservationService {
         if (timeChanged) {
             // 자기 자신을 제외한 중복 예약 검사
             boolean overlap = reservationRepository
-                    .existsOverlappingReservationExceptThis(
+                    .existsOverlappingReservationExceptThisWithStatus(
                             reservation.getRoom().getId(),
                             newDate,
                             newStart,
                             newEnd,
-                            reservationId
+                            reservationId,
+                            ReservationStatus.CONFIRMED
                     );
             if (overlap) {
                 throw new ApiException(ErrorCode.RESERVATION_TIME_CONFLICT);
@@ -189,9 +192,9 @@ public class ReservationService {
             throw new ApiException(ErrorCode.ACCESS_DENIED);
         }
 
-         //취소로 상태 변경
-         reservation.setReservationStatus(ReservationStatus.CANCELED);
-         reservationRepository.save(reservation);
+        //취소로 상태 변경
+        reservation.setReservationStatus(ReservationStatus.CANCELED);
+        reservationRepository.save(reservation);
     }
 
 
