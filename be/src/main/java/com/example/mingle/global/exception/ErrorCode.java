@@ -41,6 +41,7 @@ public enum ErrorCode {
     ADMIN_NOT_FOUND(HttpStatus.NOT_FOUND, "게시판 생성자가 존재하지 않습니다."),
     DEPARTMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 부서입니다."),
     POST_MENU_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 메뉴입니다."),
+    GOODS_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 상품입니다."),
     RESERVATION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 예약입니다."),
     ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 방입니다."),
 
