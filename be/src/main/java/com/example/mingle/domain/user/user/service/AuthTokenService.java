@@ -2,7 +2,7 @@ package com.example.mingle.domain.user.user.service;
 
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.domain.user.user.entity.UserRole;
-import com.example.mingle.global.utils.JwtUtil;
+import com.example.mingle.global.security.jwt.JwtUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 

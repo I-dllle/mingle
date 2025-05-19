@@ -1,4 +1,4 @@
 package com.example.mingle.domain.chat.common.dto;
 
-public class WebSocketAuthDto {
+public record WebSocketAuthDto(Long userId, String email) {
 }
