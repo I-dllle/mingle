@@ -13,4 +13,13 @@ public interface GroupChatRoomService {
 
     // 현재 유저가 속한 모든 채팅방 조회
     List<GroupChatRoomResponse> findMyRooms(Long userId, ChatScope scope);
+
+    // Project Chat - 진행중 탭
+    List<GroupChatRoomResponse> findActiveProjectRooms(Long userId);
+
+    // Project Chat - 보관 탭
+    List<GroupChatRoomResponse> findArchivedProjectRooms(Long userId);
+
+    // 채팅방 이름 검색
+    List<GroupChatRoomResponse> searchRoomsByKeyword(String keyword);
 }

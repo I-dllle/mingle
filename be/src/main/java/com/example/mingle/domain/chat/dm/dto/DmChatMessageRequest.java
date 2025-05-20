@@ -1,4 +1,4 @@
 package com.example.mingle.domain.chat.dm.dto;
 
-public class DmChatMessageRequest {
+public record DmChatMessageRequest() {
 }

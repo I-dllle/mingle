@@ -6,6 +6,8 @@ import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
+
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -15,7 +17,7 @@ public class GroupChatRoom extends BaseEntity {
 
     /**
      * 채팅방의 소속 대상 ID
-     * scope가 DEPARTMENT면 departmentId, PROJECT면 artistTeamId로 사용됨
+     * scope가 DEPARTMENT면 departmentId, PROJECT면 projectId로 사용됨
      */
     private Long teamId;
 
@@ -28,4 +30,7 @@ public class GroupChatRoom extends BaseEntity {
     private String name;        // 채팅방 이름 (사용자에게 보이는 이름, 중복무관)
 
     private Long createdBy;
+
+    private LocalDate projectEndDate; // 프로젝트 종료일 (null 가능, 부서 채팅방은 사용 안 함)
+
 }

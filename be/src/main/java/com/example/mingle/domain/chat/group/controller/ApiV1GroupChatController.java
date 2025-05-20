@@ -20,8 +20,8 @@ public class ApiV1GroupChatController {
     private final GroupChatRoomService groupChatRoomService;
 
     /**
-     * 그룹 채팅방 생성 (부서 or 프로젝트 기반)
-     * - 관리자 or 프로젝트 리더만 생성 가능
+     * POST
+     * 채팅방 생성 (Team Chat / Project Chat 공통)
      */
     @PostMapping
     public GroupChatRoomResponse createGroupChatRoom(
@@ -34,8 +34,10 @@ public class ApiV1GroupChatController {
 
 
     /**
-     * 내가 속한 그룹 채팅방 전체 조회
-     * - scope=DEPARTMENT or PROJECT
+     * GET
+     * 내 채팅방 목록 조회
+     * - Team Chat: scope = DEPARTMENT
+     * - Project Chat 기본: scope = PROJECT
      */
     @GetMapping
     public List<GroupChatRoomResponse> getMyGroupChatRooms(
@@ -43,5 +45,44 @@ public class ApiV1GroupChatController {
             @AuthenticationPrincipal SecurityUser loginUser
     ) {
         return groupChatRoomService.findMyRooms(loginUser.getId(), scope);
+    }
+
+
+
+    /**
+     * GET
+     * 진행중인 프로젝트 채팅방만 조회 (Project Chat - 진행중 탭)
+     */
+    @GetMapping("/active")
+    public List<GroupChatRoomResponse> getActiveProjectRooms(
+            @AuthenticationPrincipal SecurityUser loginUser
+    ) {
+        return groupChatRoomService.findActiveProjectRooms(loginUser.getId());
+    }
+
+
+
+    /**
+     * GET
+     * 보관된 프로젝트 채팅방만 조회 (Project Chat - 보관 탭)
+     */
+    @GetMapping("/archived")
+    public List<GroupChatRoomResponse> getArchivedProjectRooms(
+            @AuthenticationPrincipal SecurityUser loginUser
+    ) {
+        return groupChatRoomService.findArchivedProjectRooms(loginUser.getId());
+    }
+
+
+
+    /**
+     * GET
+     * 채팅방 이름 검색 (Team/Project 공통 상단 검색창)
+     */
+    @GetMapping("/search")
+    public List<GroupChatRoomResponse> searchRooms(
+            @RequestParam String keyword
+    ) {
+        return groupChatRoomService.searchRoomsByKeyword(keyword);
     }
 }

@@ -35,7 +35,7 @@ public class ProjectLeaderAuthService {
     /**
      * 해당 프로젝트의 리더 권한이 있는지 여부를 확인
      */
-    public boolean isLeader(String projectName, Long userId) {
-        return projectLeaderAuthRepository.existsByProjectNameAndUserId(projectName, userId);
+    public boolean isLeader(Long projectId, Long userId) {
+        return projectLeaderAuthRepository.existsByProjectIdAndUserId(projectId, userId);
     }
 }
