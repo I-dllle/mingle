@@ -3,7 +3,6 @@ package com.example.mingle.domain.chat.dm.entity;
 import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
