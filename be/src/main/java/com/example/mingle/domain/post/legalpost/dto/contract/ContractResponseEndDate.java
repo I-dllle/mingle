@@ -9,7 +9,7 @@ import java.time.LocalDate;
 
 @Getter
 @Builder
-public class ContractResponseEndDaate {
+public class ContractResponseEndDate {
     private Long id;
     private String title;
     private String userName;
@@ -18,8 +18,8 @@ public class ContractResponseEndDaate {
     private LocalDate endDate;
     private ContractStatus status;
 
-    public static ContractResponseEndDaate from(Contract c) {
-        return ContractResponseEndDaate.builder()
+    public static ContractResponseEndDate from(Contract c) {
+        return ContractResponseEndDate.builder()
                 .id(c.getId())
                 .title(c.getTitle())
                 .userName(c.getUser().getName())

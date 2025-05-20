@@ -41,7 +41,6 @@ public class ContractConditionResponse {
                 .status(contract.getStatus())
                 .contractType(contract.getContractType())
                 .contractCategory(contract.getContractCategory())
-                .isSettlementCreated(contract.getIsSettlementCreated())
                 .signerName(contract.getSignerName())
                 .signerMemo(contract.getSignerMemo())
                 .isTerminated(contract.getEndDate().isBefore(LocalDate.now()))

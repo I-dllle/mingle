@@ -1,6 +1,6 @@
 package com.example.mingle.domain.attendance.attendanceRequest.service;
 
-import com.example.mingle.domain.admin.approval.entity.ApprovalStatus;
+import com.example.mingle.domain.attendance.enums.ApprovalStatus;
 import com.example.mingle.domain.attendance.attendance.entity.Attendance;
 import com.example.mingle.domain.attendance.attendance.repository.AttendanceRepository;
 import com.example.mingle.domain.attendance.attendanceRequest.dto.AttendanceRequestDetailDto;

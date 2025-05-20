@@ -1,6 +1,6 @@
 package com.example.mingle.domain.attendance.attendanceRequest.controller;
 
-import com.example.mingle.domain.admin.approval.entity.ApprovalStatus;
+import com.example.mingle.domain.attendance.enums.ApprovalStatus;
 import com.example.mingle.domain.attendance.attendanceRequest.dto.ApprovalActionRequest;
 import com.example.mingle.domain.attendance.attendanceRequest.dto.AttendanceRequestDetailDto;
 import com.example.mingle.domain.attendance.attendanceRequest.dto.AttendanceRequestDto;

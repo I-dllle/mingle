@@ -1,7 +1,7 @@
 package com.example.mingle.domain.admin.approval.dto;
 
 import com.example.mingle.domain.admin.approval.entity.Approval;
-import com.example.mingle.domain.admin.approval.entity.ApprovalStatus;
+import com.example.mingle.domain.attendance.enums.ApprovalStatus;
 import com.example.mingle.domain.admin.approval.entity.ApprovalType;
 import lombok.Builder;
 import lombok.Getter;

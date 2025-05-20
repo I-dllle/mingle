@@ -1,4 +1,4 @@
-package com.example.mingle.domain.admin.approval.entity;
+package com.example.mingle.domain.attendance.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

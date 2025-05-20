@@ -22,6 +22,7 @@ public class AdminUserService {
     private final DepartmentRepository departmentRepository;
     private final UserPositionRepository userPositionRepository;
 
+    @Transactional(readOnly = true)
     public Page<AdminRequestUser> getUsersFiltered(Long departmentId, PositionCode positionCode, Pageable pageable) {
         return userRepository.findByDepartmentAndPositionCode(departmentId, positionCode, pageable)
                 .map(AdminRequestUser::from);

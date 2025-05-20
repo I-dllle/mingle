@@ -1,6 +1,6 @@
 package com.example.mingle.domain.attendance.attendanceRequest.repository;
 
-import com.example.mingle.domain.admin.approval.entity.ApprovalStatus;
+import com.example.mingle.domain.attendance.enums.ApprovalStatus;
 import com.example.mingle.domain.attendance.attendanceRequest.entity.AttendanceRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

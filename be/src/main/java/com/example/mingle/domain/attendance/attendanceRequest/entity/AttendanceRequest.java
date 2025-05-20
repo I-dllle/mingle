@@ -1,6 +1,6 @@
 package com.example.mingle.domain.attendance.attendanceRequest.entity;
 
-import com.example.mingle.domain.admin.approval.entity.ApprovalStatus;
+import com.example.mingle.domain.attendance.enums.ApprovalStatus;
 import com.example.mingle.domain.attendance.attendance.entity.Attendance;
 import com.example.mingle.domain.attendance.enums.LeaveType;
 import com.example.mingle.domain.user.user.entity.User;
