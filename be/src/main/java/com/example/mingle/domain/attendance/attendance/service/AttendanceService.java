@@ -81,6 +81,10 @@ public class AttendanceService {
                         .date(today)
                         .build());
 
+        // 이미 18시가 넘었으면 예외처리
+        if (now.toLocalTime().isAfter(LocalTime.of(18, 0))) {
+            throw new IllegalStateException("출근 시간이 지났습니다");
+        }
 
         // 이미 일반 출근 처리된 경우 예외 발생
         if (attendance.getCheckInTime() != null &&
@@ -152,6 +156,8 @@ public class AttendanceService {
 
         attendance.setCheckOutTime(now);
         double workingHours = Duration.between(attendance.getCheckInTime(), now).toMinutes() / 60.0;
+        // 점심시간 제외 (기본 1시간)
+        workingHours = Math.max(0, workingHours - 1.0);  // 음수 방지
         attendance.setWorkingHours(workingHours);
 
         // 야근 자동 감지 및 처리
@@ -272,6 +278,11 @@ public class AttendanceService {
         if (!userRepository.existsById(userId)) {
             throw new IllegalArgumentException("존재하지 않는 유저입니다. id=" + userId);
         }
+
+        if (start.isAfter(end)) {
+            throw new ApiException(ErrorCode.INVALID_TIME_RANGE);
+        }
+
         // 기간별 근태 조회
         List<Attendance> records = attendanceRepository
                 .findByUser_IdAndDateBetweenOrderByDateAsc(userId, start, end);
@@ -381,6 +392,7 @@ public class AttendanceService {
     // ================== 관리자 용 메서드 =========================
 
     // 전체 근태 기록 조회(페이징 및 필터 검색)
+    @Transactional(readOnly = true)
     public Page<AttendanceAdminDto> getFilteredAttendanceRecords(
             YearMonth ym,
             Long departmentId,
@@ -412,6 +424,12 @@ public class AttendanceService {
         Attendance attendance = attendanceRepository.findById(attendanceId)
                 .orElseThrow(() -> new ApiException(ErrorCode.ATTENDANCE_NOT_FOUND));
 
+        if (dto.getCheckInTime() != null) {
+            attendance.setDate(dto.getCheckInTime().toLocalDate());
+        } else {
+            attendance.setDate(dto.getDate()); // fallback
+        }
+
         attendance.setCheckInTime(dto.getCheckInTime());
         attendance.setCheckOutTime(dto.getCheckOutTime());
         attendance.setAttendanceStatus(dto.getAttendanceStatus());
@@ -426,7 +444,9 @@ public class AttendanceService {
             }
 
             double workingHours = (double) Duration.between(dto.getCheckInTime(), dto.getCheckOutTime()).toMinutes() / 60.0;
-            attendance.setWorkingHours(Math.round(workingHours * 10000.0) / 10000.0);
+            // 점심시간 제외 (기본 1시간)
+            workingHours = Math.max(0, workingHours - 1.0);  // 음수 방지
+            attendance.setWorkingHours(Math.round((workingHours) * 10000.0) / 10000.0);
         }
 
         // 야근 시간 자동 계산
@@ -448,8 +468,6 @@ public class AttendanceService {
         }
         return attendanceMapper.toDetailDto(attendance);
     }
-
-
 }
 
 

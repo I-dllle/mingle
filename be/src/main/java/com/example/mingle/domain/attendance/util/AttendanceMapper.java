@@ -84,8 +84,8 @@ public class AttendanceMapper {
     public AttendanceAdminDto toAdminDto(Attendance attendance) {
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 
-        String userName = attendance.getUser() != null
-                ? attendance.getUser().getName()
+        String nickName = attendance.getUser() != null
+                ? attendance.getUser().getNickname()
                 : "알 수 없음";
 
         String departmentName = (attendance.getUser() != null && attendance.getUser().getDepartment() != null)
@@ -104,7 +104,7 @@ public class AttendanceMapper {
         return AttendanceAdminDto.builder()
                 .id(attendance.getId())
                 .date(attendance.getDate())
-                .userName(userName)
+                .nickName(nickName)
                 .departmentName(departmentName)
                 .attendanceStatus(attendance.getAttendanceStatus())
                 .checkIn(checkIn)

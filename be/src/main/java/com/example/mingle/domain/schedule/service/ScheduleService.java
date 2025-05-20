@@ -1,5 +1,7 @@
 package com.example.mingle.domain.schedule.service;
 
+import com.example.mingle.domain.post.post.entity.Post;
+import com.example.mingle.domain.post.post.repository.PostRepository;
 import com.example.mingle.domain.schedule.dto.ScheduleRequest;
 import com.example.mingle.domain.schedule.dto.ScheduleResponse;
 import com.example.mingle.domain.schedule.entity.Schedule;
@@ -7,11 +9,10 @@ import com.example.mingle.domain.schedule.entity.ScheduleStatus;
 import com.example.mingle.domain.schedule.entity.ScheduleType;
 import com.example.mingle.domain.schedule.repository.ScheduleRepository;
 import com.example.mingle.domain.schedule.util.ScheduleMapper;
-import com.example.mingle.domain.post.post.entity.Post;
-import com.example.mingle.domain.post.post.repository.PostRepository;
 import com.example.mingle.domain.user.team.entity.Department;
 import com.example.mingle.domain.user.team.repository.DepartmentRepository;
 import com.example.mingle.domain.user.user.entity.User;
+import com.example.mingle.domain.user.user.entity.UserRole;
 import com.example.mingle.domain.user.user.repository.UserRepository;
 import com.example.mingle.global.exception.ApiException;
 import com.example.mingle.global.exception.ErrorCode;
@@ -28,7 +29,6 @@ import java.time.YearMonth;
 import java.time.temporal.WeekFields;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -55,12 +55,12 @@ public class ScheduleService {
         }
 
         Schedule schedule = scheduleMapper.toEntity(request, user, post);
-        schedule.setScheduleType(ScheduleType.PERSONAL);
         Schedule saved = scheduleRepository.save(schedule);
         return scheduleMapper.toResponse(saved);
     }
 
-    // 타입별 일정상태별 페이징 조회
+    // 개인 상태에따라서 일정 조회
+    @Transactional(readOnly = true)
     public Page<ScheduleResponse> getSchedulesByStatus(
             Long userId,
             ScheduleStatus status,
@@ -105,7 +105,8 @@ public class ScheduleService {
     public List<ScheduleResponse> getMonthlyView(
             Long userId,
             ScheduleType type,
-            LocalDate date
+            LocalDate date,
+            Long departmentId
     ) {
         if (userId == null) {
             throw new IllegalArgumentException("유저 ID는 필수입니다.");
@@ -113,17 +114,19 @@ public class ScheduleService {
 
         // 기준 날짜가 없으면 현재 날짜 사용
         LocalDate targetDate = date != null ? date : LocalDate.now();
-
         // 해당 월의 YearMonth 생성
         YearMonth ym = YearMonth.from(targetDate);
-
         // 해당 월의 시작·끝 시점 계산
         LocalDateTime start = ym.atDay(1).atStartOfDay();
         LocalDateTime end = ym.atEndOfMonth().atTime(23, 59, 59);
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
-        Long departmentId = user.getDepartment().getId();
+
+        boolean isAdmin = user.getRole() == UserRole.ADMIN;
+        Long finalDepartmentId = isAdmin && departmentId != null
+                ? departmentId
+                : user.getDepartment().getId();
 
         List<Schedule> schedules;
         if (type == null) {
@@ -139,7 +142,7 @@ public class ScheduleService {
 
             // 팀 일정 조회
             List<Schedule> teamSchedules = scheduleRepository.findByDepartment_IdAndScheduleTypeAndStartTimeBetween(
-                    departmentId, ScheduleType.DEPARTMENT, start, end);
+                    finalDepartmentId, ScheduleType.DEPARTMENT, start, end);
 
             schedules = new ArrayList<>();
             schedules.addAll(personalSchedules);
@@ -153,7 +156,7 @@ public class ScheduleService {
         } else if (type == ScheduleType.DEPARTMENT) {
             // 팀 일정은 사용자가 속한 팀의 모든 일정
             schedules = scheduleRepository.findByDepartment_IdAndScheduleTypeAndStartTimeBetween(
-                    departmentId, type, start, end);
+                    finalDepartmentId, type, start, end);
         } else {
             // 개인 일정 조회 (PERSONAL)
             schedules = scheduleRepository.findByUserIdAndScheduleTypeAndStartTimeBetween(
@@ -167,7 +170,7 @@ public class ScheduleService {
 
     // 주간 타입에 따라 조회
     @Transactional(readOnly = true)
-    public List<ScheduleResponse> getWeeklyView(Long userId, LocalDate date, ScheduleType type) {
+    public List<ScheduleResponse> getWeeklyView(Long userId, LocalDate date, ScheduleType type, Long departmentId) {
         if (userId == null) {
             throw new IllegalArgumentException("유저 ID는 필수입니다.");
         }
@@ -187,7 +190,10 @@ public class ScheduleService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
-        Long departmentId = user.getDepartment().getId();
+        boolean isAdmin = user.getRole() == UserRole.ADMIN;
+        Long finalDepartmentId = isAdmin && departmentId != null
+                ? departmentId
+                : user.getDepartment().getId();
 
         List<Schedule> schedules;
         if (type == null) {
@@ -204,7 +210,7 @@ public class ScheduleService {
             // 팀 일정 조회
             List<Schedule> teamSchedules = scheduleRepository
                     .findByDepartment_IdAndScheduleTypeAndStartTimeBetween(
-                            departmentId, ScheduleType.DEPARTMENT, startDateTime, endDateTime);
+                            finalDepartmentId, ScheduleType.DEPARTMENT, startDateTime, endDateTime);
 
             schedules = new ArrayList<>();
             schedules.addAll(personalSchedules);
@@ -218,7 +224,7 @@ public class ScheduleService {
         } else if (type == ScheduleType.DEPARTMENT) {
             // 팀 일정은 사용자가 속한 팀의 모든 일정
             schedules = scheduleRepository.findByDepartment_IdAndScheduleTypeAndStartTimeBetween(
-                    departmentId, type, startDateTime, endDateTime);
+                    finalDepartmentId, type, startDateTime, endDateTime);
         } else {
             // 개인 일정 조회 (PERSONAL)
             schedules = scheduleRepository.findByUserIdAndScheduleTypeAndStartTimeBetween(
@@ -231,7 +237,7 @@ public class ScheduleService {
 
     // 일간 타입에 따라 조회
     @Transactional(readOnly = true)
-    public List<ScheduleResponse> getDailyView(Long userId, LocalDate date, ScheduleType type) {
+    public List<ScheduleResponse> getDailyView(Long userId, LocalDate date, ScheduleType type, Long departmentId) {
         if (userId == null) {
             throw new IllegalArgumentException("유저 ID는 필수입니다.");
         }
@@ -244,7 +250,10 @@ public class ScheduleService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
-        Long departmentId = user.getDepartment().getId();
+        boolean isAdmin = user.getRole() == UserRole.ADMIN;
+        Long finalDepartmentId = isAdmin && departmentId != null
+                ? departmentId
+                : user.getDepartment().getId();
 
         List<Schedule> schedules;
         if (type == null) {
@@ -260,7 +269,7 @@ public class ScheduleService {
 
             // 팀 일정 조회
             List<Schedule> teamSchedules = scheduleRepository.findByDepartment_IdAndScheduleTypeAndStartTimeBetween(
-                    departmentId, ScheduleType.DEPARTMENT, startDateTime, endDateTime);
+                    finalDepartmentId, ScheduleType.DEPARTMENT, startDateTime, endDateTime);
 
             schedules = new ArrayList<>();
             schedules.addAll(personalSchedules);
@@ -274,7 +283,7 @@ public class ScheduleService {
         } else if (type == ScheduleType.DEPARTMENT) {
             // 팀 일정은 사용자가 속한 팀의 모든 일정
             schedules = scheduleRepository.findByDepartment_IdAndScheduleTypeAndStartTimeBetween(
-                    departmentId, type, startDateTime, endDateTime);
+                    finalDepartmentId, type, startDateTime, endDateTime);
         } else {
             // 개인 일정 조회 (PERSONAL)
             schedules = scheduleRepository.findByUserIdAndScheduleTypeAndStartTimeBetween(
@@ -357,7 +366,7 @@ public class ScheduleService {
                     () -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
         }
 
-        Long departmentId = user.getDepartment().getId();
+        Long departmentId = request.getDepartmentId();
         Department department = departmentRepository.findById(departmentId)
                 .orElseThrow((() -> new ApiException(ErrorCode.DEPARTMENT_NOT_FOUND)));
 

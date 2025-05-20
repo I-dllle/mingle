@@ -52,17 +52,17 @@ public class ApiV1ScheduleController {
 
     // 상태별 일정 조회
     @Operation(summary = "상태별 일정 조회", description = "특정 상태의 일정을 조회합니다.")
-    @GetMapping("/status/{status}")
+    @GetMapping("/status")
     public ResponseEntity<Page<ScheduleResponse>> getSchedulesByStatus(
-            @Parameter(description = "조회할 일정 상태", example = "중요회의, 휴가, 출장 등")
+            @Parameter(description = "조회할 일정 상태", example = "MEETING, IMPORTANT_MEETING, VACATION")
             @RequestParam ScheduleStatus status,
-            @Parameter(description = "일정 타입", example = "회사, 팀, 개인")
+            @Parameter(description = "일정 타입", example = "PERSONAL, COMPANY, DEPARTMENT")
             @RequestParam ScheduleType scheduleType,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "15") int size
     ) {
         Long userId = rq.getActor().getId();
-        Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size, Sort.by("startDate").descending());
+        Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size, Sort.by("startTime").descending());
         Page<ScheduleResponse> responses = scheduleService.getSchedulesByStatus(userId, status, scheduleType, pageable);
         return ResponseEntity.ok(responses);
     }
@@ -74,10 +74,11 @@ public class ApiV1ScheduleController {
             @Parameter(description = "일정 타입", example = "DEPARTMENT, COMPANY, PERSONAL")
             @RequestParam(required = false) ScheduleType type,
             @Parameter(description = "조회 기준 날짜(ISO)", example = "2025-05-13")
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) Long departmentId
     ) {
         Long userId = rq.getActor().getId();
-        List<ScheduleResponse> responses = scheduleService.getWeeklyView(userId, date, type);
+        List<ScheduleResponse> responses = scheduleService.getWeeklyView(userId, date, type, departmentId);
         return ResponseEntity.ok(responses);
     }
 
@@ -88,11 +89,11 @@ public class ApiV1ScheduleController {
             @Parameter(description = "일정 타입", example = "DEPARTMENT, COMPANY, PERSONAL")
             @RequestParam(required = false) ScheduleType type,
             @Parameter(description = "조회 기준 날짜(ISO)", example = "2025-05-13")
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
-
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) Long departmentId
     ) {
         Long userId = rq.getActor().getId();
-        List<ScheduleResponse> responses = scheduleService.getWeeklyView(userId, date, type);
+        List<ScheduleResponse> responses = scheduleService.getWeeklyView(userId, date, type, departmentId);
         return ResponseEntity.ok(responses);
     }
 
@@ -103,10 +104,11 @@ public class ApiV1ScheduleController {
             @Parameter(description = "일정 타입", example = "DEPARTMENT, COMPANY, PERSONAL")
             @RequestParam(required = false) ScheduleType type,
             @Parameter(description = "조회 기준 날짜(ISO)", example = "2025-05-13")
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) Long departmentId
     ) {
         Long userId = rq.getActor().getId();
-        List<ScheduleResponse> responses = scheduleService.getDailyView(userId, date, type);
+        List<ScheduleResponse> responses = scheduleService.getDailyView(userId, date, type, departmentId);
         return ResponseEntity.ok(responses);
     }
 
@@ -140,7 +142,7 @@ public class ApiV1ScheduleController {
 
     // 부서 목록 가져오기
     @Operation(summary = "전체 부서 목록 가져오기", description = "관리자가 팀 일정을 생성할 때 드롭다운에 노출할 부서 목록을 반환합니다.")
-    @GetMapping("/admin/departments")
+    @GetMapping("/departments")
     public List<DepartmentResponse> listDepartments() {
         return departmentRepository.findAll().stream()
                 .map(dept -> new DepartmentResponse(

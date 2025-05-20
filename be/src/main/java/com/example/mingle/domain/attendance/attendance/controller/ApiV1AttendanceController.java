@@ -9,7 +9,9 @@ import com.example.mingle.domain.attendance.attendance.dto.response.AttendancePa
 import com.example.mingle.domain.attendance.attendance.dto.response.WorkHoursChartResponseDto;
 import com.example.mingle.domain.attendance.attendance.service.AttendanceService;
 import com.example.mingle.domain.attendance.enums.AttendanceStatus;
+import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.domain.user.user.entity.UserRole;
+import com.example.mingle.domain.user.user.repository.UserRepository;
 import com.example.mingle.global.exception.ApiException;
 import com.example.mingle.global.exception.ErrorCode;
 import com.example.mingle.global.rq.Rq;
@@ -23,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -37,6 +40,7 @@ public class ApiV1AttendanceController {
 
     private final AttendanceService attendanceService;
     private final Rq rq;
+    private final UserRepository userRepository;
 
     @Operation(summary = "출근 처리", description = "사용자의 출근을 기록합니다.")
     @PostMapping("/check-in")
@@ -62,6 +66,7 @@ public class ApiV1AttendanceController {
         return ResponseEntity.ok(result);
     }
 
+    @Transactional(readOnly = true)
     @Operation(summary = "사용자별 근태 전체 조회")
     @GetMapping("/all")
     public ResponseEntity<Page<AttendanceAdminDto>> getAllAttendanceRecords(
@@ -72,7 +77,8 @@ public class ApiV1AttendanceController {
             @RequestParam(defaultValue = "15") int size
     ) {
         Long userId = rq.getActor().getId();
-        Long departmentId = rq.getActor().getDepartment().getId();
+        User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
+        Long departmentId = user.getDepartment().getId();
         Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size, Sort.by("date").descending());
         Page<AttendanceAdminDto> result = attendanceService.getFilteredAttendanceRecords(
                 yearMonth, departmentId, userId, keyword, status, pageable

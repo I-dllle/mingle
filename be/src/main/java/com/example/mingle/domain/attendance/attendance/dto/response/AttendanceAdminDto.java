@@ -13,7 +13,7 @@ import java.time.LocalDate;
 public class AttendanceAdminDto {
     private Long id;
     private LocalDate date;
-    private String userName;
+    private String nickName;
     private String departmentName;
     private AttendanceStatus attendanceStatus;
     private String checkIn;  // "09:00"
