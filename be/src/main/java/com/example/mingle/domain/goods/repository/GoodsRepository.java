@@ -2,6 +2,9 @@ package com.example.mingle.domain.goods.repository;
 
 import com.example.mingle.domain.goods.entity.Goods;
 import com.example.mingle.domain.user.user.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -15,4 +18,7 @@ public interface GoodsRepository extends JpaRepository<Goods, Long> {
 
     // 특정 사용자가 등록한 상품
     List<Goods> findByCreatedBy(User user);
+
+    @EntityGraph(attributePaths = {"imgUrl", "createdBy"})
+    Page<Goods> findAll(Pageable pageable);
 }

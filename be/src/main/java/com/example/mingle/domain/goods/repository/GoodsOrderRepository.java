@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface GoodsOrderRepository extends JpaRepository<GoodsOrder, Long> {
@@ -18,4 +19,7 @@ public interface GoodsOrderRepository extends JpaRepository<GoodsOrder, Long> {
     List<GoodsOrder> findByPurStatus(OrderStatus purStatus);
 
     List<GoodsOrder> findByPurMethod(PaymentMethod purMethod);
+
+    // 주문 ID로 조회
+    Optional<GoodsOrder> findByOrderId(String orderId);
 }

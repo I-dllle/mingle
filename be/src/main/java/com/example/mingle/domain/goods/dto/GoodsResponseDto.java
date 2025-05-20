@@ -1,6 +1,7 @@
 package com.example.mingle.domain.goods.dto;
 
 import com.example.mingle.domain.goods.entity.Goods;
+import com.example.mingle.domain.user.user.dto.UserSimpleDto;
 import com.example.mingle.domain.user.user.entity.User;
 import lombok.*;
 
@@ -20,16 +21,21 @@ public class GoodsResponseDto {
     private Boolean isActive;
 
     //관리자용 필드
-    private User createdBy;
+    private UserSimpleDto createdBy;
 
     public static GoodsResponseDto fromEntity(Goods goods) {
+        User user = goods.getCreatedBy();
         return GoodsResponseDto.builder()
                 .itemName(goods.getItemName())
                 .imgUrl(goods.getImgUrl())
                 .description(goods.getDescription())
                 .itemPrice(goods.getItemPrice())
                 .isActive(goods.getIsActive())
-                .createdBy(goods.getCreatedBy())
+                .createdBy(UserSimpleDto.builder()
+                        .id(user.getId())
+                        .nickname(user.getNickname())
+                        .email(user.getEmail())
+                        .build())
                 .build();
     }
 }

@@ -12,6 +12,7 @@ import com.example.mingle.global.exception.ApiException;
 import com.example.mingle.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -35,11 +36,6 @@ public class GoodsService {
     public GoodsResponseDto registerGoods(Long userId, GoodsRequestDto dto, MultipartFile[] imageFiles) throws IOException {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
-        
-        // 디버깅을 위한 로그 추가
-        System.out.println("User ID: " + userId);
-        System.out.println("User Role: " + user.getRole());
-        System.out.println("User Role Name: " + user.getRole().name());
         
         //관리자인지 검증
         if (!"ADMIN".equals(user.getRole().name())) {
@@ -66,10 +62,14 @@ public class GoodsService {
 
     //상품조회 with 페이징
     @Transactional(readOnly = true)
-    public Page<GoodsResponseDto> getAllGoodsPageable(Pageable pageable) {
+    public Page<GoodsResponseDto> getAllGoodsPageable(int page, int size, String sortField, Sort.Direction direction) {
+        Sort sort = Sort.by(direction, sortField);
+        Pageable pageable = PageRequest.of(page, size, sort);
+
         return goodsRepository.findAll(pageable)
                 .map(GoodsResponseDto::fromEntity);
     }
+
 
     //관리자가 상품내용 수정
     @Transactional
@@ -119,17 +119,6 @@ public class GoodsService {
 
         goodsRepository.delete(goods);
     }
-
-
-//주문 crud
-    //상품 주문
-
-
-    //주문내역 확인(+배송상태까지)
-
-
-    //주문취소
-
 
 //TODO : 상품검색
 
