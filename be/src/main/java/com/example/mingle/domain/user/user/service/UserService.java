@@ -114,6 +114,19 @@ public class UserService {
 
 
 
+    /**
+     * 로그아웃 처리
+     * → refreshToken을 무효화하고 저장
+     * → Controller에서는 쿠키 삭제와 SecurityContext 초기화만 담당
+     */
+    @Transactional
+    public void logout(User user) {
+        user.setRefreshToken(null);
+        userRepository.save(user);
+    }
+
+
+
     // refreshToken을 받아 access + refresh 토큰을 새로 발급해주는 메서드
     @Transactional
     public TokenResponseDto refreshToken(String refreshToken) {
