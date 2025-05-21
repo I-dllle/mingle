@@ -7,9 +7,11 @@ import com.example.mingle.domain.chat.dm.dto.DmChatRoomResponse;
 import com.example.mingle.domain.chat.dm.entity.DmChatMessage;
 import com.example.mingle.domain.chat.dm.entity.DmChatRoom;
 import com.example.mingle.domain.chat.dm.repository.DmChatMessageRepository;
+import com.example.mingle.domain.chat.dm.service.DmChatMessageService;
 import com.example.mingle.domain.chat.dm.service.DmChatRoomService;
 import com.example.mingle.global.security.auth.SecurityUser;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +24,7 @@ import java.util.List;
 public class ApiV1DmChatController {
 
     private final DmChatRoomService dmChatRoomService;
+    private final DmChatMessageService dmChatMessageService;
     private final DmChatMessageRepository dmMessageRepository;
 
     /**
@@ -41,16 +44,18 @@ public class ApiV1DmChatController {
 
     /**
      * GET
-     * 채팅방 ID 기준 메시지 전체 조회 (오름차순)
+     * DM 채팅방 메시지 페이징 조회 (최신순 20개씩)
+     * - 최초 입장 시 cursor 없이 요청 → 최신 20개
+     * - 이후 스크롤 시 가장 오래된 메시지 시간(cursor) 기준 이전 메시지 20개씩 불러오기
      */
     @GetMapping("/{roomId}/messages")
     public List<DmChatMessageResponse> getMessages(
-            @PathVariable Long roomId
+            @PathVariable Long roomId,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            LocalDateTime cursor
     ) {
-        List<DmChatMessage> messages = dmMessageRepository.findByDmRoomIdOrderByCreatedAtAsc(roomId);
-        return messages.stream()
-                .map(DmChatMessageResponse::from)
-                .toList();
+        return dmChatMessageService.getMessagesByRoomIdBefore(roomId, cursor);
     }
 
 

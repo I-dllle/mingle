@@ -2,14 +2,18 @@ package com.example.mingle.domain.chat.group.controller;
 
 import com.example.mingle.domain.chat.group.dto.GroupChatRoomCreateRequest;
 import com.example.mingle.domain.chat.group.dto.GroupChatRoomResponse;
+import com.example.mingle.domain.chat.group.dto.GroupChatMessageResponse;
 import com.example.mingle.domain.chat.common.enums.ChatScope;
 import com.example.mingle.domain.chat.group.service.GroupChatRoomService;
+import com.example.mingle.domain.chat.group.service.GroupChatMessageService;
 import com.example.mingle.global.security.auth.SecurityUser;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -18,6 +22,7 @@ import java.util.List;
 public class ApiV1GroupChatController {
 
     private final GroupChatRoomService groupChatRoomService;
+    private final GroupChatMessageService groupChatMessageService;
 
     /**
      * POST
@@ -84,5 +89,25 @@ public class ApiV1GroupChatController {
             @RequestParam String keyword
     ) {
         return groupChatRoomService.searchRoomsByKeyword(keyword);
+    }
+
+
+    /**
+     * GET
+     * 그룹 채팅 메시지 페이징 조회 API
+     * 채팅방 입장 시 최초 메시지 조회 / 스크롤 위로 이동 시 이전 메시지 더 불러오기 용
+     */
+    @GetMapping("/{roomId}/messages")
+    public List<GroupChatMessageResponse> getMessages(
+            @PathVariable Long roomId,
+
+            // cursor 기준 시각보다 이전 메시지 20개를 최신순으로 조회합니다.
+            // - 생략 시 현재 시간(LocalDateTime.now()) 이전 메시지를 조회 (최신 메시지 20개)
+            // - cursor가 있을 경우: 해당 시각 이전 메시지부터 조회 (스크롤 위로)
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            LocalDateTime cursor
+    ) {
+        return groupChatMessageService.getMessagesByRoomIdBefore(roomId, cursor);
     }
 }

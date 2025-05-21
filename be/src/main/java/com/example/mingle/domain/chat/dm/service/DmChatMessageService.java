@@ -1,6 +1,10 @@
 package com.example.mingle.domain.chat.dm.service;
 
 import com.example.mingle.domain.chat.common.dto.ChatMessagePayload;
+import com.example.mingle.domain.chat.dm.dto.DmChatMessageResponse;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 public interface DmChatMessageService {
     /**
@@ -21,4 +25,9 @@ public interface DmChatMessageService {
 
     // 추후 구현: 읽지 않은 메시지 개수 조회
     int countUnreadMessages(Long dmRoomId, Long userId); // TODO: 구현 예정
+
+    // 페이징 메시지 조회
+    // - cursor 기준으로 이전 메시지를 size=20개까지 조회
+    // - 최초 요청 시 cursor가 null이면 현재 시각 기준으로 조회됨
+    List<DmChatMessageResponse> getMessagesByRoomIdBefore(Long roomId, LocalDateTime cursor);
 }
