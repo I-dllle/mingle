@@ -101,7 +101,7 @@ public class ReservationService {
         // 방 별로 예약 조회 및 dto 변환
         for (Room room : rooms) {
             List<Reservation> reservations = reservationRepository
-                    .findAllByRoomIdAndDateAndStatusOrderByStartTime(room.getId(), date, ReservationStatus.CONFIRMED);
+                    .findAllByRoomIdAndDateAndReservationStatusOrderByStartTime(room.getId(), date, ReservationStatus.CONFIRMED);
 
             List<ReservationResponseDto> reservationResponseDtos = new ArrayList<>();
             for (Reservation reservation : reservations) {

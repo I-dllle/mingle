@@ -24,7 +24,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
 
     //날짜별 방 가져오기.
-    List<Reservation> findAllByRoomIdAndDateAndStatusOrderByStartTime(Long roomId, LocalDate date, ReservationStatus status);
+    List<Reservation> findAllByRoomIdAndDateAndReservationStatusOrderByStartTime(Long roomId, LocalDate date, ReservationStatus status);
 
     //자기 자신의 예약인지 확인
     @Query("SELECT COUNT(r) > 0 FROM Reservation r " +
