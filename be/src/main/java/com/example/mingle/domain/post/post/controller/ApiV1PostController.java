@@ -3,6 +3,7 @@ package com.example.mingle.domain.post.post.controller;
 import com.example.mingle.domain.post.post.dto.PostRequestDto;
 import com.example.mingle.domain.post.post.dto.PostResponseDto;
 import com.example.mingle.domain.post.post.service.PostService;
+import com.example.mingle.global.security.auth.SecurityUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -36,21 +37,19 @@ public class ApiV1PostController {
             responses = {
                     @ApiResponse(responseCode = "201", description = "작성 성공"),
                     @ApiResponse(responseCode = "400", description = "잘못된 요청 (내용 누락 등)"),
-                    @ApiResponse(responseCode = "403", description = "게시글 작성 제한 초과"),
+                    @ApiResponse(responseCode = "403", description = "권한없음"),
                     @ApiResponse(responseCode = "404", description = "해당 게시판 없음")
             }
     )
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<PostResponseDto> createPost(
-            @RequestPart("postRequestDto") @Valid PostRequestDto requestDto,
+            @RequestPart("requestDto") @Valid PostRequestDto requestDto,
             @RequestPart(value = "postImage", required = false) MultipartFile[] postImage,
-            @RequestParam Long userId
-            //TODO : security로 바꾸기
-//            @AuthenticationPrincipal SecurityUser user
+            @Parameter(description = "사용자 ID", required = true) @AuthenticationPrincipal SecurityUser user
     ) throws IOException{
         PostResponseDto responseDto = postService.createPost(
                 requestDto.getPostTypeId(),
-                userId,
+                user.getId(),
                 requestDto,
                 postImage
                 //만약 postType이 업무자료 카테고리라면? 검증필요
@@ -81,7 +80,7 @@ public class ApiV1PostController {
                     @ApiResponse(responseCode = "404", description = "해당 카테고리 없음")
             }
     )
-    @GetMapping("/menus/{menuId}/posts")
+    @GetMapping("/menus/{postMenuId}/posts")
     public ResponseEntity<List<PostResponseDto>> getCommonPosts(
             @Parameter(description = "게시판 ID", required = true) @PathVariable Long postMenuId,
             @RequestParam(required = false) String category
@@ -100,12 +99,11 @@ public class ApiV1PostController {
                     @ApiResponse(responseCode = "404", description = "해당 카테고리 없음")
             }
     )
-    @GetMapping("/departments/{deptId}/menus/{menuId}/posts")
+    @GetMapping("/departments/{deptId}/menus/{postMenuId}/posts")
     public ResponseEntity<List<PostResponseDto>> getPostsByMenu(
             @Parameter(description = "부서 ID", required = true) @PathVariable Long deptId,
             @Parameter(description = "게시판 ID", required = true) @PathVariable Long postMenuId
     ){
-
         List<PostResponseDto> posts = postService.getPostsByMenu(deptId, postMenuId);
         return ResponseEntity.ok(posts);
     }
@@ -136,15 +134,15 @@ public class ApiV1PostController {
                     @ApiResponse(responseCode = "404", description = "해당 게시글 없음")
             }
     )
-    @PutMapping("/{postId}")
+    @PutMapping(value = "/{postId}", consumes = "multipart/form-data")
     public ResponseEntity<PostResponseDto> updatePost(
-            @Parameter(description = "게시글 ID", required = true) @PathVariable Long postId,
-            @RequestParam Long userId,
-//            @AuthenticationPrincipal SecurityUser user
-            @Valid @RequestPart PostRequestDto postRequestDto,
-            @RequestPart(value = "postImage", required = false) MultipartFile[] postImage
-    ) throws  IOException{
-        PostResponseDto responseDto = postService.updatePost(postId, userId, postRequestDto, postImage);
+            @PathVariable Long postId,
+            @RequestPart("postRequestDto") @Valid PostRequestDto postRequestDto,
+            @RequestPart(value = "postImage", required = false) MultipartFile[] postImage,
+            @Parameter(description = "사용자 ID", required = true)
+            @AuthenticationPrincipal SecurityUser user
+    ) throws IOException {
+        PostResponseDto responseDto = postService.updatePost(postId, user.getId(), postRequestDto, postImage);
         return ResponseEntity.ok(responseDto);
     }
 
@@ -162,10 +160,9 @@ public class ApiV1PostController {
     @DeleteMapping("/{postId}")
     public ResponseEntity<Void> deletePost(
             @Parameter(description = "게시글 ID", required = true) @PathVariable Long postId,
-            @RequestParam Long userId
-//            @AuthenticationPrincipal SecurityUser user
+            @Parameter(description = "사용자 ID", required = true) @AuthenticationPrincipal SecurityUser user
     ){
-        postService.deletePost(postId, userId);
+        postService.deletePost(postId, user.getId());
         return ResponseEntity.noContent().build();
     }
 

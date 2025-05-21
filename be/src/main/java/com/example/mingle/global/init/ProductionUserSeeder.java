@@ -3,6 +3,7 @@ package com.example.mingle.global.init;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.domain.user.user.entity.UserRole;
 import com.example.mingle.domain.user.user.entity.UserStatus;
+import com.example.mingle.domain.user.user.entity.PresenceStatus;
 import com.example.mingle.domain.user.user.repository.UserRepository;
 import com.example.mingle.domain.user.team.entity.Department;
 import com.example.mingle.domain.user.team.repository.DepartmentRepository;
@@ -69,7 +70,8 @@ public class ProductionUserSeeder {
                         .department(dept)
                         .position(position)
                         .role(UserRole.STAFF)
-                        .status(UserStatus.ONLINE)
+                        .status(UserStatus.ACTIVE) // 계정 기본 상태
+                        .presence(PresenceStatus.OFFLINE) // 접속 상태 기본값 설정
                         .build());
 
                 log.info("[ProductionUserSeeder] 유저 추가: {}", loginId);
@@ -77,7 +79,7 @@ public class ProductionUserSeeder {
 
             br.close();
         } catch (Exception e) {
-            log.error("📛 [ProductionUserSeeder] 유저 seed 실패", e);
+            log.error("[ProductionUserSeeder] 유저 seed 실패", e);
         }
     }
 }

@@ -6,8 +6,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum UserStatus {
-    //활동중, 자리비움, 오프라인
-    ONLINE,
-    OFFLINE,
-    LEFT
+    ACTIVE,     // 정상
+    INACTIVE,   // 탈퇴 또는 중지 상태
+    BANNED      // 제재 상태
 }

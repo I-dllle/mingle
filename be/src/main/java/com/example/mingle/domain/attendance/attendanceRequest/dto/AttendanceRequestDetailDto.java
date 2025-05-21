@@ -1,6 +1,6 @@
 package com.example.mingle.domain.attendance.attendanceRequest.dto;
 
-import com.example.mingle.domain.admin.approval.entity.ApprovalStatus;
+import com.example.mingle.domain.attendance.enums.ApprovalStatus;
 import com.example.mingle.domain.attendance.enums.LeaveType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;

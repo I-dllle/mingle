@@ -61,6 +61,26 @@ public class ApiV1AuthController {
 
 
     /**
+     * 로그아웃
+     */
+    @Operation(summary = "로그아웃", description = "로그아웃 처리를 합니다.")
+    @ApiResponse(responseCode = "200", description = "로그아웃 성공")
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout() {
+        User user = rq.getActor();
+        if (user != null) userService.logout(user); // 저장 필요 시
+
+        rq.deleteCookie("accessToken");
+        rq.deleteCookie("refreshToken");
+        rq.deleteCookie("JSESSIONID");
+        SecurityContextHolder.clearContext();
+
+        return ResponseEntity.ok("로그아웃 되었습니다.");
+    }
+
+
+
+    /**
      * refreshToken을 이용해 accessToken 재발급
      */
     @Operation(summary = "AccessToken 재발급", description = "쿠키에 저장된 refreshToken을 이용해 새로운 accessToken을 발급합니다.")
@@ -74,27 +94,6 @@ public class ApiV1AuthController {
         return ResponseEntity.ok(response);
     }
 
-
-
-    /**
-     * 로그아웃
-     */
-    @Operation(summary = "로그아웃", description = "로그아웃 처리를 합니다.")
-    @ApiResponse(responseCode = "200", description = "로그아웃 성공")
-    @PostMapping("/logout")
-    public ResponseEntity<String> logout() {
-        User user = rq.getActor();
-        if (user != null) {
-            user.setRefreshToken(null); // refreshToken 무효화
-            userService.updateUser(user); // 저장 필요 시
-        }
-        rq.deleteCookie("accessToken");
-        rq.deleteCookie("refreshToken");
-        rq.deleteCookie("JSESSIONID");
-        SecurityContextHolder.clearContext();
-
-        return ResponseEntity.ok("로그아웃 되었습니다.");
-    }
 
 
 

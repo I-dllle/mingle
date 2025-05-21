@@ -1,7 +1,5 @@
 package com.example.mingle.domain.attendance.enums;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -26,21 +24,6 @@ public enum AttendanceStatus {
     ON_SPECIAL_LEAVE("특별 휴가"); // 결혼, 조의, 육아 등 특별 휴가
 
     private final String displayName;
-
-    @JsonValue
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    @JsonCreator
-    public static AttendanceStatus fromDisplayName(String displayName) {
-        for (AttendanceStatus status : values()) {
-            if (status.displayName.equals(displayName)) {
-                return status;
-            }
-        }
-        throw new IllegalArgumentException("Unknown displayName: " + displayName);
-    }
 
     public boolean isLeave() {
         switch (this) {

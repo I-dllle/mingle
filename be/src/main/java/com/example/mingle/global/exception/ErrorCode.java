@@ -29,6 +29,7 @@ public enum ErrorCode {
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "만료된 토큰입니다."),
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 리프레시 토큰입니다."),
     INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다."),
+    INVALID_ORDER_PRICE(HttpStatus.UNAUTHORIZED, "결제금액이 일치하지 않습니다."),
 
     // 403 FORBIDDEN
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
@@ -49,15 +50,17 @@ public enum ErrorCode {
     DEPARTMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 부서입니다."),
     POST_MENU_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 메뉴입니다."),
     GOODS_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 상품입니다."),
+    GOODS_ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "주문정보를 찾을 수 없습니다."),
     RESERVATION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 예약입니다."),
     ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 방입니다."),
     SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 일정입니다."),
-
+    ATTENDANCE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 출결 기록입니다."),
 
     // 409 CONFLICT
     EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 등록된 이메일입니다."),
     NICKNAME_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 사용 중인 닉네임입니다."),
     RESERVATION_TIME_CONFLICT(HttpStatus.CONFLICT, "해당 시간에 이미 신청이 존재합니다."),
+    CANCEL_ORDER_CONFLICT(HttpStatus.CONFLICT, "배송중이거나 이미 취소된 주문입니다."),
 
     // 500 INTERNAL_SERVER_ERROR
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다."), INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "파일 형식이 올바르지 않습니다."),

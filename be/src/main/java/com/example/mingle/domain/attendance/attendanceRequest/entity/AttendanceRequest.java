@@ -1,6 +1,6 @@
 package com.example.mingle.domain.attendance.attendanceRequest.entity;
 
-import com.example.mingle.domain.admin.approval.entity.ApprovalStatus;
+import com.example.mingle.domain.attendance.enums.ApprovalStatus;
 import com.example.mingle.domain.attendance.attendance.entity.Attendance;
 import com.example.mingle.domain.attendance.enums.LeaveType;
 import com.example.mingle.domain.user.user.entity.User;
@@ -28,12 +28,18 @@ public class AttendanceRequest extends BaseEntity {
     private User user;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "leave_type", nullable = false)
     private LeaveType leaveType;
 
+    @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
+    @Column(name = "end_date")
     private LocalDate endDate;
 
+    @Column(name = "start_time")
     private LocalTime startTime;
+
+    @Column(name = "end_time")
     private LocalTime endTime;
 
     // 사유
@@ -42,24 +48,27 @@ public class AttendanceRequest extends BaseEntity {
 
     // 승인 관련 필드
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "approval_status", nullable = false)
     private ApprovalStatus approvalStatus = ApprovalStatus.PENDING;
 
     // 반려 사유 또는 승인 시 추가 코멘트
-    @Column(length = 500)
+    @Column(length = 500, name = "approval_comment")
     private String approvalComment;
 
     // 승인자
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "approver_id")
     private User approver;
 
     // 신청/승인 일시
-    @Column(nullable = false)
+    @Column(name = "applied_at", nullable = false)
     private LocalDateTime appliedAt;
 
+    @Column(name = "approved_at")
     private LocalDateTime approvedAt;
 
     // 관련 Attendance 목록 (양방향 매핑)
+    @Builder.Default
     @OneToMany(mappedBy = "attendanceRequest", cascade = CascadeType.ALL)
     private List<Attendance> attendances = new ArrayList<>();
 
@@ -68,7 +77,6 @@ public class AttendanceRequest extends BaseEntity {
         this.attendances.add(attendance);
         attendance.setAttendanceRequest(this);
     }
-
 }
 
 
