@@ -1,7 +1,5 @@
 package com.example.mingle.domain.attendance.enums;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -30,21 +28,6 @@ public enum LeaveType {
     OTHER("기타");
 
     private final String displayName;
-
-    @JsonValue
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    @JsonCreator
-    public static LeaveType fromDisplayName(String displayName) {
-        for (LeaveType status : values()) {
-            if (status.displayName.equals(displayName)) {
-                return status;
-            }
-        }
-        throw new IllegalArgumentException("Unknown displayName: " + displayName);
-    }
 
     // 상태 연결
     public AttendanceStatus toAttendanceStatus() {

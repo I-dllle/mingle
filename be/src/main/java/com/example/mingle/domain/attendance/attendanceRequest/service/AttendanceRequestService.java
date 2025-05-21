@@ -1,13 +1,15 @@
 package com.example.mingle.domain.attendance.attendanceRequest.service;
 
-import com.example.mingle.domain.admin.approval.entity.ApprovalStatus;
+import com.example.mingle.domain.attendance.enums.ApprovalStatus;
 import com.example.mingle.domain.attendance.attendance.entity.Attendance;
 import com.example.mingle.domain.attendance.attendance.repository.AttendanceRepository;
+import com.example.mingle.domain.attendance.attendanceRequest.dto.AttendanceRequestDetailDto;
 import com.example.mingle.domain.attendance.attendanceRequest.dto.AttendanceRequestDto;
 import com.example.mingle.domain.attendance.attendanceRequest.entity.AttendanceRequest;
 import com.example.mingle.domain.attendance.attendanceRequest.repository.AttendanceRequestRepository;
 import com.example.mingle.domain.attendance.enums.AttendanceStatus;
 import com.example.mingle.domain.attendance.enums.LeaveType;
+import com.example.mingle.domain.attendance.util.AttendanceMapper;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.domain.user.user.repository.UserRepository;
 import com.example.mingle.global.exception.ApiException;
@@ -36,10 +38,11 @@ public class AttendanceRequestService {
     private final UserRepository userRepository;
     private final AttendanceRepository attendanceRepository;
     private final AttendanceRequestRepository requestRepository;
+    private final AttendanceMapper attendanceMapper;
 
     // 일반 유저가 휴가/반차/출장 요청을 생성
     @Transactional
-    public AttendanceRequest submitRequest(AttendanceRequestDto dto, Long userId) {
+    public AttendanceRequestDetailDto submitRequest(AttendanceRequestDto dto, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
 
@@ -95,24 +98,27 @@ public class AttendanceRequestService {
         log.info("휴가 요청 생성: 사용자={}, 타입={}, 시작일={}, 종료일={}",
                 userId, dto.getType(), dto.getStartDate(), endDate);
 
-        return requestRepository.save(request);
+        AttendanceRequest created = requestRepository.save(request);
+
+        return attendanceMapper.toDetailDto(created);
     }
 
     // 일반 사용자 요청 1개 상세 조회
     @Transactional(readOnly = true)
-    public AttendanceRequest getRequestById(Long requestId, Long userId) {
+    public AttendanceRequestDetailDto getRequestById(Long requestId, Long userId) {
         AttendanceRequest attendanceRequest = requestRepository.findById(requestId)
                 .orElseThrow(() -> new ApiException(ErrorCode.REQUEST_NOT_FOUND));
 
         if (!attendanceRequest.getUser().getId().equals(userId)) {
              throw new ApiException(ErrorCode.FORBIDDEN);
          }
-        return attendanceRequest;
+
+        return attendanceMapper.toDetailDto(attendanceRequest);
     }
 
     // 일반 사용자 요청을 상태별·기간별·페이징 조회
     @Transactional(readOnly = true)
-    public Page<AttendanceRequest> getUserRequestsByStatus(
+    public Page<AttendanceRequestDetailDto> getUserRequestsByStatus(
             Long userId,
             ApprovalStatus status,
             YearMonth ym,
@@ -125,16 +131,22 @@ public class AttendanceRequestService {
         LocalDate start = ym.atDay(1);
         LocalDate end   = ym.atEndOfMonth();
         Pageable pageable = PageRequest.of(page, size, Sort.by("startDate").descending());
-        return requestRepository
+
+        Page<AttendanceRequest> entities = requestRepository
                 .findByUser_IdAndApprovalStatusAndStartDateBetween(
                         userId, status, start, end, pageable);
+
+        return entities.map(attendanceMapper::toDetailDto);
     }
 
     // 일반 사용자가 자신의 요청 수정
     @Transactional
-    public AttendanceRequest updateRequest(Long requestId, AttendanceRequestDto dto, Long userId) {
+    public AttendanceRequestDetailDto updateRequest(Long requestId, AttendanceRequestDto dto, Long userId) {
         AttendanceRequest request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new ApiException(ErrorCode.REQUEST_NOT_FOUND));
+
+        request.getAttendances().size();
+
         if (!request.getUser().getId().equals(userId)) {
             throw new ApiException(ErrorCode.FORBIDDEN);
         }
@@ -146,7 +158,10 @@ public class AttendanceRequestService {
         request.setEndDate(dto.getEndDate() != null ? dto.getEndDate() : dto.getStartDate());
         request.setReason(dto.getReason());
         validateLeaveTypeRequirements(dto);
-        return requestRepository.save(request);
+
+        AttendanceRequest updated = requestRepository.save(request);
+
+        return attendanceMapper.toDetailDto(updated);
     }
 
     // 일반 사용자가 자신의 요청 취소(완전 삭제)
@@ -168,14 +183,16 @@ public class AttendanceRequestService {
 
     // 관리자용 요청 1개 상세 조회
     @Transactional(readOnly = true)
-    public AttendanceRequest getRequestByIdForAdmin(Long requestId) {
-        return requestRepository.findById(requestId)
+    public AttendanceRequestDetailDto getRequestByIdForAdmin(Long requestId) {
+        AttendanceRequest attendanceRequest = requestRepository.findById(requestId)
                 .orElseThrow(() -> new ApiException(ErrorCode.REQUEST_NOT_FOUND));
+
+        return attendanceMapper.toDetailDto(attendanceRequest);
     }
 
     // 관리자: 요청 승인시 해당 기간의 Attendance 엔티티에 반영
     @Transactional
-    public AttendanceRequest approveRequest(Long requestId, String comment, Long approverId) {
+    public AttendanceRequestDetailDto approveRequest(Long requestId, String comment, Long approverId) {
         // 요청 조회
         AttendanceRequest request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new ApiException(ErrorCode.REQUEST_NOT_FOUND));
@@ -254,12 +271,14 @@ public class AttendanceRequestService {
                 requestId, request.getLeaveType(), request.getUser().getId(),
                 request.getStartDate(), request.getEndDate(), attendances.size());
 
-        return requestRepository.save(request);
+        AttendanceRequest saved = requestRepository.save(request);
+
+        return attendanceMapper.toDetailDto(saved);
     }
 
     // 관리자 요청 거절
     @Transactional
-    public AttendanceRequest rejectRequest(Long requestId, String comment, Long approverId) {
+    public AttendanceRequestDetailDto rejectRequest(Long requestId, String comment, Long approverId) {
         // 요청 조회
         AttendanceRequest request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new ApiException(ErrorCode.REQUEST_NOT_FOUND));
@@ -287,13 +306,14 @@ public class AttendanceRequestService {
         log.info("휴가 요청 반려: 요청ID={}, 사용자={}, 사유={}",
                 requestId, request.getUser().getId(), comment);
 
-        return requestRepository.save(request);
+        AttendanceRequest saved = requestRepository.save(request);
+        return attendanceMapper.toDetailDto(saved);
     }
 
 
     // 관지자용 전체 사용자 요청을 상태별·기간별·페이징 조회
     @Transactional(readOnly = true)
-    public Page<AttendanceRequest> getAllRequestsByStatus(
+    public Page<AttendanceRequestDetailDto> getAllRequestsByStatus(
             ApprovalStatus status,
             YearMonth ym,
             int page,
@@ -302,15 +322,16 @@ public class AttendanceRequestService {
         LocalDate from = ym.atDay(1);
         LocalDate to   = ym.atEndOfMonth();
         Pageable pageable = PageRequest.of(page, size, Sort.by("startDate").descending());
-        return requestRepository
+        Page<AttendanceRequest> requests = requestRepository
                 .findByApprovalStatusAndStartDateBetween(
                         status, from, to, pageable
                 );
+        return requests.map(attendanceMapper::toDetailDto);
     }
 
     // 관리자용 요청 상태 변경
     @Transactional
-    public AttendanceRequest changeRequestStatus(Long requestId,
+    public AttendanceRequestDetailDto changeRequestStatus(Long requestId,
                                                  ApprovalStatus newStatus,
                                                  String comment,
                                                  Long adminId) {
@@ -319,15 +340,29 @@ public class AttendanceRequestService {
         User admin = userRepository.findById(adminId)
                 .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
 
+        ApprovalStatus currentStatus = request.getApprovalStatus();
+        // 기존 상태가 APPROVED였고, 새 상태가 APPROVED가 아닌 경우 → 생성된 근태 삭제
+        if (currentStatus == ApprovalStatus.APPROVED && newStatus != ApprovalStatus.APPROVED) {
+            List<Attendance> attendances = request.getAttendances();
+
+            // 양방향 매핑 끊기
+            for (Attendance attendance : attendances) {
+                attendance.setAttendanceRequest(null);
+            }
+
+            attendanceRepository.deleteAll(attendances);
+            request.getAttendances().clear();
+
+            log.info("상태 변경으로 인해 근태 기록 삭제됨: 요청ID={}, 삭제된 근태 수={}", requestId, attendances.size());
+        }
         // 기존 승인 로직과 달리, 어떤 상태에서든 변경 가능
         request.setApprovalStatus(newStatus);
         request.setApprover(admin);
         request.setApprovedAt(LocalDateTime.now());
         request.setApprovalComment(comment);
-        return requestRepository.save(request);
+        AttendanceRequest updated = requestRepository.save(request);
+        return attendanceMapper.toDetailDto(updated);
     }
-
-
 
 
 

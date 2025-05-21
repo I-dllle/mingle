@@ -5,14 +5,12 @@ import com.example.mingle.domain.reservation.reservation.dto.ReservationResponse
 import com.example.mingle.domain.reservation.reservation.dto.RoomWithReservationsDto;
 import com.example.mingle.domain.reservation.reservation.service.ReservationService;
 import com.example.mingle.domain.reservation.room.entity.RoomType;
-import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.global.rq.Rq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -22,7 +20,7 @@ import java.util.List;
 @RequestMapping("/api/v1/reservations")
 @RequiredArgsConstructor
 @Tag(name = "Reservations", description = "예약 API")
-public class ReservationController {
+public class ApiV1ReservationController {
 
     private final ReservationService reservationService;
     private final Rq rq;
