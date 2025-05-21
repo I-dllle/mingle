@@ -44,7 +44,6 @@ custom:
     cookieDomain: "${custom.dev.cookieDomain}"
     frontUrl: "${custom.dev.frontUrl}"
     backUrl: "${custom.dev.backUrl}"
-
 cloud:
   aws:
     s3:
@@ -56,10 +55,9 @@ cloud:
       static: ap-northeast-2
     stack:
       auto: false
-
 admin:
   initial:
     email: admin@admin.com
     password: Admin1234!
-    nickname: ???
+    nickname: 관리자
 
