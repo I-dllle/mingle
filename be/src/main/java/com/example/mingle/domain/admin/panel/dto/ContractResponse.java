@@ -40,7 +40,7 @@ public record ContractResponse(
     public static ContractResponse fromInternal(InternalContract contract) {
         return new ContractResponse(
                 contract.getId(),
-                contract.getTitle(),
+                "(내부계약) 사용자 정산 계약",
                 contract.getUser().getName(),
                 "team",
                 "mingle",

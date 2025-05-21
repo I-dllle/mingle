@@ -6,7 +6,5 @@ import lombok.Getter;
 
 @Getter
 public class ChangeStatusRequest {
-
-    private ContractCategory category;
     private ContractStatus nextStatus;
 }
