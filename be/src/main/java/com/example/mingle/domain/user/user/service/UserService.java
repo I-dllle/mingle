@@ -6,10 +6,7 @@ import com.example.mingle.domain.user.user.dto.LoginRequestDto;
 import com.example.mingle.domain.user.user.dto.ProfileUpdateRequestDto;
 import com.example.mingle.domain.user.user.dto.SignupRequestDto;
 import com.example.mingle.domain.user.user.dto.TokenResponseDto;
-import com.example.mingle.domain.user.user.entity.User;
-import com.example.mingle.domain.user.user.entity.UserRole;
-import com.example.mingle.domain.user.user.entity.UserPosition;
-import com.example.mingle.domain.user.user.entity.UserStatus;
+import com.example.mingle.domain.user.user.entity.*;
 import com.example.mingle.domain.user.user.repository.UserRepository;
 import com.example.mingle.domain.user.user.repository.UserPositionRepository;
 import com.example.mingle.global.exception.ApiException;
@@ -69,6 +66,8 @@ public class UserService {
                 .role(UserRole.valueOf(request.getRole()))
                 .department(department)
                 .position(position)
+                .status(UserStatus.ACTIVE)               // 계정 활성 상태
+                .presence(PresenceStatus.OFFLINE)        // 가입 후 접속 전 상태
                 .build();
 
         return userRepository.save(user);

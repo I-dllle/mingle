@@ -1,7 +1,6 @@
-package com.example.mingle.domain.chat.common.config;
+package com.example.mingle.global.websocket;
 
 import com.example.mingle.domain.chat.common.socket.ChatWebSocketHandler;
-import com.example.mingle.domain.chat.common.socket.JwtHandshakeInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;

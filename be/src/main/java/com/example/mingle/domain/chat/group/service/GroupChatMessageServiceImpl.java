@@ -1,7 +1,8 @@
 package com.example.mingle.domain.chat.group.service;
 
 import com.example.mingle.domain.chat.common.dto.ChatMessagePayload;
-import com.example.mingle.domain.chat.common.socket.WebSocketSessionManager;
+import com.example.mingle.domain.chat.common.enums.MessageFormat;
+import com.example.mingle.global.websocket.WebSocketSessionManager;
 import com.example.mingle.domain.chat.group.entity.GroupChatMessage;
 import com.example.mingle.domain.chat.group.repository.GroupChatMessageRepository;
 import lombok.RequiredArgsConstructor;
@@ -37,5 +38,19 @@ public class GroupChatMessageServiceImpl implements GroupChatMessageService {
                 log.warn("메시지 전송 실패", e);
             }
         }
+    }
+
+    // 시스템 메시지 전송 메서드
+    @Override
+    public void sendSystemMessage(String content, Long roomId) {
+        ChatMessagePayload systemMessage = ChatMessagePayload.builder()
+                .roomId(roomId)
+                .senderId(null) // 시스템 메시지이므로 사용자 없음
+                .format(MessageFormat.SYSTEM)
+                .content(content)
+                .build();
+
+        // 재사용: 기존 저장 + 전송 메서드 활용
+        saveAndBroadcast(systemMessage);
     }
 }

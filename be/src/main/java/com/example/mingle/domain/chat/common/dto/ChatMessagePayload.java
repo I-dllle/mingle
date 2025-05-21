@@ -4,6 +4,7 @@ import com.example.mingle.domain.chat.common.enums.ChatRoomType;
 import com.example.mingle.domain.chat.common.enums.MessageFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +13,7 @@ import lombok.NoArgsConstructor;
  * - 그룹/DM 공용
  * - 저장 및 전송 시 사용
  */
+@Builder
 @Getter
 @NoArgsConstructor
 public class ChatMessagePayload {

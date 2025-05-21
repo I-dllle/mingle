@@ -68,6 +68,7 @@ public class AttendanceRequest extends BaseEntity {
     private LocalDateTime approvedAt;
 
     // 관련 Attendance 목록 (양방향 매핑)
+    @Builder.Default
     @OneToMany(mappedBy = "attendanceRequest", cascade = CascadeType.ALL)
     private List<Attendance> attendances = new ArrayList<>();
 

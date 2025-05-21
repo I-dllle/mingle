@@ -20,5 +20,13 @@ public class ChatUtil {
                 .toList();
     }
 
+
+
+    public static Long extractArchiveIdFromContent(String content) {
+        if (content == null || !content.startsWith("archive:")) {
+            throw new IllegalArgumentException("Invalid archive message content: " + content);
+        }
+        return Long.parseLong(content.substring("archive:".length()));
+    }
     // 추후 메시지 본문 파싱도 여기 추가할 수 있음
 }

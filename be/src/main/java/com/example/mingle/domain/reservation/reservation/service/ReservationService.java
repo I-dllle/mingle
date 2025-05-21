@@ -6,7 +6,6 @@ import com.example.mingle.domain.reservation.reservation.dto.RoomWithReservation
 import com.example.mingle.domain.reservation.reservation.entity.Reservation;
 import com.example.mingle.domain.reservation.reservation.entity.ReservationStatus;
 import com.example.mingle.domain.reservation.reservation.repository.ReservationRepository;
-import com.example.mingle.domain.reservation.room.dto.RoomDto;
 import com.example.mingle.domain.reservation.room.entity.Room;
 import com.example.mingle.domain.reservation.room.entity.RoomType;
 import com.example.mingle.domain.reservation.room.repository.RoomRepository;
@@ -14,20 +13,14 @@ import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.domain.user.user.repository.UserRepository;
 import com.example.mingle.global.exception.ApiException;
 import com.example.mingle.global.exception.ErrorCode;
-import com.example.mingle.global.rq.Rq;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -108,7 +101,7 @@ public class ReservationService {
         // 방 별로 예약 조회 및 dto 변환
         for (Room room : rooms) {
             List<Reservation> reservations = reservationRepository
-                    .findAllByRoomIdAndDateOrderByStartTime(room.getId(), date);
+                    .findAllByRoomIdAndDateAndReservationStatusOrderByStartTime(room.getId(), date, ReservationStatus.CONFIRMED);
 
             List<ReservationResponseDto> reservationResponseDtos = new ArrayList<>();
             for (Reservation reservation : reservations) {
@@ -123,7 +116,6 @@ public class ReservationService {
 
             result.add(roomDto);
         }
-
         return result;
     }
 
@@ -139,6 +131,11 @@ public class ReservationService {
                 .orElseThrow(() -> new ApiException(ErrorCode.RESERVATION_NOT_FOUND));
         if (!reservation.getUser().getId().equals(userId)) {
             throw new ApiException(ErrorCode.ACCESS_DENIED);
+        }
+
+        // 취소된 예약은 수정 불가능
+        if (reservation.getReservationStatus() == ReservationStatus.CANCELED) {
+            throw new ApiException(ErrorCode.REQUEST_NOT_FOUND);
         }
 
         // 새 예약 정보 가져오기
