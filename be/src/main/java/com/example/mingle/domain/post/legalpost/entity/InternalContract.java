@@ -16,6 +16,7 @@ import java.time.LocalDate;
 public class InternalContract extends BaseEntity {
     @ManyToOne
     private User user;
+
     private LocalDate startDate;
     private LocalDate endDate;
     private BigDecimal defaultRatio;
