@@ -5,11 +5,10 @@ import com.example.mingle.domain.user.team.repository.DepartmentRepository;
 import com.example.mingle.domain.user.user.entity.*;
 import com.example.mingle.domain.user.user.repository.UserPositionRepository;
 import com.example.mingle.domain.user.user.repository.UserRepository;
-import jakarta.annotation.PostConstruct;
+import com.example.mingle.domain.user.user.entity.UserStatus;
+import com.example.mingle.domain.user.user.entity.PresenceStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
@@ -65,7 +64,8 @@ public class AdminInitializer implements CommandLineRunner {
                 .phoneNum("010-9999-0000")
                 .imageUrl(null)
                 .role(UserRole.ADMIN)
-                .status(UserStatus.ONLINE)
+                .status(UserStatus.ACTIVE) // 계정 상태
+                .presence(PresenceStatus.OFFLINE) // 초기 접속 상태
                 .department(sysOps)
                 .position(position)
                 .build());
