@@ -1,6 +1,7 @@
 package com.example.mingle.domain.chat.dm.controller;
 
 import com.example.mingle.domain.chat.common.enums.MessageFormat;
+import com.example.mingle.domain.chat.dm.dto.ChatRoomSummaryResponse;
 import com.example.mingle.domain.chat.dm.dto.DmChatMessageResponse;
 import com.example.mingle.domain.chat.dm.dto.DmChatRoomCreateRequest;
 import com.example.mingle.domain.chat.dm.dto.DmChatRoomResponse;
@@ -38,6 +39,22 @@ public class ApiV1DmChatController {
     ) {
         DmChatRoom room = dmChatRoomService.findOrCreateRoom(loginUser.getId(), request.receiverId());
         return DmChatRoomResponse.from(room);
+    }
+
+
+
+    /**
+     * GET
+     * 내가 속한 모든 DM 채팅방 요약 정보 반환
+     * - 상대 닉네임
+     * - 최근 메시지 (content, format, sentAt)
+     * - 읽지 않은 메시지 수
+     */
+    @GetMapping("/summary")
+    public List<ChatRoomSummaryResponse> getChatRoomSummaries(
+            @AuthenticationPrincipal SecurityUser loginUser
+    ) {
+        return dmChatRoomService.getChatRoomSummaries(loginUser.getId());
     }
 
 
