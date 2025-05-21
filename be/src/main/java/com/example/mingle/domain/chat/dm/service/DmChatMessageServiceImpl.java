@@ -1,5 +1,6 @@
 package com.example.mingle.domain.chat.dm.service;
 
+import com.example.mingle.domain.chat.dm.dto.DmChatMessageResponse;
 import com.example.mingle.global.websocket.WebSocketSessionManager;
 import com.example.mingle.domain.chat.common.dto.ChatMessagePayload;
 import com.example.mingle.domain.chat.dm.entity.DmChatMessage;
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 
@@ -98,5 +101,22 @@ public class DmChatMessageServiceImpl implements DmChatMessageService {
     @Override
     public int countUnreadMessages(Long dmRoomId, Long userId) {
         return dmRepository.countByDmRoomIdAndReceiverIdAndIsReadFalse(dmRoomId, userId);
+    }
+
+
+
+    // 페이징 조회: cursor 이전 메시지 20개를 최신순으로 조회
+    // - 최초 요청 시 cursor가 null이면 현재 시각 기준으로 조회
+    @Override
+    public List<DmChatMessageResponse> getMessagesByRoomIdBefore(Long roomId, LocalDateTime cursor) {
+        if (cursor == null) {
+            cursor = LocalDateTime.now();
+        }
+
+        return dmRepository
+                .findTop20ByDmRoomIdAndCreatedAtBeforeOrderByCreatedAtDesc(roomId, cursor)
+                .stream()
+                .map(DmChatMessageResponse::from)
+                .toList();
     }
 }
