@@ -1,6 +1,8 @@
 package com.example.mingle.domain.post.legalpost.entity;
 
+import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
 import com.example.mingle.domain.post.legalpost.enums.SettlementCategory;
+import com.example.mingle.domain.post.legalpost.enums.SettlementStatus;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
@@ -37,6 +39,7 @@ public class Settlement extends BaseEntity {
     @Column(nullable = false)
     private Boolean isSettled;
 
-
-
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private SettlementStatus status;
 }

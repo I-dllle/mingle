@@ -53,8 +53,12 @@ public class User extends BaseEntity {
     private UserPosition position;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private UserStatus status;
+    @Column(name = "status", nullable = false, length = 30)
+    private UserStatus status = UserStatus.ACTIVE; // 기본값
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private PresenceStatus presence = PresenceStatus.OFFLINE; // 기본값
 
     @Column(name = "phone_num", length = 20)
     private String phoneNum;

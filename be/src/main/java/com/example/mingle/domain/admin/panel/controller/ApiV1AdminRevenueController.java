@@ -6,8 +6,10 @@ import com.example.mingle.domain.post.legalpost.dto.settlement.SettlementDto;
 import com.example.mingle.domain.post.legalpost.enums.RatioType;
 import com.example.mingle.domain.post.legalpost.service.SettlementService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -18,7 +20,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/admin/revenue")
 @RequiredArgsConstructor
-//@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasRole('ADMIN')")
+@Tag(name = "AdminRevenue", description = "관리자 전용 수익 관리 API")
 public class ApiV1AdminRevenueController {
     private final SettlementService settlementService;
 

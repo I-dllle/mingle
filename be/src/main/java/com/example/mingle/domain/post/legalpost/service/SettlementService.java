@@ -8,6 +8,7 @@ import com.example.mingle.domain.post.legalpost.entity.SettlementRatio;
 import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
 import com.example.mingle.domain.post.legalpost.enums.RatioType;
 import com.example.mingle.domain.post.legalpost.enums.SettlementCategory;
+import com.example.mingle.domain.post.legalpost.enums.SettlementStatus;
 import com.example.mingle.domain.post.legalpost.repository.ContractRepository;
 import com.example.mingle.domain.post.legalpost.repository.SettlementDetailRepository;
 import com.example.mingle.domain.post.legalpost.repository.SettlementRatioRepository;
@@ -28,14 +29,14 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class SettlementService {
     private final ContractRepository contractRepository;
     private final SettlementRatioRepository ratioRepository;
     private final SettlementRepository settlementRepository;
     private final SettlementDetailRepository settlementDetailRepository;
 
-    @Transactional
-    public void createSettlement(Long contractId, BigDecimal totalRevenue, List<CreateSettlementDetailRequest> detailRequests)
+    public void createSettlement(Long contractId, BigDecimal totalRevenue)
     {
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new EntityNotFoundException("계약을 찾을 수 없습니다."));
@@ -44,9 +45,6 @@ public class SettlementService {
             throw new IllegalStateException("확정된 계약만 정산할 수 있습니다.");
         }
 
-        if (contract.getIsSettlementCreated()) {
-            throw new IllegalStateException("이미 정산이 생성되었습니다.");
-        }
 
         // 1. 수익 단위 Settlement 생성
         Settlement settlement = Settlement.builder()
@@ -54,6 +52,7 @@ public class SettlementService {
                 .incomeDate(LocalDate.now())
                 .totalAmount(totalRevenue)
                 .memo("정산 생성: " + contract.getSummary())
+                .status(SettlementStatus.ACTIVE)
                 .isSettled(false)
                 .build();
 
@@ -72,41 +71,65 @@ public class SettlementService {
                     .ratioType(ratio.getRatioType())
                     .percentage(ratio.getPercentage())
                     .amount(amount)
+                    .status(SettlementStatus.ACTIVE)
                     .build();
 
             settlementDetailRepository.save(detail);
         }
 
-        // 3. 계약 상태 변경
-        contract.setIsSettlementCreated(true);
         contractRepository.save(contract);
     }
-
-
 
     public void updateSettlement(Long id, UpdateSettlementRequest request) {
         Settlement settlement = settlementRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("정산 내역을 찾을 수 없습니다."));
 
+        Contract contract = settlement.getContract();
+
         settlement.setTotalAmount(request.getTotalAmount());
         settlement.setMemo(request.getMemo());
         settlement.setIsSettled(request.getIsSettled());
         settlement.setIncomeDate(request.getIncomeDate());
+        settlement.setSource(request.getSource());
+
+        settlementDetailRepository.deleteBySettlementId(settlement.getId());
+
+        List<SettlementRatio> ratios = ratioRepository.findByContract(contract);
+        BigDecimal totalRevenue = request.getTotalAmount();
+
+        for (SettlementRatio ratio : ratios) {
+            BigDecimal amount = totalRevenue.multiply(ratio.getPercentage())
+                    .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+
+            SettlementDetail detail = SettlementDetail.builder()
+                    .settlement(settlement)
+                    .user(ratio.getRatioType() == RatioType.AGENCY ? null : ratio.getUser())
+                    .ratioType(ratio.getRatioType())
+                    .percentage(ratio.getPercentage())
+                    .amount(amount)
+                    .build();
+
+            settlementDetailRepository.save(detail);
+        }
 
         settlementRepository.save(settlement);
-
-        // SettlementDetail도 수정하려면 별도 로직 필요
     }
 
 
+
+    @Transactional
     public void deleteSettlement(Long settlementId) {
         Settlement settlement = settlementRepository.findById(settlementId)
                 .orElseThrow(() -> new EntityNotFoundException("정산 내역을 찾을 수 없습니다."));
 
-        // 먼저 하위 SettlementDetail 삭제
-        settlementDetailRepository.deleteBySettlement(settlement);
+        // 상위 Settlement 상태 변경
+        settlement.setStatus(SettlementStatus.DELETED);
 
-        settlementRepository.delete(settlement);
+        // 하위 SettlementDetail 모두 상태 변경
+        List<SettlementDetail> details = settlementDetailRepository.findAllBySettlement(settlement);
+        for (SettlementDetail detail : details) {
+            detail.setStatus(SettlementStatus.DELETED);
+        }
     }
 
 
@@ -191,11 +214,20 @@ public class SettlementService {
         return result != null ? result : BigDecimal.ZERO;
     }
 
+
     public List<SettlementDetailResponse> getSettlementDetailsByContract(Long contractId) {
         List<SettlementDetail> details = settlementDetailRepository.findAllByContractId(contractId);
         return details.stream()
                 .map(SettlementDetailResponse::from)
                 .toList();
+    }
+
+    public BigDecimal getMonthlyTotalRevenue() {
+        YearMonth now = YearMonth.now();
+        LocalDate start = now.atDay(1);
+        LocalDate end = now.atEndOfMonth();
+        return settlementRepository.getTotalRevenueBetween(start, end)
+                .orElse(BigDecimal.ZERO);
     }
 
 }

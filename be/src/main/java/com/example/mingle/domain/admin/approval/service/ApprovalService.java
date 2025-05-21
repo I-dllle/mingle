@@ -3,8 +3,7 @@ package com.example.mingle.domain.admin.approval.service;
 import com.example.mingle.domain.admin.approval.dto.ApprovalListDto;
 import com.example.mingle.domain.admin.approval.dto.ApprovalRequestDto;
 import com.example.mingle.domain.admin.approval.entity.Approval;
-import com.example.mingle.domain.admin.approval.entity.ApprovalStatus;
-import com.example.mingle.domain.admin.approval.entity.ApprovalType;
+import com.example.mingle.domain.attendance.enums.ApprovalStatus;
 import com.example.mingle.domain.admin.approval.repository.ApprovalRepository;
 import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
 import com.example.mingle.domain.post.legalpost.service.ContractService;
@@ -48,7 +47,7 @@ public class ApprovalService {
 
         // 승인 대상 처리 (예: 계약 상태 변경)
         switch (approval.getType()) {
-            case CONTRACT -> contractService.changeStatus(approval.getTargetId(), ContractStatus.CONFIRMED);
+            case CONTRACT -> contractService.changeStatus(approval.getTargetId(), ContractStatus.CONFIRMED, null);
 //            case LEAVE -> leaveRequestService.changeStatus(approval.getTargetId(), LeaveStatus.APPROVED);
 //            case SETTLEMENT -> settlementService.approve(approval.getTargetId()); // 정산 승인 처리
 //            case POST -> postService.publish(approval.getTargetId()); // 게시물 게시 처리

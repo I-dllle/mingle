@@ -1,6 +1,8 @@
 package com.example.mingle.domain.post.legalpost.repository;
 
 import com.example.mingle.domain.post.legalpost.entity.Contract;
+import com.example.mingle.domain.post.legalpost.entity.InternalContract;
+import com.example.mingle.domain.post.legalpost.enums.ContractCategory;
 import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -9,13 +11,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 
 @Repository
 public interface ContractRepository extends JpaRepository<Contract, Long>, JpaSpecificationExecutor<Contract> {
 
-    List<Contract> findByUserId(Long userId);
 
     @Query("""
     SELECT COUNT(c)
@@ -35,5 +37,19 @@ public interface ContractRepository extends JpaRepository<Contract, Long>, JpaSp
 """)
     List<Contract> findExpiringContracts(@Param("deadline") LocalDate deadline,
                                          @Param("terminated") ContractStatus terminated);
+
+    long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+
+    @Query("SELECT c.status, COUNT(c) " +
+            "FROM Contract c " +
+            "GROUP BY c.status")
+    List<Object[]> countContractsByStatus();
+
+    List<Contract> findByCreatedAtAfterOrderByCreatedAtDesc(LocalDateTime time);
+
+    List<Contract> findByParticipants_IdAndContractCategory(Long userId, ContractCategory category);
+
+    // 특정 시간이 지난 게시물을 가져오는 메서드
+    List<Contract> findAllByStatusAndUpdatedAtBefore(ContractStatus status, LocalDateTime time);
 
 }

@@ -10,5 +10,4 @@ import java.util.List;
 @Setter
 public class SettlementRequest {
     private BigDecimal totalRevenue;
-    private List<CreateSettlementDetailRequest> details; // 배분 대상 목록
 }

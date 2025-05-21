@@ -1,5 +1,6 @@
 package com.example.mingle.domain.post.post.repository;
 
+import com.example.mingle.domain.post.post.entity.NoticeType;
 import com.example.mingle.domain.post.post.entity.Post;
 import com.example.mingle.domain.post.post.entity.BusinessDocumentCategory;
 import com.example.mingle.domain.post.post.entity.PostMenu;
@@ -7,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,4 +29,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     //페이징 처리
     Page<Post> findByMenu_Id(Long menuId, Pageable pageable);
     Page<Post> findAll(Pageable pageable);
+
+    List<Post> findByCreatedAtAfterAndNoticeTypeInOrderByCreatedAtDesc(LocalDateTime time, List<NoticeType> noticeTypes);
+
 }

@@ -62,3 +62,6 @@ admin:
     password: Admin1234!
     nickname: ???
 
+toss:
+  payments:
+    api-key: test_sk_D4yKeq5bgrpKRd0J07RQVX0lzW6Y
