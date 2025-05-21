@@ -1,5 +1,6 @@
 package com.example.mingle.domain.admin.approval.entity;
 
+import com.example.mingle.domain.attendance.enums.ApprovalStatus;
 import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

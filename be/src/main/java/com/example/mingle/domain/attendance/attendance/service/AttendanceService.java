@@ -3,6 +3,7 @@ package com.example.mingle.domain.attendance.attendance.service;
 import com.example.mingle.domain.attendance.attendance.dto.AttendanceDetailDto;
 import com.example.mingle.domain.attendance.attendance.dto.AttendanceRecordDto;
 import com.example.mingle.domain.attendance.attendance.dto.request.OvertimeRequestDto;
+import com.example.mingle.domain.attendance.attendance.dto.response.AttendanceAdminDto;
 import com.example.mingle.domain.attendance.attendance.dto.response.AttendanceMonthStatsDto;
 import com.example.mingle.domain.attendance.attendance.dto.response.AttendancePageResponseDto;
 import com.example.mingle.domain.attendance.attendance.dto.response.WorkHoursChartResponseDto;
@@ -12,6 +13,8 @@ import com.example.mingle.domain.attendance.attendance.repository.AttendanceRepo
 import com.example.mingle.domain.attendance.util.AttendanceMapper;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.domain.user.user.repository.UserRepository;
+import com.example.mingle.global.exception.ApiException;
+import com.example.mingle.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -78,6 +81,10 @@ public class AttendanceService {
                         .date(today)
                         .build());
 
+        // 이미 18시가 넘었으면 예외처리
+        if (now.toLocalTime().isAfter(LocalTime.of(18, 0))) {
+            throw new IllegalStateException("출근 시간이 지났습니다");
+        }
 
         // 이미 일반 출근 처리된 경우 예외 발생
         if (attendance.getCheckInTime() != null &&
@@ -149,6 +156,8 @@ public class AttendanceService {
 
         attendance.setCheckOutTime(now);
         double workingHours = Duration.between(attendance.getCheckInTime(), now).toMinutes() / 60.0;
+        // 점심시간 제외 (기본 1시간)
+        workingHours = Math.max(0, workingHours - 1.0);  // 음수 방지
         attendance.setWorkingHours(workingHours);
 
         // 야근 자동 감지 및 처리
@@ -269,6 +278,11 @@ public class AttendanceService {
         if (!userRepository.existsById(userId)) {
             throw new IllegalArgumentException("존재하지 않는 유저입니다. id=" + userId);
         }
+
+        if (start.isAfter(end)) {
+            throw new ApiException(ErrorCode.INVALID_TIME_RANGE);
+        }
+
         // 기간별 근태 조회
         List<Attendance> records = attendanceRepository
                 .findByUser_IdAndDateBetweenOrderByDateAsc(userId, start, end);
@@ -372,6 +386,87 @@ public class AttendanceService {
         Attendance saved = attendanceRepository.save(attendance);
 
         return attendanceMapper.toDetailDto(saved);
+    }
+
+
+    // ================== 관리자 용 메서드 =========================
+
+    // 전체 근태 기록 조회(페이징 및 필터 검색)
+    @Transactional(readOnly = true)
+    public Page<AttendanceAdminDto> getFilteredAttendanceRecords(
+            YearMonth ym,
+            Long departmentId,
+            Long userId,
+            String keyword,
+            AttendanceStatus status,
+            Pageable pageable
+    ) {
+        LocalDate start = ym.atDay(1);
+        LocalDate end = ym.atEndOfMonth();
+
+        return attendanceRepository.findWithFilters(
+                start, end, departmentId, userId, keyword, status, pageable
+        ).map(attendanceMapper::toAdminDto);
+    }
+
+    // 개별 근태 상세 조회
+    @Transactional(readOnly = true)
+    public AttendanceDetailDto getAttendanceDetailByAdmin(Long attendanceId) {
+        Attendance attendance = attendanceRepository.findById(attendanceId)
+                .orElseThrow(() -> new ApiException(ErrorCode.ATTENDANCE_NOT_FOUND));
+
+        return attendanceMapper.toDetailDto(attendance);
+    }
+
+    // 개별 근태 수정
+    @Transactional
+    public AttendanceDetailDto updateAttendanceByAdmin(Long attendanceId, AttendanceDetailDto dto) {
+        Attendance attendance = attendanceRepository.findById(attendanceId)
+                .orElseThrow(() -> new ApiException(ErrorCode.ATTENDANCE_NOT_FOUND));
+
+        if (dto.getCheckInTime() != null) {
+            attendance.setDate(dto.getCheckInTime().toLocalDate());
+        } else {
+            attendance.setDate(dto.getDate()); // fallback
+        }
+
+        attendance.setCheckInTime(dto.getCheckInTime());
+        attendance.setCheckOutTime(dto.getCheckOutTime());
+        attendance.setAttendanceStatus(dto.getAttendanceStatus());
+        attendance.setReason(dto.getReason());
+
+        // 근무 시간 자동 계산
+        if (dto.getCheckInTime() != null && dto.getCheckOutTime() != null) {
+            Duration workDuration = Duration.between(dto.getCheckInTime(), dto.getCheckOutTime());
+
+            if (workDuration.isNegative()) {
+                throw new ApiException(ErrorCode.INVALID_TIME_RANGE);
+            }
+
+            double workingHours = (double) Duration.between(dto.getCheckInTime(), dto.getCheckOutTime()).toMinutes() / 60.0;
+            // 점심시간 제외 (기본 1시간)
+            workingHours = Math.max(0, workingHours - 1.0);  // 음수 방지
+            attendance.setWorkingHours(Math.round((workingHours) * 10000.0) / 10000.0);
+        }
+
+        // 야근 시간 자동 계산
+        if (dto.getOvertimeStart() != null && dto.getOvertimeEnd() != null) {
+            Duration workDuration = Duration.between(dto.getOvertimeStart(), dto.getOvertimeEnd());
+
+            if (workDuration.isNegative()) {
+                throw new ApiException(ErrorCode.INVALID_TIME_RANGE);
+            }
+
+            double overtimeHours = (double) Duration.between(dto.getOvertimeStart(), dto.getOvertimeEnd()).toMinutes() / 60.0;
+            attendance.setOvertimeHours(Math.round(overtimeHours * 10000.0) / 10000.0);
+            attendance.setOvertimeStart(dto.getOvertimeStart());
+            attendance.setOvertimeEnd(dto.getOvertimeEnd());
+        } else {
+            attendance.setOvertimeStart(null);
+            attendance.setOvertimeEnd(null);
+            attendance.setOvertimeHours(0.0);
+        }
+        return attendanceMapper.toDetailDto(attendance);
     }
 }
 
