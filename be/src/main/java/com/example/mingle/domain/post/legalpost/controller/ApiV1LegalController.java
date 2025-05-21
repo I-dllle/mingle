@@ -59,8 +59,8 @@ public class ApiV1LegalController {
     // 계약서 상태 변경
     @PutMapping("/contracts/{id}/status")
     @Operation(summary = "계약서 상태 변경")
-    public ResponseEntity<?> changeStatus(@PathVariable Long id, @RequestBody ChangeStatusRequest request) {
-        contractService.changeStatus(id, request.getNextStatus(), request.getCategory());
+    public ResponseEntity<?> changeStatus(@PathVariable Long id, @RequestBody ChangeStatusRequest request, @RequestParam ContractCategory category) {
+        contractService.changeStatus(id, request.getNextStatus(), category);
         return ResponseEntity.ok("상태 변경 완료");
     }
 
@@ -192,5 +192,27 @@ public class ApiV1LegalController {
     public ResponseEntity<List<ContractResponse>> getExpiringContracts(
             @RequestParam ContractCategory category) {
         return ResponseEntity.ok(contractService.getExpiringContracts(category));
+    }
+
+    @PutMapping("/contracts/{contractId}")
+    @Operation(summary = "계약서 수정")
+    public ResponseEntity<Long> updateContract(
+            @PathVariable Long contractId,
+            @RequestPart("request") UpdateContractRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile file
+    ) throws IOException {
+        Long updatedId = contractService.updateContract(contractId, request, file);
+        return ResponseEntity.ok(updatedId);
+    }
+
+    // 게시글 삭제
+    @DeleteMapping("/{contractId}")
+    public ResponseEntity<String> deletePost(
+            @PathVariable Long contractId
+    ) {
+
+        contractService.deleteContract(contractId);
+        return ResponseEntity.ok("게시글 삭제 완료");
+
     }
 }
