@@ -1,6 +1,7 @@
 package com.example.mingle.domain.attendance.attendance.repository;
 
 import com.example.mingle.domain.attendance.attendance.entity.Attendance;
+import com.example.mingle.domain.attendance.enums.AttendanceStatus;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,5 +36,27 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
             @Param("userId") Long userId,
             @Param("start")  LocalDate start,
             @Param("end")    LocalDate end
+    );
+
+    // 관리자 용 조회
+    @Query("""
+    SELECT a FROM Attendance a
+    WHERE a.date BETWEEN :start AND :end
+      AND (:departmentId IS NULL OR a.user.department.id = :departmentId)
+      AND (:userId IS NULL OR a.user.id = :userId)
+      AND (:status IS NULL OR a.attendanceStatus = :status)
+      AND (:keyword IS NULL OR (
+            LOWER(a.user.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+            LOWER(a.user.loginId) LIKE LOWER(CONCAT('%', :keyword, '%'))
+      ))
+""")
+    Page<Attendance> findWithFilters(
+            @Param("start") LocalDate start,
+            @Param("end") LocalDate end,
+            @Param("departmentId") Long departmentId,
+            @Param("userId") Long userId,
+            @Param("keyword") String keyword,
+            @Param("status") AttendanceStatus status,
+            Pageable pageable
     );
 }

@@ -8,7 +8,6 @@ import com.example.mingle.global.exception.ApiException;
 import com.example.mingle.global.exception.ErrorCode;
 import com.example.mingle.global.rq.Rq;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "Rooms", description = "방 관리 API - 관리자 전용")
 @Slf4j
-public class RoomController {
+public class ApiV1RoomController {
 
     private final RoomService roomService;
     private final Rq rq;

@@ -43,7 +43,6 @@ public class ScheduleMapper {
         if (schedule == null) {
             return null;
         }
-
         Long postId = schedule.getPost() != null ? schedule.getPost().getId() : null;
 
         Long departmentId = schedule.getDepartment() != null
