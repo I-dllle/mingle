@@ -40,7 +40,7 @@ public class AttendanceRequestService {
     private final AttendanceRequestRepository requestRepository;
     private final AttendanceMapper attendanceMapper;
 
-    // 일반 유저가 휴가/반차/출장 요청을 생성
+    // 휴가/반차/출장 요청을 생성
     @Transactional
     public AttendanceRequestDetailDto submitRequest(AttendanceRequestDto dto, Long userId) {
         User user = userRepository.findById(userId)
@@ -94,9 +94,6 @@ public class AttendanceRequestService {
                 .appliedAt(LocalDateTime.now())
                 .approvalStatus(ApprovalStatus.PENDING)
                 .build();
-
-        log.info("휴가 요청 생성: 사용자={}, 타입={}, 시작일={}, 종료일={}",
-                userId, dto.getType(), dto.getStartDate(), endDate);
 
         AttendanceRequest created = requestRepository.save(request);
 
@@ -224,7 +221,6 @@ public class AttendanceRequestService {
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
             // 주말 건너뛰기
             if (date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY) {
-                log.debug("주말 제외: {}", date);
                 continue;
             }
 
@@ -267,10 +263,6 @@ public class AttendanceRequestService {
             attendanceRepository.saveAll(attendances);
         }
 
-        log.info("휴가 요청 승인: 요청ID={}, 타입={}, 사용자={}, 기간={}~{}, 영향받은 근태 수={}",
-                requestId, request.getLeaveType(), request.getUser().getId(),
-                request.getStartDate(), request.getEndDate(), attendances.size());
-
         AttendanceRequest saved = requestRepository.save(request);
 
         return attendanceMapper.toDetailDto(saved);
@@ -302,9 +294,6 @@ public class AttendanceRequestService {
         request.setApprover(approver);
         request.setApprovedAt(LocalDateTime.now());
         request.setApprovalComment(comment);
-
-        log.info("휴가 요청 반려: 요청ID={}, 사용자={}, 사유={}",
-                requestId, request.getUser().getId(), comment);
 
         AttendanceRequest saved = requestRepository.save(request);
         return attendanceMapper.toDetailDto(saved);
@@ -352,8 +341,6 @@ public class AttendanceRequestService {
 
             attendanceRepository.deleteAll(attendances);
             request.getAttendances().clear();
-
-            log.info("상태 변경으로 인해 근태 기록 삭제됨: 요청ID={}, 삭제된 근태 수={}", requestId, attendances.size());
         }
         // 기존 승인 로직과 달리, 어떤 상태에서든 변경 가능
         request.setApprovalStatus(newStatus);
