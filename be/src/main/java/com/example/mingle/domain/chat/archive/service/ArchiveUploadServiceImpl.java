@@ -5,6 +5,9 @@ import com.example.mingle.domain.chat.archive.entity.ArchiveItem;
 import com.example.mingle.domain.chat.archive.entity.ArchiveTag;
 import com.example.mingle.domain.chat.archive.repository.ArchiveItemRepository;
 import com.example.mingle.domain.chat.archive.repository.ArchiveTagRepository;
+import com.example.mingle.domain.chat.common.util.ChatUtil;
+import com.example.mingle.domain.user.user.repository.UserRepository;
+import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.global.aws.AwsS3Uploader;
 import com.example.mingle.global.exception.ApiException;
 import com.example.mingle.global.exception.ErrorCode;
@@ -21,6 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ArchiveUploadServiceImpl implements ArchiveUploadService {
 
+    private final UserRepository userRepository;
     private final ArchiveItemRepository archiveItemRepository;
     private final ArchiveTagRepository archiveTagRepository;
     private final AwsS3Uploader awsS3Uploader;
@@ -31,18 +35,35 @@ public class ArchiveUploadServiceImpl implements ArchiveUploadService {
         // 1. S3에 업로드
         String fileUrl = awsS3Uploader.upload(request.file(), "archive_files");
 
-        // 2. ArchiveItem 생성
+
+        // 2. 업로더 User 조회 (uploaderId → User 객체)
+        User uploader = userRepository.findById(request.uploaderId())
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
+
+
+        // 3. ArchiveItem 생성
         ArchiveItem archiveItem = ArchiveItem.builder()
                 .chatRoomId(request.chatRoomId())
-                .uploaderId(request.uploaderId())
+                .uploader(uploader)
                 .fileUrl(fileUrl)
                 .originalFilename(request.file().getOriginalFilename())
                 .thumbnailUrl(null) // 이미지 파일이 아니라면 비워둠 (후처리로 가능)
                 .build();
 
-        // 3. 태그 처리
+
+        // 4. 태그 처리 (수동 입력이 없으면 파일명 기반 추출 예정)
+
+        // 수동 태그가 비어 있으면 파일명에서 자동 추출
+        List<String> tags;
         if (request.tags() != null && !request.tags().isEmpty()) {
-            List<ArchiveTag> tagEntities = request.tags().stream()
+            tags = request.tags(); // 수동 입력 우선
+        } else {
+            tags = ChatUtil.extractTagsFromFilename(request.file().getOriginalFilename()); // 자동 추출
+        }
+
+        // 추출된 태그가 존재하면 ArchiveTag로 변환 후 연결
+        if (!tags.isEmpty()) {
+            List<ArchiveTag> tagEntities = tags.stream()
                     .map(tagName -> ArchiveTag.builder()
                             .name(tagName)
                             .archiveItem(archiveItem)
@@ -51,7 +72,8 @@ public class ArchiveUploadServiceImpl implements ArchiveUploadService {
             archiveItem.getTags().addAll(tagEntities);
         }
 
-        // 4. 저장
+
+        // 5. 저장
         archiveItemRepository.save(archiveItem);
     }
 
@@ -67,7 +89,7 @@ public class ArchiveUploadServiceImpl implements ArchiveUploadService {
         // 기존 태그 전부 삭제
         archiveTagRepository.deleteAllByArchiveItemId(archiveItemId);
 
-        // 새 태그 리스트 저장
+        // 새로 들어온 List<String> tags 값을 기반으로 전부 다시 생성해서 저장
         List<ArchiveTag> newTags = tags.stream()
                 .map(tag -> ArchiveTag.of(tag, archiveItem)) // ArchiveTag.of()는 정적 생성자
                 .toList();
