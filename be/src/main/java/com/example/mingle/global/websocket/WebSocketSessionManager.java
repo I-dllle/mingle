@@ -1,4 +1,4 @@
-package com.example.mingle.domain.chat.common.socket;
+package com.example.mingle.global.websocket;
 
 import com.example.mingle.domain.chat.common.dto.WebSocketAuthDto;
 import org.springframework.web.socket.WebSocketSession;

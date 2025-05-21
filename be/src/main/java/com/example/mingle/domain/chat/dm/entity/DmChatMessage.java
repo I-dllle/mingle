@@ -31,4 +31,9 @@ public class DmChatMessage extends BaseEntity {
     // 추후 구현: 읽음 처리 기능을 위한 필드
     private boolean isRead; // TODO
     private LocalDateTime readAt; // TODO
+
+    public void updateContent(String newContent) {
+        this.content = newContent;
+    }
+
 }

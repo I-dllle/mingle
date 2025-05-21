@@ -2,8 +2,14 @@ package com.example.mingle.domain.chat.common.socket;
 
 import com.example.mingle.domain.chat.common.dto.ChatMessagePayload;
 import com.example.mingle.domain.chat.common.enums.ChatRoomType;
+import com.example.mingle.domain.chat.common.enums.MessageFormat; // 메시지 타입 enum
 import com.example.mingle.domain.chat.group.service.GroupChatMessageService;
 import com.example.mingle.domain.chat.dm.service.DmChatMessageService;
+import com.example.mingle.domain.chat.archive.entity.ArchiveItem;
+import com.example.mingle.domain.chat.archive.repository.ArchiveItemRepository; // 자료 조회
+import com.example.mingle.domain.chat.common.util.ChatUtil; // archiveId 추출용 유틸
+import com.example.mingle.global.exception.ApiException;
+import com.example.mingle.global.exception.ErrorCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.validation.ConstraintViolation;
@@ -31,6 +37,9 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     private final DmChatMessageService dmChatMessageService;
 
+    // 자료 조회용
+    private final ArchiveItemRepository archiveItemRepository;
+
     // 유효성 검사를 위한 Validator
     private final Validator validator;
 
@@ -42,7 +51,19 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
         log.info("WebSocket 연결됨: sessionId = {}", session.getId());
+
         // TODO: 인증 처리 예정 (WebSocketAuthDto, SessionManager 연동)
+
+        // TODO: SYSTEM 메시지 전송 예정
+        // 추후 인증 완료 후 actor 정보 획득 필요
+        // 예: nickname = "홍길동", roomId = 123L
+        //
+        // 가정: 인증 처리를 마쳤고 roomId와 nickname을 알 수 있다고 가정
+        //
+        // String nickname = "홍길동"; // 인증된 사용자에서 가져옴
+        // Long roomId = ...;          // 연결된 채팅방 정보
+
+        // groupChatMessageService.sendSystemMessage("[" + nickname + "]님이 입장했습니다.", roomId);
     }
 
 
@@ -68,6 +89,13 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
             // 3단계: 메시지 저장 + 같은 채팅방 유저에게 전송 (Service에 위임)
             // 메시지 타입에 따라 서비스 위임
+            // format=ARCHIVE 메시지 수신 시 분기 처리
+            if (payload.getFormat() == MessageFormat.ARCHIVE) {
+                handleArchiveMessage(payload, session);
+                return;
+            }
+
+            // 일반 메시지 분기
             if (payload.getRoomType() == ChatRoomType.DIRECT) {
                 dmChatMessageService.saveAndSend(payload);
             } else {
@@ -104,5 +132,33 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) {
         log.warn("WebSocket 에러: sessionId = {}, error = {}", session.getId(), exception.getMessage());
+    }
+
+
+
+    // format=ARCHIVE 메시지 수신 처리 메서드
+    private void handleArchiveMessage(ChatMessagePayload payload, WebSocketSession session) {
+        try {
+            Long archiveItemId = ChatUtil.extractArchiveIdFromContent(payload.getContent());
+            ArchiveItem archiveItem = archiveItemRepository.findById(archiveItemId)
+                    .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND_ARCHIVE));
+
+            // TODO: 여기서 archiveItem을 이용해 preview 메시지 content 구성 예정
+            log.info("자료 미리보기 요청됨: archiveId = {}, file = {}", archiveItemId, archiveItem.getOriginalFilename());
+
+            // 임시 응답: 추후 DTO로 가공 예정
+            String previewText = "[자료] " + archiveItem.getOriginalFilename();
+            ChatMessagePayload previewPayload = ChatMessagePayload.builder()
+                    .roomId(payload.getRoomId())
+                    .senderId(payload.getSenderId())
+                    .format(MessageFormat.ARCHIVE)
+                    .content(previewText)
+                    .build();
+
+            groupChatMessageService.saveAndBroadcast(previewPayload); // broadcast 처리
+
+        } catch (Exception e) {
+            log.error("format=ARCHIVE 메시지 처리 중 오류", e);
+        }
     }
 }

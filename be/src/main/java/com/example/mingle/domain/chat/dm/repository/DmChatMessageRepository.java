@@ -18,4 +18,5 @@ public interface DmChatMessageRepository extends JpaRepository<DmChatMessage, Lo
 
     // 추후 구현: 읽지 않은 메시지 수
     int countByDmRoomIdAndReceiverIdAndIsReadFalse(Long roomId, Long userId); // TODO
+
 }
