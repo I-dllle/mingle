@@ -38,8 +38,8 @@ public class ApiV1ScheduleController {
     private final Rq rq;
     private final DepartmentRepository departmentRepository;
 
-    // 일정 생성
-    @Operation(summary = "일정 생성", description = "새 일정을 생성하고 생성된 일정을 반환합니다.")
+    // 개인 일정 생성
+    @Operation(summary = "개인 일정 생성", description = "새 일정을 생성하고 생성된 일정을 반환합니다.")
     @PostMapping
     public ResponseEntity<ScheduleResponse> createSchedule(
             @Parameter(description = "생성할 일정 정보", required = true)
@@ -78,7 +78,7 @@ public class ApiV1ScheduleController {
             @RequestParam(required = false) Long departmentId
     ) {
         Long userId = rq.getActor().getId();
-        List<ScheduleResponse> responses = scheduleService.getWeeklyView(userId, date, type, departmentId);
+        List<ScheduleResponse> responses = scheduleService.getMonthlyView(userId, type, date, departmentId);
         return ResponseEntity.ok(responses);
     }
 

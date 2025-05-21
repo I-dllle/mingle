@@ -2,7 +2,6 @@ package com.example.mingle.domain.reservation.reservation.repository;
 
 import com.example.mingle.domain.reservation.reservation.entity.Reservation;
 import com.example.mingle.domain.reservation.reservation.entity.ReservationStatus;
-import com.example.mingle.domain.reservation.room.entity.RoomType;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -25,7 +24,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
 
     //날짜별 방 가져오기.
-    List<Reservation> findAllByRoomIdAndDateOrderByStartTime(Long roomId, LocalDate date);
+    List<Reservation> findAllByRoomIdAndDateAndStatusOrderByStartTime(Long roomId, LocalDate date, ReservationStatus status);
 
     //자기 자신의 예약인지 확인
     @Query("SELECT COUNT(r) > 0 FROM Reservation r " +
