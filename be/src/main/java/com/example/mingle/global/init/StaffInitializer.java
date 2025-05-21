@@ -5,6 +5,8 @@ import com.example.mingle.domain.user.team.repository.DepartmentRepository;
 import com.example.mingle.domain.user.user.entity.*;
 import com.example.mingle.domain.user.user.repository.UserPositionRepository;
 import com.example.mingle.domain.user.user.repository.UserRepository;
+import com.example.mingle.domain.user.user.entity.PresenceStatus;
+
 import net.datafaker.Faker;
 
 import lombok.RequiredArgsConstructor;
@@ -91,7 +93,8 @@ public class StaffInitializer implements CommandLineRunner {
                 .role(UserRole.STAFF)
                 .department(planning)
                 .position(defaultPosition) // 직책
-                .status(UserStatus.ONLINE)
+                .status(UserStatus.ACTIVE) // 계정 상태
+                .presence(PresenceStatus.OFFLINE) // 접속 상태 초기화
                 .build());
 
         // 더미 스태프 유저 30명 생성: staff002 ~ staff031
@@ -124,7 +127,8 @@ public class StaffInitializer implements CommandLineRunner {
                     .role(UserRole.STAFF)
                     .department(randomDept)
                     .position(selected)
-                    .status(UserStatus.ONLINE)
+                    .status(UserStatus.ACTIVE) // 계정 상태
+                    .presence(PresenceStatus.OFFLINE) // 접속 상태 초기화
                     .build());
         });
     }
