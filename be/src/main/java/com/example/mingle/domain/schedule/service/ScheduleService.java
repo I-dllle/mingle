@@ -55,6 +55,7 @@ public class ScheduleService {
         }
 
         Schedule schedule = scheduleMapper.toEntity(request, user, post);
+        schedule.setScheduleType(ScheduleType.PERSONAL);
         Schedule saved = scheduleRepository.save(schedule);
         return scheduleMapper.toResponse(saved);
     }
@@ -64,7 +65,7 @@ public class ScheduleService {
     public Page<ScheduleResponse> getSchedulesByStatus(
             Long userId,
             ScheduleStatus status,
-            ScheduleType type,        // personal/company/department
+            ScheduleType type,
             Pageable pageable
     ) {
         switch (type) {
@@ -80,7 +81,6 @@ public class ScheduleService {
                         .map(scheduleMapper::toResponse);
 
             case DEPARTMENT:
-                // principal 에서 꺼낸 deptId
                 User user = userRepository.findById(userId)
                         .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
                 Long deptId = user.getDepartment().getId();
