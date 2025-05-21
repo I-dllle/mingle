@@ -14,7 +14,9 @@ import java.util.List;
 
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     // 타입별 + 기간별 일정 조회
-    List<Schedule> findByUserIdAndScheduleTypeAndStartTimeBetween(
+    @Query("SELECT s FROM Schedule s JOIN FETCH s.user WHERE s.user.id = :userId " +
+            "AND s.scheduleType = :type AND s.startTime BETWEEN :start AND :end")
+    List<Schedule> findByUserIdAndScheduleTypeBetweenWithUser(
             Long userId, ScheduleType scheduleType, LocalDateTime startTime, LocalDateTime endTime);
 
     // 타입별 일정 조회 ( 회사 전체 일정 조회 때 사용)
