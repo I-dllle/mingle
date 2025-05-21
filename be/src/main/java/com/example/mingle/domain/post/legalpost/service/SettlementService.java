@@ -71,6 +71,7 @@ public class SettlementService {
                     .ratioType(ratio.getRatioType())
                     .percentage(ratio.getPercentage())
                     .amount(amount)
+                    .status(SettlementStatus.ACTIVE)
                     .build();
 
             settlementDetailRepository.save(detail);

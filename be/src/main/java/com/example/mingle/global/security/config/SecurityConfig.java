@@ -69,7 +69,9 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/v1/users/signup",
                                 "/api/v1/users/login",
-                                "/api/v1/users/refresh"
+                                "/api/v1/users/refresh",
+                                "/api/v1/legal/**",
+                                "/api/v1/finance/**"
                         ).permitAll() // 회원가입, 로그인, 토큰 재발급 : 허용✔️
                         .requestMatchers(HttpMethod.GET, "/api/**").permitAll() // GET 요청 : 모두 허용✔️
                         .requestMatchers("/api/**").authenticated() // 그 외 /api/** 요청 : 인증 필요⚠️
