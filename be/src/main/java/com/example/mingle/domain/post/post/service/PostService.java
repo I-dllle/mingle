@@ -104,14 +104,16 @@ public class PostService {
         }
 
         Post post = Post.builder()
+                .department(department)
+                .menu(menu)
+                .postType(postType)
+                .category(requestDto.getBusinessDocumentCategory())
+                .user(user)
                 .title(requestDto.getTitle())
                 .content(requestDto.getContent())
-                .category(requestDto.getBusinessDocumentCategory())
-                .menu(menu)
-                .user(user)
-                .department(department)
                 .imageUrl(uploadedUrls)
                 .isDeleted(false)
+                .noticeType(requestDto.getNoticeType())
                 .build();
         postRepository.save(post);
         return PostResponseDto.fromEntity(post);
