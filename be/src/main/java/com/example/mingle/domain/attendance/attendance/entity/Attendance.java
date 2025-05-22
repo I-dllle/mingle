@@ -26,6 +26,11 @@ import java.time.LocalDateTime;
         )
 )
 public class Attendance extends BaseEntity {
+
+    // 강사님의 추천으로 낙관적 락 추가
+    @Version
+    private Long version;
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

@@ -8,8 +8,8 @@ import com.example.mingle.domain.attendance.attendance.dto.response.AttendanceMo
 import com.example.mingle.domain.attendance.attendance.dto.response.AttendancePageResponseDto;
 import com.example.mingle.domain.attendance.attendance.dto.response.WorkHoursChartResponseDto;
 import com.example.mingle.domain.attendance.attendance.entity.Attendance;
-import com.example.mingle.domain.attendance.enums.AttendanceStatus;
 import com.example.mingle.domain.attendance.attendance.repository.AttendanceRepository;
+import com.example.mingle.domain.attendance.enums.AttendanceStatus;
 import com.example.mingle.domain.attendance.util.AttendanceMapper;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.domain.user.user.repository.UserRepository;
@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.example.mingle.global.constants.WorkTimeConstants.*;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -39,13 +41,6 @@ public class AttendanceService {
     private final AttendanceRepository attendanceRepository;
     private final UserRepository userRepository;
     private final AttendanceMapper attendanceMapper;
-
-    // 근태 관련 상수 정의
-    private static final int STANDARD_START_HOUR = 9;   // 출근 기준 - 오전 9시
-    private static final int STANDARD_START_MINUTE = 0; // 출근 기준 - 0분
-    private static final int STANDARD_END_HOUR = 18;    // 퇴근 기준 - 오후 6시
-    private static final int STANDARD_END_MINUTE = 0;   // 퇴근 기준 - 0분
-    private static final int OVERTIME_THRESHOLD_MINUTES = 10; // 야근 허용 유예 시간 (10분)
 
 
     // 출근 가능한 상태인지 확인 (오전 반차는 출근 불가, 오후 반차는 오전에 출근)
