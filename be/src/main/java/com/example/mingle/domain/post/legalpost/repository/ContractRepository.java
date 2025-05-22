@@ -1,6 +1,7 @@
 package com.example.mingle.domain.post.legalpost.repository;
 
 import com.example.mingle.domain.post.legalpost.entity.Contract;
+import com.example.mingle.domain.post.legalpost.entity.InternalContract;
 import com.example.mingle.domain.post.legalpost.enums.ContractCategory;
 import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -47,5 +48,8 @@ public interface ContractRepository extends JpaRepository<Contract, Long>, JpaSp
     List<Contract> findByCreatedAtAfterOrderByCreatedAtDesc(LocalDateTime time);
 
     List<Contract> findByParticipants_IdAndContractCategory(Long userId, ContractCategory category);
+
+    // 특정 시간이 지난 게시물을 가져오는 메서드
+    List<Contract> findAllByStatusAndUpdatedAtBefore(ContractStatus status, LocalDateTime time);
 
 }

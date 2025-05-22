@@ -73,4 +73,5 @@ public interface SettlementDetailRepository extends JpaRepository<SettlementDeta
     @Query("DELETE FROM SettlementDetail d WHERE d.settlement.id = :settlementId")
     void deleteBySettlementId(@Param("settlementId") Long settlementId);
 
+    List<SettlementDetail> findAllBySettlement(Settlement settlement);
 }

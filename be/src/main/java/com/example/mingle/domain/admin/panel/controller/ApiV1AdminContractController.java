@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,7 +31,7 @@ public class ApiV1AdminContractController {
     @Operation(summary = "계약서 목록 필터+페이징 조회")
     public ResponseEntity<Page<ContractResponse>> getFilteredContracts(
             ContractSearchCondition condition,
-            @PageableDefault(size = 10, sort = "createdAt", direction = org.springframework.data.domain.Sort.Direction.DESC) Pageable pageable
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         Page<ContractResponse> contracts = contractService.getContractsByFilter(condition, pageable);
         return ResponseEntity.ok(contracts);

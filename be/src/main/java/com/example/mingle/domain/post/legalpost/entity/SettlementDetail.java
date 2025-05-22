@@ -1,6 +1,7 @@
 package com.example.mingle.domain.post.legalpost.entity;
 
 import com.example.mingle.domain.post.legalpost.enums.RatioType;
+import com.example.mingle.domain.post.legalpost.enums.SettlementStatus;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
@@ -8,6 +9,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.Where;
 
 import java.math.BigDecimal;
 
@@ -36,4 +38,7 @@ public class SettlementDetail extends BaseEntity {
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal amount;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private SettlementStatus status = SettlementStatus.ACTIVE;
 }

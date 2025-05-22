@@ -80,7 +80,7 @@ public class DocusignAuthService {
             return response.get("access_token").toString();
 
         } catch (Exception e) {
-            e.printStackTrace(); // 로그 꼭 찍자
+            e.printStackTrace();
             throw new RuntimeException("DocuSign access token 발급 실패", e);
         }
     }
