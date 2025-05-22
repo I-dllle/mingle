@@ -1,7 +1,8 @@
 package com.example.mingle.domain.attendance.attendance.entity;
 
-import com.example.mingle.domain.attendance.enums.AttendanceStatus;
 import com.example.mingle.domain.attendance.attendanceRequest.entity.AttendanceRequest;
+import com.example.mingle.domain.attendance.enums.AttendanceStatus;
+import com.example.mingle.domain.attendance.enums.LeaveType;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
@@ -68,6 +69,10 @@ public class Attendance extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "attendance_request_id")
     private AttendanceRequest attendanceRequest;
+
+    // 요청 시 특별 휴가 일때, 이유를 받기 위한 필드
+    @Enumerated(EnumType.STRING)
+    private LeaveType leaveType; // 결혼휴가, 병가 등
 }
 
 
