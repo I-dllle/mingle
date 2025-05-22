@@ -133,7 +133,7 @@ public class ScheduleService {
             // 타입 무관하게 사용자의 모든 일정 조회
 
             // 사용자의 개인 일정 조회
-            List<Schedule> personalSchedules = scheduleRepository.findByUserIdAndScheduleTypeAndStartTimeBetween(
+            List<Schedule> personalSchedules = scheduleRepository.findByUserIdAndScheduleTypeBetweenWithUser(
                     userId, ScheduleType.PERSONAL, start, end);
 
             // 회사 전체 일정 조회
@@ -159,7 +159,7 @@ public class ScheduleService {
                     finalDepartmentId, type, start, end);
         } else {
             // 개인 일정 조회 (PERSONAL)
-            schedules = scheduleRepository.findByUserIdAndScheduleTypeAndStartTimeBetween(
+            schedules = scheduleRepository.findByUserIdAndScheduleTypeBetweenWithUser(
                     userId, type, start, end);
         }
 
@@ -200,7 +200,7 @@ public class ScheduleService {
             // 타입 무관하게 사용자의 모든 일정 조회
 
             // 사용자의 개인 일정 조회
-            List<Schedule> personalSchedules = scheduleRepository.findByUserIdAndScheduleTypeAndStartTimeBetween(
+            List<Schedule> personalSchedules = scheduleRepository.findByUserIdAndScheduleTypeBetweenWithUser(
                     userId, ScheduleType.PERSONAL, startDateTime, endDateTime);
 
             // 회사 전체 일정 조회
@@ -227,7 +227,7 @@ public class ScheduleService {
                     finalDepartmentId, type, startDateTime, endDateTime);
         } else {
             // 개인 일정 조회 (PERSONAL)
-            schedules = scheduleRepository.findByUserIdAndScheduleTypeAndStartTimeBetween(
+            schedules = scheduleRepository.findByUserIdAndScheduleTypeBetweenWithUser(
                     userId, type, startDateTime, endDateTime);
         }
 
@@ -260,7 +260,7 @@ public class ScheduleService {
             // 타입 무관하게 사용자의 모든 일정 조회
 
             // 사용자의 개인 일정 조회
-            List<Schedule> personalSchedules = scheduleRepository.findByUserIdAndScheduleTypeAndStartTimeBetween(
+            List<Schedule> personalSchedules = scheduleRepository.findByUserIdAndScheduleTypeBetweenWithUser(
                     userId, ScheduleType.PERSONAL, startDateTime, endDateTime);
 
             // 회사 전체 일정 조회
@@ -286,7 +286,7 @@ public class ScheduleService {
                     finalDepartmentId, type, startDateTime, endDateTime);
         } else {
             // 개인 일정 조회 (PERSONAL)
-            schedules = scheduleRepository.findByUserIdAndScheduleTypeAndStartTimeBetween(
+            schedules = scheduleRepository.findByUserIdAndScheduleTypeBetweenWithUser(
                     userId, type, startDateTime, endDateTime);
         }
 
