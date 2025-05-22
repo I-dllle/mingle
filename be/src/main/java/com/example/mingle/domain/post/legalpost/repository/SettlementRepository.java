@@ -1,6 +1,7 @@
 package com.example.mingle.domain.post.legalpost.repository;
 
 import com.example.mingle.domain.post.legalpost.entity.Settlement;
+import com.example.mingle.domain.post.legalpost.enums.SettlementStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -39,4 +40,30 @@ public interface SettlementRepository extends JpaRepository<Settlement, Long> {
                                                 @Param("end") LocalDate end);
 
     List<Settlement> findByCreatedAtAfterOrderByCreatedAtDesc(LocalDateTime time);
+
+    @Query("""
+    SELECT SUM(s.totalAmount)
+    FROM Settlement s
+    WHERE s.status != :excludedStatus
+""")
+    Optional<BigDecimal> getTotalRevenueExcludingStatus(@Param("excludedStatus") SettlementStatus excludedStatus);
+
+    @Query("""
+    SELECT SUM(s.totalAmount)
+    FROM Settlement s
+    WHERE s.incomeDate BETWEEN :start AND :end
+      AND s.status != :excludedStatus
+""")
+    Optional<BigDecimal> getTotalRevenueBetweenExcludingStatus(
+            @Param("start") LocalDate start,
+            @Param("end") LocalDate end,
+            @Param("excludedStatus") SettlementStatus excludedStatus
+    );
+
+    @Query("""
+    SELECT s FROM Settlement s
+    WHERE s.status != :excludedStatus
+""")
+    List<Settlement> findAllExcludingStatus(@Param("excludedStatus") SettlementStatus excludedStatus);
+
 }

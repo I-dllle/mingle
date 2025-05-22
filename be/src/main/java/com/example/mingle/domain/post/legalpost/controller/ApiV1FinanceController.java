@@ -8,11 +8,13 @@ import com.example.mingle.domain.post.legalpost.service.SettlementService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +52,7 @@ public class ApiV1FinanceController {
     }
 
     // 정산 수정
-    @PutMapping("/settlements/{settlementId}")
+    @PutMapping("/{settlementId}")
     @Operation(summary = "정산 수정")
     public ResponseEntity<?> updateSettlement(
             @PathVariable Long settlementId,
@@ -61,7 +63,7 @@ public class ApiV1FinanceController {
     }
 
     // 정산 삭제
-    @DeleteMapping("/settlements/{settlementId}")
+    @DeleteMapping("/{settlementId}")
     @Operation(summary = "정산 삭제")
     public ResponseEntity<?> deleteSettlement(@PathVariable Long settlementId) {
         settlementService.deleteSettlement(settlementId);
@@ -69,7 +71,7 @@ public class ApiV1FinanceController {
     }
 
     // 정산 상태 변경 (정산 확정 여부만 true/false)
-    @PutMapping("/settlements/{settlementId}/status")
+    @PutMapping("/{settlementId}/status")
     @Operation(summary = "정산 상태 변경")
     public ResponseEntity<?> updateSettlementStatus(
             @PathVariable Long settlementId,
@@ -88,10 +90,14 @@ public class ApiV1FinanceController {
 
     // 전체 수익
     @GetMapping("/total-revenue")
-    @Operation(summary = "전체 총 수익 조회")
-    public ResponseEntity<BigDecimal> getTotalRevenue() {
-        return ResponseEntity.ok(settlementService.getTotalRevenue());
+    @Operation(summary = "전체 또는 기간별 총 수익 조회")
+    public ResponseEntity<BigDecimal> getTotalRevenue(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+    ) {
+        return ResponseEntity.ok(settlementService.getTotalRevenue(startDate, endDate));
     }
+
 
     // 특정 유저 수익
     @GetMapping("/users/{userId}/total-revenue")

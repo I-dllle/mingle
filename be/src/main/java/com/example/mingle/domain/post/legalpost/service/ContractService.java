@@ -109,7 +109,7 @@ public class ContractService {
                 contract.getParticipants().add(user);
 
                 InternalContract internal = internalContractRepository
-                        .findValidByUserAndDate(user, LocalDate.now())
+                        .findValidByUserAndDate(user, LocalDate.now(), ContractStatus.TERMINATED)
                         .orElseThrow(() -> new IllegalStateException("내부 계약 없음"));
 
                 BigDecimal userRatio = internal.getDefaultRatio();
@@ -212,7 +212,7 @@ public class ContractService {
                 contract.getParticipants().add(user);
 
                 InternalContract internal = internalContractRepository
-                        .findValidByUserAndDate(user, LocalDate.now())
+                        .findValidByUserAndDate(user, LocalDate.now(), ContractStatus.TERMINATED)
                         .orElseThrow(() -> new IllegalStateException("내부 계약 없음"));
 
                 BigDecimal userRatio = internal.getDefaultRatio();
@@ -440,17 +440,28 @@ public class ContractService {
     }
 
     @Transactional
-    public void deleteContract(Long contractId) {
-        Contract contract = contractRepository.findById(contractId)
-                .orElseThrow(() -> new EntityNotFoundException("계약서를 찾을 수 없습니다."));
+    public void deleteContract(Long contractId, ContractCategory category) {
 
-        // Soft delete: 상태만 변경
-        contract.setStatus(ContractStatus.TERMINATED);
+        switch (category) {
+            case EXTERNAL -> {
+                Contract contract = contractRepository.findById(contractId)
+                        .orElseThrow(() -> new EntityNotFoundException("계약서를 찾을 수 없습니다."));
+                // Soft delete: 상태만 변경
+                contract.setStatus(ContractStatus.TERMINATED);
 
-        // 필요 시: 연결된 SettlementRatio도 soft delete 처리
-        List<SettlementRatio> ratios = ratioRepository.findByContract(contract);
-        for (SettlementRatio ratio : ratios) {
-            ratio.setStatus(SettlementStatus.DELETED);
+                // 필요 시: 연결된 SettlementRatio도 soft delete 처리
+                List<SettlementRatio> ratios = ratioRepository.findByContract(contract);
+                for (SettlementRatio ratio : ratios) {
+                    ratio.setStatus(SettlementStatus.DELETED);
+                }
+            }
+
+            case INTERNAL -> {
+                InternalContract internalcontract = internalContractRepository.findById(contractId)
+                        .orElseThrow(() -> new EntityNotFoundException("계약서를 찾을 수 없습니다."));
+                // 내부 계약은 삭제
+                internalcontract.setStatus(ContractStatus.TERMINATED);
+            }
         }
     }
 }

@@ -151,27 +151,35 @@ public class SettlementService {
     }
 
     public List<SettlementDto> getAllSettlements() {
-        return settlementRepository.findAll().stream()
+        return settlementRepository.findAllExcludingStatus(SettlementStatus.DELETED).stream()
                 .map(SettlementDto::from)
                 .toList();
     }
 
 
-    public BigDecimal getTotalRevenue() {
-        return settlementRepository.getTotalRevenue();
+    public BigDecimal getTotalRevenue(LocalDate startDate, LocalDate endDate) {
+        SettlementStatus excluded = SettlementStatus.DELETED;
+        if (startDate != null && endDate != null) {
+            return settlementRepository.getTotalRevenueBetweenExcludingStatus(startDate, endDate, excluded)
+                    .orElse(BigDecimal.ZERO);
+        } else {
+            return settlementRepository.getTotalRevenueExcludingStatus(excluded)
+                    .orElse(BigDecimal.ZERO);
+        }
     }
 
+
     public BigDecimal getTotalRevenueByUser(Long userId) {
-        return settlementDetailRepository.getTotalRevenueByUser(userId);
+        return settlementDetailRepository.getTotalRevenueByUser(userId, SettlementStatus.DELETED);
     }
 
     public BigDecimal getAgencyRevenue() {
-        BigDecimal result = settlementDetailRepository.calculateTotalByRatioType(RatioType.AGENCY);
+        BigDecimal result = settlementDetailRepository.calculateTotalByRatioType(RatioType.AGENCY, SettlementStatus.DELETED);
         return result != null ? result : BigDecimal.ZERO;
     }
 
     public Map<YearMonth, BigDecimal> getMonthlyRevenueSummary() {
-        List<Object[]> rows = settlementDetailRepository.findMonthlyRevenueSummary();
+        List<Object[]> rows = settlementDetailRepository.findMonthlyRevenueSummary(SettlementStatus.DELETED);
 
         Map<YearMonth, BigDecimal> result = new LinkedHashMap<>();
         for (Object[] row : rows) {
@@ -184,7 +192,7 @@ public class SettlementService {
     }
 
     public List<ArtistRevenueDto> getTopArtistsByRevenue(int limit) {
-        List<Object[]> rows = settlementDetailRepository.findTopArtistRevenue();
+        List<Object[]> rows = settlementDetailRepository.findTopArtistRevenue(SettlementStatus.DELETED);
 
         return rows.stream()
                 .limit(limit)
@@ -210,7 +218,7 @@ public class SettlementService {
 
 
     public BigDecimal getRevenueByContract(Long contractId) {
-        BigDecimal result = settlementDetailRepository.getTotalRevenueByContract(contractId);
+        BigDecimal result = settlementDetailRepository.getTotalRevenueByContract(contractId, SettlementStatus.DELETED);
         return result != null ? result : BigDecimal.ZERO;
     }
 
