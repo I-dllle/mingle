@@ -59,4 +59,27 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
             @Param("status") AttendanceStatus status,
             Pageable pageable
     );
+
+    @Query("""
+    SELECT a FROM Attendance a
+    WHERE a.date BETWEEN :start AND :end
+      AND (:departmentId IS NULL OR a.user.department.id = :departmentId)
+      AND (:userId IS NULL OR a.user.id = :userId)
+      AND (:status IS NULL OR a.attendanceStatus = :status)
+      AND (:keyword IS NULL OR (
+            LOWER(a.user.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+            LOWER(a.user.loginId) LIKE LOWER(CONCAT('%', :keyword, '%'))
+      ))
+""")
+    List<Attendance> findAllWithFilters(
+            @Param("start") LocalDate start,
+            @Param("end") LocalDate end,
+            @Param("departmentId") Long departmentId,
+            @Param("userId") Long userId,
+            @Param("keyword") String keyword,
+            @Param("status") AttendanceStatus status
+    );
+
+
+
 }
