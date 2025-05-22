@@ -7,6 +7,7 @@ import com.example.mingle.domain.attendance.attendance.dto.response.AttendanceAd
 import com.example.mingle.domain.attendance.attendance.dto.response.AttendanceMonthStatsDto;
 import com.example.mingle.domain.attendance.attendance.dto.response.AttendancePageResponseDto;
 import com.example.mingle.domain.attendance.attendance.dto.response.WorkHoursChartResponseDto;
+import com.example.mingle.domain.attendance.attendance.service.AttendanceExcelService;
 import com.example.mingle.domain.attendance.attendance.service.AttendanceService;
 import com.example.mingle.domain.attendance.enums.AttendanceStatus;
 import com.example.mingle.domain.user.user.entity.User;
@@ -24,10 +25,15 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
@@ -41,6 +47,7 @@ public class ApiV1AttendanceController {
     private final AttendanceService attendanceService;
     private final Rq rq;
     private final UserRepository userRepository;
+    private final AttendanceExcelService attendanceExcelService;
 
     @Operation(summary = "출근 처리", description = "사용자의 출근을 기록합니다.")
     @PostMapping("/check-in")
@@ -181,5 +188,36 @@ public class ApiV1AttendanceController {
         }
         AttendanceDetailDto updated = attendanceService.updateAttendanceByAdmin(attendanceId, dto);
         return ResponseEntity.ok(updated);
+    }
+
+
+    // 관리자용 엑셀 다운도르
+    @GetMapping("/admin/exel-download")
+    public ResponseEntity<byte[]> downloadExcel(
+            @RequestParam LocalDate startDate,
+            @RequestParam LocalDate endDate,
+            @RequestParam(required = false) Long departmentId,
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) AttendanceStatus status
+    ) throws IOException {
+
+        if (!UserRole.ADMIN.equals(rq.getActor().getRole())) {
+            throw new ApiException(ErrorCode.ACCESS_DENIED);
+        }
+
+        byte[] excel = attendanceExcelService.downloadAttendanceExcel(
+                startDate, endDate, departmentId, userId, keyword, status
+        );
+
+        HttpHeaders headers = new HttpHeaders();
+        String filename = "근태기록_" + startDate + "~" + endDate + ".xlsx";
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + URLEncoder.encode(filename, StandardCharsets.UTF_8));
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(excel);
     }
 }
