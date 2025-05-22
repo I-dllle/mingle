@@ -9,5 +9,9 @@ public enum UserRole {
     ARTIST,
     MANAGER,
     STAFF,
-    ADMIN
+    ADMIN;
+
+    public boolean isAdmin() {
+        return this == ADMIN;
+    }
 }
