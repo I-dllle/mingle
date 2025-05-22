@@ -72,6 +72,7 @@ public class Attendance extends BaseEntity {
 
     // 요청 시 특별 휴가 일때, 이유를 받기 위한 필드
     @Enumerated(EnumType.STRING)
+    @Column(name = "leave_type")
     private LeaveType leaveType; // 결혼휴가, 병가 등
 }
 
