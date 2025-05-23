@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -83,16 +84,13 @@ public class PostService {
             }
         }
 
-
-        String[] uploadedUrls = null;
+        List<String> uploadedUrls = new ArrayList<>();
         if (postImage != null && postImage.length > 0) {
-            uploadedUrls = new String[postImage.length];
-            for (int i = 0; i < postImage.length; i++) {
-                MultipartFile image = postImage[i];
+            for (MultipartFile image : postImage) {
                 if (image != null && !image.isEmpty()) {
-                    uploadedUrls[i] = awsS3Uploader.upload(image, "post_images");
+                    uploadedUrls.add(awsS3Uploader.upload(image, "post_images"));
                 } else {
-                    uploadedUrls[i] = null; // 이미지가 없으면 null로 처리
+                    uploadedUrls.add(null); // 이미지가 없으면 null로 처리
                 }
             }
         }
@@ -233,15 +231,13 @@ public class PostService {
             }
         }
 
-        String[] uploadedUrls = null;
+        List<String> uploadedUrls = new ArrayList<>();
         if (postImage != null && postImage.length > 0) {
-            uploadedUrls = new String[postImage.length];
-            for (int i = 0; i < postImage.length; i++) {
-                MultipartFile image = postImage[i];
+            for (MultipartFile image : postImage) {
                 if (image != null && !image.isEmpty()) {
-                    uploadedUrls[i] = awsS3Uploader.upload(image, "post_images");
+                    uploadedUrls.add(awsS3Uploader.upload(image, "post_images"));
                 } else {
-                    uploadedUrls[i] = null; // 이미지가 없으면 null로 처리
+                    uploadedUrls.add(null); // 이미지가 없으면 null로 처리
                 }
             }
         } else {
