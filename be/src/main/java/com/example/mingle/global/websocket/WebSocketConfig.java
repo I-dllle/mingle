@@ -20,7 +20,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
         // /ws/chat 경로로 WebSocket 연결 허용
         registry.addHandler(chatWebSocketHandler, "/ws/chat/{roomId}")
                 .addInterceptors(jwtHandshakeInterceptor)
-                .setAllowedOrigins("*")
-                .withSockJS();
+                .setAllowedOrigins("*");
+//                .withSockJS(); //테스트를 위해서 잠시 주석처리 함
     }
 }
