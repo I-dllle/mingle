@@ -7,7 +7,8 @@ import com.example.mingle.domain.chat.common.enums.ChatScope;
 import com.example.mingle.domain.chat.group.service.GroupChatRoomService;
 import com.example.mingle.domain.chat.group.service.GroupChatMessageService;
 import com.example.mingle.global.security.auth.SecurityUser;
-
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,6 +20,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/group-chats")
+@Tag(name = "Group Chat API", description = "부서 및 프로젝트 그룹 채팅 기능")
 public class ApiV1GroupChatController {
 
     private final GroupChatRoomService groupChatRoomService;
@@ -28,6 +30,18 @@ public class ApiV1GroupChatController {
      * POST
      * 채팅방 생성 (Team Chat / Project Chat 공통)
      */
+    @Operation(
+            summary = "그룹 채팅방 생성",
+            description = """
+  * 채팅방 생성 시 주의사항:
+
+  • `scope: DEPARTMENT` ➝ 관리자만 생성 가능 (`UserRole.ADMIN`)
+  • `scope: PROJECT` ➝ 해당 프로젝트 리더만 생성 가능 (`ProjectLeaderAuth` 등록 필요)
+  • 프로젝트 종료일은 `scope: PROJECT`일 때만 필요
+
+  * 권한 없을 경우 403 Forbidden 반환됨
+  """
+    )
     @PostMapping
     public GroupChatRoomResponse createGroupChatRoom(
             @RequestBody GroupChatRoomCreateRequest request,
@@ -44,6 +58,7 @@ public class ApiV1GroupChatController {
      * - Team Chat: scope = DEPARTMENT
      * - Project Chat 기본: scope = PROJECT
      */
+    @Operation(summary = "내 그룹 채팅방 목록 조회")
     @GetMapping
     public List<GroupChatRoomResponse> getMyGroupChatRooms(
             @RequestParam ChatScope scope,
@@ -58,6 +73,7 @@ public class ApiV1GroupChatController {
      * GET
      * 진행중인 프로젝트 채팅방만 조회 (Project Chat - 진행중 탭)
      */
+    @Operation(summary = "진행 중인 프로젝트 채팅방 조회")
     @GetMapping("/active")
     public List<GroupChatRoomResponse> getActiveProjectRooms(
             @AuthenticationPrincipal SecurityUser loginUser
@@ -71,6 +87,7 @@ public class ApiV1GroupChatController {
      * GET
      * 보관된 프로젝트 채팅방만 조회 (Project Chat - 보관 탭)
      */
+    @Operation(summary = "보관된 프로젝트 채팅방 조회")
     @GetMapping("/archived")
     public List<GroupChatRoomResponse> getArchivedProjectRooms(
             @AuthenticationPrincipal SecurityUser loginUser
@@ -84,6 +101,7 @@ public class ApiV1GroupChatController {
      * GET
      * 채팅방 이름 검색 (Team/Project 공통 상단 검색창)
      */
+    @Operation(summary = "그룹 채팅방 이름 검색")
     @GetMapping("/search")
     public List<GroupChatRoomResponse> searchRooms(
             @RequestParam String keyword
@@ -97,6 +115,7 @@ public class ApiV1GroupChatController {
      * 그룹 채팅 메시지 페이징 조회 API
      * 채팅방 입장 시 최초 메시지 조회 / 스크롤 위로 이동 시 이전 메시지 더 불러오기 용
      */
+    @Operation(summary = "그룹 채팅 메시지 페이징 조회")
     @GetMapping("/{roomId}/messages")
     public List<GroupChatMessageResponse> getMessages(
             @PathVariable Long roomId,

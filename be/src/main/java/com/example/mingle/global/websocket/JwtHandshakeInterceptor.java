@@ -27,26 +27,39 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
                                    WebSocketHandler wsHandler,
                                    Map<String, Object> attributes) {
 
-        if (request instanceof ServletServerHttpRequest servletRequest) {
-            HttpServletRequest httpRequest = servletRequest.getServletRequest();
-            String token = httpRequest.getParameter("token");
+        try {
+            if (request instanceof ServletServerHttpRequest servletRequest) {
+                HttpServletRequest httpRequest = servletRequest.getServletRequest();
 
-            if (token != null && jwtUtil.isValid(token)) {
-                Map<String, Object> payload = jwtUtil.getPayload(token);
-                if (payload == null) return false;
+                // 1. WebSocket 요청이 도착했는지 확인하는 로그
+                log.info("WebSocket 연결 시도 감지됨");
 
-                Long userId = ((Number) payload.get("userId")).longValue();
-                String email = (String) payload.get("email");
+                String token = httpRequest.getParameter("token");
 
-                attributes.put("auth", new WebSocketAuthDto(userId, email));
-                log.info("WebSocket 인증 성공 - userId={}, email={}", userId, email);
-                return true;
+                // 2. 전달받은 토큰이 뭔지 확인하는 로그
+                log.info("전달된 token: {}", token);
+
+                if (token != null && jwtUtil.isValid(token)) {
+                    Map<String, Object> payload = jwtUtil.getPayload(token);
+                    if (payload == null) return false;
+
+                    Long userId = ((Number) payload.get("userId")).longValue();
+                    String email = (String) payload.get("email");
+
+                    attributes.put("auth", new WebSocketAuthDto(userId, email));
+                    log.info("WebSocket 인증 성공 - userId={}, email={}", userId, email);
+                    return true;
+                }
+
+                log.warn("WebSocket 인증 실패 - 토큰 없음 or 검증 실패");
             }
 
-            log.warn("WebSocket 인증 실패 - 토큰 없음 or 검증 실패");
+            return false;
+        } catch (Exception e) {
+            // 서버 콘솔에서 보이게 예외 출력
+            log.error("WebSocket 핸드셰이크 중 JWT 인증 중 예외 발생", e);
+            return false;
         }
-
-        return false;
     }
 
     @Override
