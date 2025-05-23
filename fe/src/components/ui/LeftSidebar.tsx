@@ -9,6 +9,7 @@ import {
   FiFileText,
 } from "react-icons/fi";
 import styles from "./LeftSidebar.module.css";
+import { useRouter, usePathname } from "next/navigation";
 
 interface LeftSideBarProps {
   department?: string;
@@ -18,38 +19,158 @@ interface LeftSideBarProps {
 // 부서별 메뉴 설정
 const departmentMenus = {
   "marketing&PR": [
-    { id: "contract", name: "계약서 관리", icon: "/file.svg", isActive: true },
-    { id: "settlement", name: "정산 내역 관리", icon: "document" },
-    { id: "property", name: "지적 재산권 관리", icon: "chart" },
-    { id: "regulation", name: "내부 규정", icon: "book" },
-    { id: "legal", name: "법률 자문", icon: "shield" },
-    { id: "meeting", name: "회의실 예약", icon: "calendar" },
+    {
+      id: "contract",
+      name: "계약서 관리",
+      icon: "document",
+      isActive: true,
+      path: "/finance-legal/contracts",
+    },
+    {
+      id: "settlement",
+      name: "정산 내역 관리",
+      icon: "document",
+      path: "/finance-legal/revenue",
+    },
+    {
+      id: "property",
+      name: "지적 재산권 관리",
+      icon: "chart",
+      path: "/finance-legal/property",
+    },
+    {
+      id: "regulation",
+      name: "내부 규정",
+      icon: "book",
+      path: "/main/board/department",
+    },
+    {
+      id: "legal",
+      name: "법률 자문",
+      icon: "shield",
+      path: "/finance-legal/legal",
+    },
+    {
+      id: "meeting",
+      name: "회의실 예약",
+      icon: "calendar",
+      path: "/main/reservation",
+    },
   ],
   development: [
-    { id: "project", name: "프로젝트 관리", icon: "/file.svg", isActive: true },
-    { id: "code", name: "코드 리뷰", icon: "document" },
-    { id: "deploy", name: "배포 관리", icon: "chart" },
-    { id: "bug", name: "버그 트래킹", icon: "bug" },
-    { id: "document", name: "기술 문서", icon: "book" },
+    {
+      id: "project",
+      name: "프로젝트 관리",
+      icon: "document",
+      isActive: true,
+      path: "/main/board/department",
+    },
+    {
+      id: "code",
+      name: "코드 리뷰",
+      icon: "document",
+      path: "/main/board/department",
+    },
+    {
+      id: "deploy",
+      name: "배포 관리",
+      icon: "chart",
+      path: "/main/board/department",
+    },
+    {
+      id: "bug",
+      name: "버그 트래킹",
+      icon: "bug",
+      path: "/main/board/department",
+    },
+    {
+      id: "document",
+      name: "기술 문서",
+      icon: "book",
+      path: "/main/board/department",
+    },
   ],
   design: [
-    { id: "asset", name: "에셋 관리", icon: "/file.svg", isActive: true },
-    { id: "color", name: "컬러 시스템", icon: "palette" },
-    { id: "typography", name: "타이포그래피", icon: "text" },
-    { id: "brand", name: "브랜드 가이드", icon: "book" },
-    { id: "prototype", name: "프로토타입", icon: "pen" },
+    {
+      id: "asset",
+      name: "에셋 관리",
+      icon: "document",
+      isActive: true,
+      path: "/main/board/department",
+    },
+    {
+      id: "color",
+      name: "컬러 시스템",
+      icon: "palette",
+      path: "/main/board/department",
+    },
+    {
+      id: "typography",
+      name: "타이포그래피",
+      icon: "text",
+      path: "/main/board/department",
+    },
+    {
+      id: "brand",
+      name: "브랜드 가이드",
+      icon: "book",
+      path: "/main/board/department",
+    },
+    {
+      id: "prototype",
+      name: "프로토타입",
+      icon: "pen",
+      path: "/main/board/department",
+    },
   ],
   hr: [
-    { id: "employee", name: "직원 관리", icon: "/file.svg", isActive: true },
-    { id: "recruitment", name: "채용 관리", icon: "document" },
-    { id: "attendance", name: "근태 관리", icon: "clock" },
-    { id: "evaluation", name: "평가 관리", icon: "chart" },
-    { id: "education", name: "교육 관리", icon: "book" },
+    {
+      id: "employee",
+      name: "직원 관리",
+      icon: "document",
+      isActive: true,
+      path: "/users",
+    },
+    {
+      id: "recruitment",
+      name: "채용 관리",
+      icon: "document",
+      path: "/main/board/department",
+    },
+    {
+      id: "attendance",
+      name: "근태 관리",
+      icon: "clock",
+      path: "/main/attendance/calendar",
+    },
+    {
+      id: "evaluation",
+      name: "평가 관리",
+      icon: "chart",
+      path: "/main/board/department",
+    },
+    {
+      id: "education",
+      name: "교육 관리",
+      icon: "book",
+      path: "/main/board/department",
+    },
   ],
   default: [
-    { id: "dashboard", name: "대시보드", icon: "/file.svg", isActive: true },
-    { id: "profile", name: "프로필", icon: "user" },
-    { id: "setting", name: "설정", icon: "setting" },
+    {
+      id: "dashboard",
+      name: "대시보드",
+      icon: "document",
+      isActive: true,
+      path: "/dashboard",
+    },
+    { id: "profile", name: "프로필", icon: "user", path: "/panel/contracts" },
+    {
+      id: "setting",
+      name: "설정",
+      icon: "setting",
+      path: "/panel/users",
+    },
   ],
 };
 
@@ -295,6 +416,8 @@ export default function LeftSideBar({
   const [userDepartment, setUserDepartment] = useState(department);
   const [activeMenus, setActiveMenus] = useState<any[]>([]);
   const [selectedMenuName, setSelectedMenuName] = useState<string>("");
+  const router = useRouter();
+  const pathname = usePathname();
 
   // 사용자 정보 가져오기(실제로는 API 호출 등을 통해 가져와야 함)
   useEffect(() => {
@@ -313,24 +436,68 @@ export default function LeftSideBar({
 
     setUserDepartment(pathDepartment);
   }, []);
-
-  // 부서에 따라 메뉴 설정
+  // 부서에 따라 메뉴 설정 및 현재 URL에 맞는 메뉴 활성화
   useEffect(() => {
     const menus =
       departmentMenus[userDepartment as keyof typeof departmentMenus] ||
       departmentMenus.default;
-    setActiveMenus(menus);
 
-    // 첫 번째 활성화된 메뉴 찾기
-    const activeMenu = menus.find((menu) => menu.isActive);
+    // 현재 URL과 일치하는 메뉴 찾기
+    const currentPath = window.location.pathname;
+    const updatedMenus = menus.map((menu) => ({
+      ...menu,
+      isActive: menu.path === currentPath,
+    }));
+
+    // 일치하는 메뉴가 없으면 첫 번째 메뉴를 활성화
+    if (!updatedMenus.some((menu) => menu.isActive)) {
+      if (updatedMenus.length > 0) {
+        updatedMenus[0].isActive = true;
+      }
+    }
+
+    setActiveMenus(updatedMenus);
+
+    // 활성화된 메뉴 찾기
+    const activeMenu = updatedMenus.find((menu) => menu.isActive);
     if (activeMenu) {
       setSelectedMenuName(activeMenu.name);
       if (onMenuChange) {
         onMenuChange(activeMenu.name);
       }
     }
-  }, [userDepartment, onMenuChange]);
+  }, [userDepartment, onMenuChange]); // 라우터 변경 감지 및 현재 경로에 맞는 메뉴 활성화
+  useEffect(() => {
+    // 현재 부서에 해당하는 메뉴 가져오기
+    const menus =
+      departmentMenus[userDepartment as keyof typeof departmentMenus] ||
+      departmentMenus.default;
 
+    // 현재 URL과 일치하는 메뉴 찾기
+    const updatedMenus = menus.map((menu) => ({
+      ...menu,
+      isActive: menu.path === pathname,
+    }));
+
+    // 일치하는 메뉴가 없으면 첫번째 메뉴 활성화
+    if (
+      !updatedMenus.some((menu) => menu.isActive) &&
+      updatedMenus.length > 0
+    ) {
+      updatedMenus[0].isActive = true;
+    }
+
+    setActiveMenus(updatedMenus);
+
+    // 활성화된 메뉴 찾기
+    const activeMenu = updatedMenus.find((menu) => menu.isActive);
+    if (activeMenu) {
+      setSelectedMenuName(activeMenu.name);
+      if (onMenuChange) {
+        onMenuChange(activeMenu.name);
+      }
+    }
+  }, [pathname, userDepartment, onMenuChange]);
   // 메뉴 선택 핸들러
   const handleMenuClick = (menuItem: any) => {
     // 현재 활성화된 메뉴 비활성화
@@ -346,30 +513,90 @@ export default function LeftSideBar({
     if (onMenuChange) {
       onMenuChange(menuItem.name);
     }
+
+    // 해당 메뉴의 경로로 이동
+    if (menuItem.path) {
+      // 이미 현재 경로와 같다면 라우터를 새로고침하여 강제 리렌더링
+      if (menuItem.path === pathname) {
+        router.refresh();
+      } else {
+        router.push(menuItem.path);
+      }
+    }
   };
 
   return (
     <>
+      {" "}
       {/* 가장 왼쪽 아이콘 전용 사이드바 */}
       <div className={styles.iconSidebar}>
         {/* 아이콘 메뉴 */}
-        <a href="#" title="홈" className={styles.iconMenuItem}>
-          <FiHome className="w-5 h-5" />
-        </a>
-        <a href="#" title="달력" className={styles.iconMenuItem}>
+        <a href="#" title="일정" className={styles.iconMenuItem}>
           <FiCalendar className="w-5 h-5" />
         </a>
-        <a href="#" title="시간" className={styles.iconMenuItem}>
-          <FiClock className="w-5 h-5" />
-        </a>
-        <a href="#" title="알림" className={styles.iconMenuItem}>
+        <a href="#" title="공지사항" className={styles.iconMenuItem}>
           <FiBell className="w-5 h-5" />
         </a>
-        <a href="#" title="문서" className={styles.iconMenuItem}>
+        <a href="#" title="근태" className={styles.iconMenuItem}>
+          <FiClock className="w-5 h-5" />
+        </a>
+        <a href="#" title="모집공고" className={styles.iconMenuItem}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="w-5 h-5"
+          >
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        </a>
+        <a href="#" title="상점" className={styles.iconMenuItem}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="w-5 h-5"
+          >
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+        </a>
+        <a href="#" title="업무자료" className={styles.iconMenuItem}>
           <FiFileText className="w-5 h-5" />
         </a>
+        <a href="#" title="회의실 예약" className={styles.iconMenuItem}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="w-5 h-5"
+          >
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+        </a>
       </div>
-
       {/* 기존 왼쪽 사이드바 메뉴 */}
       <div className={styles.mainSidebar}>
         {/* 로고 영역 */}
