@@ -7,11 +7,12 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 @Entity
 public class GroupChatRoom extends BaseEntity {
 

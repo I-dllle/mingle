@@ -63,7 +63,7 @@ public class ArchiveUploadServiceImpl implements ArchiveUploadService {
 
         // 추출된 태그가 존재하면 ArchiveTag로 변환 후 연결
         if (!tags.isEmpty()) {
-            List<ArchiveTag> tagEntities = tags.stream()
+            List<ArchiveTag> tagEntities = (List<ArchiveTag>) tags.stream()
                     .map(tagName -> ArchiveTag.builder()
                             .name(tagName)
                             .archiveItem(archiveItem)
