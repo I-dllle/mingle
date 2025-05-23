@@ -35,6 +35,7 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.security:spring-security-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	implementation("org.springframework.boot:spring-boot-starter-validation")
 
 	// 더미 데이터 생성을 위한 라이브러리
 	implementation("net.datafaker:datafaker:2.1.0")
@@ -62,6 +63,13 @@ dependencies {
 
 	//thymeleaf
 	implementation ("org.springframework.boot:spring-boot-starter-thymeleaf")
+
+	//엑셀 API
+	implementation("org.apache.poi:poi-ooxml:5.4.1") {
+		exclude(group = "org.apache.commons", module = "commons-compress")
+	}
+	implementation("org.apache.commons:commons-compress:1.26.0")
+
 }
 
 tasks.withType<Test> {
