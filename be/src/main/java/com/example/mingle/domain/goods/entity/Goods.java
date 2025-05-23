@@ -13,6 +13,7 @@ import java.util.List;
 @Getter
 @Setter
 @SuperBuilder
+@ToString(exclude = {"createdBy"})
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "goods")

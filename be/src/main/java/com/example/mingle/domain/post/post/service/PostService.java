@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,8 +47,6 @@ public class PostService {
     private final MenuRepository menuRepository;
     private final PostTypeRepository postTypeRepository;
 
-    //TODO : 글쓰기 권한 체크 (사용자 인증/인가 필요)
-
     //게시글 CREATE
     @Transactional
     public PostResponseDto createPost(Long postTypeId, Long userId, PostRequestDto requestDto, MultipartFile[] postImage)
@@ -63,19 +62,15 @@ public class PostService {
         // 이 글이 '공지사항'이라면 -> 작성 권한 체크
         if (menu.getName().equals("공지사항")) {
             if (requestDto.getNoticeType() == NoticeType.GENERAL_NOTICE && user.getRole() != UserRole.ADMIN) {
-                log.error("Access denied: User is not admin for general notice");
                 throw new ApiException(ErrorCode.ACCESS_DENIED);
             }
-
+            //부서별 공지사항은 해당 부서 사람만 작성가능
             if (requestDto.getNoticeType() == NoticeType.DEPARTMENT_NOTICE &&
                     !user.getDepartment().equals(postType.getDepartment())) {
-                log.error("Access denied: User department doesn't match postType department for department notice");
                 throw new ApiException(ErrorCode.ACCESS_DENIED);
             }
-
             if (requestDto.getNoticeType() == NoticeType.COMPANY_NEWS && user.getRole() != UserRole.ADMIN) {
                 throw new ApiException(ErrorCode.ACCESS_DENIED);
-
             }
         }
 
@@ -89,70 +84,93 @@ public class PostService {
             }
         }
 
-
-        String[] uploadedUrls = null;
+        List<String> uploadedUrls = new ArrayList<>();
         if (postImage != null && postImage.length > 0) {
-            uploadedUrls = new String[postImage.length];
-            for (int i = 0; i < postImage.length; i++) {
-                MultipartFile image = postImage[i];
+            for (MultipartFile image : postImage) {
                 if (image != null && !image.isEmpty()) {
-                    uploadedUrls[i] = awsS3Uploader.upload(image, "post_images");
+                    uploadedUrls.add(awsS3Uploader.upload(image, "post_images"));
                 } else {
-                    uploadedUrls[i] = null; // 이미지가 없으면 null로 처리
+                    uploadedUrls.add(null); // 이미지가 없으면 null로 처리
                 }
             }
         }
 
         Post post = Post.builder()
+                .department(department)
+                .menu(menu)
+                .postType(postType)
+                .category(requestDto.getBusinessDocumentCategory())
+                .user(user)
                 .title(requestDto.getTitle())
                 .content(requestDto.getContent())
-                .category(requestDto.getBusinessDocumentCategory())
-                .menu(menu)
-                .user(user)
-                .department(department)
                 .imageUrl(uploadedUrls)
                 .isDeleted(false)
+                .noticeType(requestDto.getNoticeType())
                 .build();
         postRepository.save(post);
         return PostResponseDto.fromEntity(post);
     }
 
     //게시글 READ
-    // 전체 공지사항 조회 (isGlobalNotice == true)
+    // 전체 공지사항 조회
     public List<PostResponseDto> getGlobalNotices(){
-        PostMenu menu = menuRepository.findByCode("BUSINESS_DOCUMENTS")
+        PostMenu menu = menuRepository.findByCode("NOTICE")
                 .orElseThrow(() -> new ApiException(ErrorCode.POST_MENU_NOT_FOUND));
 
-        return postRepository.findByMenuAndCategory(menu, BusinessDocumentCategory.RESOURCE).stream()
+        return postRepository.findByMenuAndNoticeType(menu, NoticeType.GENERAL_NOTICE).stream()
                 .filter(post -> !post.isDeleted())
-                .filter(post -> post.getDepartment() == null) // 부서 없으면 전체공지로 간주
                 .map(PostResponseDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
-    // 부서별 공지사항 조회 (postType.name == '공지사항' && isGlobalNotice == false)
+    // 부서별 공지사항 조회
     public List<PostResponseDto> getDepartmentNotices(Long departmentId){
-        return postRepository.findByDepartment_IdOrderByCreatedAtDesc(departmentId).stream()
+        PostMenu menu = menuRepository.findByCode("NOTICE")
+                .orElseThrow(() -> new ApiException(ErrorCode.POST_MENU_NOT_FOUND));
+
+        return postRepository.findByMenuAndNoticeType(menu, NoticeType.DEPARTMENT_NOTICE).stream()
                 .filter(post -> !post.isDeleted())
-                .filter(post -> post.getCategory() == BusinessDocumentCategory.RESOURCE) // 또는 MEETING_MINUTES 등 분기
+                .filter(post -> post.getDepartment().getId() == departmentId)
                 .map(PostResponseDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
-    // 공통 게시판 게시글 조회 (공통게시판 : 공지사항, 업무자료, )
-    public List<PostResponseDto> getCommonPosts(Long postMenuId, String category){
+    // 회사소식 조회
+    public List<PostResponseDto> getCompanyNews(){
+        PostMenu menu = menuRepository.findByCode("NOTICE")
+                .orElseThrow(() -> new ApiException(ErrorCode.POST_MENU_NOT_FOUND));
+
+        return postRepository.findByMenuAndNoticeType(menu, NoticeType.COMPANY_NEWS).stream()
+                .filter(post -> !post.isDeleted())
+                .map(PostResponseDto::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    public List<PostResponseDto> getNoticesByType(NoticeType noticeType, Long departmentId) {
+        if (noticeType == NoticeType.GENERAL_NOTICE) {
+            return getGlobalNotices();
+        }
+
+        if (noticeType == NoticeType.DEPARTMENT_NOTICE) {
+            if (departmentId == null) {
+                throw new ApiException(ErrorCode.DEPARTMENT_NOT_FOUND);
+            }
+            return getDepartmentNotices(departmentId);
+        }
+
+        if (noticeType == NoticeType.COMPANY_NEWS) {
+            return getCompanyNews();
+        }
+
+        throw new ApiException(ErrorCode.POST_NOT_FOUND);
+    }
+
+    // 업무자료 게시판 게시글 조회
+    public List<PostResponseDto> getBusinessDocuments(Long postMenuId, BusinessDocumentCategory category){
         PostMenu menu = menuRepository.findById(postMenuId)
                 .orElseThrow(() -> new ApiException(ErrorCode.POST_MENU_NOT_FOUND));
 
-        if (category != null) {
-            BusinessDocumentCategory categoryEnum = BusinessDocumentCategory.valueOf(category);
-            return postRepository.findByMenuAndCategory(menu, categoryEnum).stream()
-                    .filter(post -> !post.isDeleted())
-                    .map(PostResponseDto::fromEntity)
-                    .collect(Collectors.toList());
-        }
-
-        return postRepository.findByMenuAndIsDeletedFalse(menu).stream()
+        return postRepository.findByMenuAndCategory(menu, category).stream()
                 .map(PostResponseDto::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -164,6 +182,16 @@ public class PostService {
 
         return postRepository.findByMenuAndIsDeletedFalse(menu).stream()
                 .filter(post -> post.getDepartment().getId().equals(deptId))
+                .map(PostResponseDto::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    //오디션 공고 게시글 조회
+    public List<PostResponseDto> getAuditionPosts(Long postMenuId){
+        PostMenu menu = menuRepository.findById(postMenuId)
+                .orElseThrow(() -> new ApiException(ErrorCode.POST_MENU_NOT_FOUND));
+
+        return postRepository.findByMenu(menu).stream()
                 .map(PostResponseDto::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -203,15 +231,13 @@ public class PostService {
             }
         }
 
-        String[] uploadedUrls = null;
+        List<String> uploadedUrls = new ArrayList<>();
         if (postImage != null && postImage.length > 0) {
-            uploadedUrls = new String[postImage.length];
-            for (int i = 0; i < postImage.length; i++) {
-                MultipartFile image = postImage[i];
+            for (MultipartFile image : postImage) {
                 if (image != null && !image.isEmpty()) {
-                    uploadedUrls[i] = awsS3Uploader.upload(image, "post_images");
+                    uploadedUrls.add(awsS3Uploader.upload(image, "post_images"));
                 } else {
-                    uploadedUrls[i] = null; // 이미지가 없으면 null로 처리
+                    uploadedUrls.add(null); // 이미지가 없으면 null로 처리
                 }
             }
         } else {

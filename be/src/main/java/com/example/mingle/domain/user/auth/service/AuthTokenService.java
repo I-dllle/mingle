@@ -33,7 +33,7 @@ public class AuthTokenService {
         return JwtUtil.generateToken(
                 jwtSecret,
                 accessTokenExpirationSeconds,
-                Map.of("id", id, "email", email, "nickname", nickname, "role", role)
+                Map.of("userId", id, "email", email, "nickname", nickname, "role", role)
         );
     }
 
@@ -47,7 +47,7 @@ public class AuthTokenService {
         return JwtUtil.generateToken(
                 jwtSecret,
                 refreshTokenExpirationSeconds,
-                Map.of("id", id, "email", email)
+                Map.of("userId", id, "email", email)
         );
     }
 

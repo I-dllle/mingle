@@ -3,12 +3,13 @@ package com.example.mingle.domain.chat.archive.entity;
 import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class ArchiveTag extends BaseEntity {
     // 태그명 (ex: #아이디어)
     @Column(nullable = false)

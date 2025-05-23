@@ -4,12 +4,13 @@ import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class DmChatRoom extends BaseEntity {
 
     // DM 채팅방에 참여하는 두 유저의 ID

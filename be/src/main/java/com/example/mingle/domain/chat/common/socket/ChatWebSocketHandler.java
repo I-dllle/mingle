@@ -1,28 +1,32 @@
 package com.example.mingle.domain.chat.common.socket;
 
-import com.example.mingle.domain.chat.common.dto.ChatMessagePayload;
-import com.example.mingle.domain.chat.common.enums.ChatRoomType;
-import com.example.mingle.domain.chat.common.enums.MessageFormat; // 메시지 타입 enum
-import com.example.mingle.domain.chat.group.service.GroupChatMessageService;
-import com.example.mingle.domain.chat.dm.service.DmChatMessageService;
 import com.example.mingle.domain.chat.archive.entity.ArchiveItem;
-import com.example.mingle.domain.chat.archive.repository.ArchiveItemRepository; // 자료 조회
-import com.example.mingle.domain.chat.common.util.ChatUtil; // archiveId 추출용 유틸
+import com.example.mingle.domain.chat.archive.repository.ArchiveItemRepository;
+import com.example.mingle.domain.chat.common.dto.ChatMessagePayload;
+import com.example.mingle.domain.chat.common.dto.WebSocketAuthDto;
+import com.example.mingle.domain.chat.common.enums.ChatRoomType;
+import com.example.mingle.domain.chat.common.enums.MessageFormat;
+import com.example.mingle.domain.chat.common.util.ChatUtil;
+import com.example.mingle.domain.chat.dm.service.DmChatMessageService;
+import com.example.mingle.domain.chat.group.service.GroupChatMessageService;
+import com.example.mingle.domain.user.presence.service.PresenceService;
+import com.example.mingle.domain.user.user.entity.PresenceStatus;
+import com.example.mingle.domain.user.user.entity.User;
+import com.example.mingle.domain.user.user.repository.UserRepository;
 import com.example.mingle.global.exception.ApiException;
 import com.example.mingle.global.exception.ErrorCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.*;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.util.Set;
-
 
 @Slf4j
 @Component
@@ -43,6 +47,10 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     // 유효성 검사를 위한 Validator
     private final Validator validator;
 
+    // 활동 상태용
+    private final PresenceService presenceService;
+    private final UserRepository userRepository;
+
 
 
     /**
@@ -51,6 +59,33 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
         log.info("WebSocket 연결됨: sessionId = {}", session.getId());
+
+        // 활동 상태를 수동으로 변환한 유저 때문에 추가함.
+        WebSocketAuthDto auth = (WebSocketAuthDto) session.getAttributes().get("auth");
+        if (auth == null) {
+            log.warn("WebSocket 인증 정보 없음");
+            return;
+        }
+
+        Long userId = auth.getUserId();
+
+        // DB에서 저장된 수동 상태 불러오기
+        User user = userRepository.findById(userId).orElseThrow(() ->
+                new ApiException(ErrorCode.USER_NOT_FOUND)
+        );
+
+        PresenceStatus savedStatus = user.getPresence();
+
+        if (savedStatus == PresenceStatus.DO_NOT_DISTURB || savedStatus == PresenceStatus.AWAY) {
+            // 수동 상태 복원
+            presenceService.setManualStatus(userId, savedStatus);
+            log.info("🔒 수동 Presence 복원: userId={}, status={}", userId, savedStatus);
+        } else {
+            // 자동 상태로 진입
+            presenceService.setStatus(userId, PresenceStatus.ONLINE);
+            presenceService.startAwayTimer(userId);
+            log.info("🟢 Presence 시작: userId={}, status=ONLINE", userId);
+        }
 
         // TODO: 인증 처리 예정 (WebSocketAuthDto, SessionManager 연동)
 
@@ -74,6 +109,27 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) {
         log.info("메시지 수신: sessionId = {}, payload = {}", session.getId(), message.getPayload());
+
+        // 활동 상태를 하나의 웹소켓 사용을 위해서 코드 추가
+        String presencePayload = message.getPayload();
+        WebSocketAuthDto auth = (WebSocketAuthDto) session.getAttributes().get("auth");
+        if (auth == null) {
+            log.warn("WebSocket 인증 정보 없음");
+            return;
+        }
+        Long userId = auth.getUserId();
+
+        // ✅ 1. Presence 메시지 먼저 필터링
+        if ("ping".equals(presencePayload)) {
+            presenceService.handlePing(userId);
+            return;
+        }
+
+        if ("tab_hidden".equals(presencePayload)) {
+            presenceService.setStatus(userId, PresenceStatus.AWAY);
+            presenceService.cancelAwayTimer(userId);
+            return;
+        }
 
         try {
             // 1단계: JSON 문자열을 ChatMessagePayload 객체로 변환
@@ -120,6 +176,14 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
      */
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+        // 활동 상태를 위해서 코드 추가
+        WebSocketAuthDto auth = (WebSocketAuthDto) session.getAttributes().get("auth");
+        if (auth != null) {
+            presenceService.setStatus(auth.getUserId(), PresenceStatus.OFFLINE);
+            presenceService.cancelAwayTimer(auth.getUserId());
+            log.info("🔴 OFFLINE 처리: userId={}", auth.getUserId());
+        }
+
         log.info("WebSocket 연결 종료: sessionId = {}", session.getId());
         // TODO: 세션 정리 예정 (SessionManager)
     }
@@ -161,4 +225,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             log.error("format=ARCHIVE 메시지 처리 중 오류", e);
         }
     }
+
+
 }

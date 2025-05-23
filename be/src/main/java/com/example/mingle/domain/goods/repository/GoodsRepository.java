@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface GoodsRepository extends JpaRepository<Goods, Long> {
     // 상품명으로 검색
@@ -21,4 +22,7 @@ public interface GoodsRepository extends JpaRepository<Goods, Long> {
 
     @EntityGraph(attributePaths = {"imgUrl", "createdBy"})
     Page<Goods> findAll(Pageable pageable);
+
+    @EntityGraph(attributePaths = {"imgUrl", "createdBy"})
+    Optional<Goods> findById(Long id);
 }

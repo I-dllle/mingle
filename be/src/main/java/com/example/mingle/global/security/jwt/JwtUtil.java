@@ -17,7 +17,7 @@ import java.util.Map;
 public class JwtUtil {
 
     // WebSocket 등에서 secret 주입 받기 위해 추가된 필드
-    @Value("${jwt.secret}")
+    @Value("${custom.jwt.secretKey}")
     private String rawSecret;
 
     private SecretKey secretKey; // 내부 캐싱용
@@ -25,8 +25,7 @@ public class JwtUtil {
     // Bean 생성 이후 자동 초기화: 기존 static 방식엔 없던 부분
     @PostConstruct
     public void init() {
-        byte[] encodedKey = Base64.getEncoder().encode(rawSecret.getBytes());
-        this.secretKey = Keys.hmacShaKeyFor(encodedKey);
+        this.secretKey = Keys.hmacShaKeyFor(rawSecret.getBytes());
     }
 
     // [기존 static] 로그인 기능에서 사용하던 토큰 생성 방식은 그대로 유지

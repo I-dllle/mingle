@@ -2,13 +2,15 @@ package com.example.mingle.domain.chat.group.entity;
 
 import com.example.mingle.domain.chat.common.enums.MessageFormat;
 import com.example.mingle.global.jpa.BaseEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
-@Builder
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor // JPA
 @Getter
