@@ -1,87 +1,123 @@
 <!DOCTYPE html>
 <html lang="ko">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Presence 상태 테스트</title>
-  </head>
-  <body>
-    <h2>✅ Presence 상태 테스트</h2>
+<head>
+  <meta charset="UTF-8" />
+  <title>Presence 상태 테스트</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 2rem;
+    }
+    button {
+      margin: 0.25rem;
+    }
+    input {
+      width: 400px;
+    }
+    pre {
+      background: #f5f5f5;
+      padding: 1rem;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+<h2>✅ Presence 상태 테스트 페이지</h2>
 
-    <label>🆔 유저 ID: <input type="number" id="userId" value="1" /></label
-    ><br /><br />
-    <label>🔐 JWT 토큰: <input type="text" id="token" size="80" /></label
-    ><br /><br />
+<label>🆔 유저 ID:
+  <input type="number" id="userId" value="1" />
+</label>
+<br /><br />
 
-    <button onclick="connectWebSocket()">🔌 WebSocket 연결</button>
-    <button onclick="sendPing()">💓 ping 전송</button>
-    <button onclick="sendTabHidden()">🙈 tab_hidden 전송</button>
-    <hr />
+<label>🔐 JWT 토큰:
+  <input type="text" id="token" placeholder="여기에 Swagger에서 받은 JWT를 붙여넣기" />
+</label>
+<br /><br />
 
-    <button onclick="setManualStatus('ONLINE')">🟢 자동 상태 복귀</button>
-    <button onclick="setManualStatus('AWAY')">🟡 자리비움 설정</button>
-    <button onclick="setManualStatus('DO_NOT_DISTURB')">
-      🚫 방해금지 설정
-    </button>
-    <hr />
+<button onclick="connectWebSocket()">🔌 WebSocket 연결</button>
+<button onclick="sendPing()">💓 ping 전송</button>
+<button onclick="sendTabHidden()">🙈 tab_hidden 전송</button>
+<hr />
 
-    <button onclick="checkStatus()">🔍 상태 조회</button>
-    <pre id="result">[상태 출력 영역]</pre>
+<button onclick="setManualStatus('ONLINE')">🟢 수동 해제 (자동 복귀)</button>
+<button onclick="setManualStatus('AWAY')">🟡 자리비움 설정</button>
+<button onclick="setManualStatus('DO_NOT_DISTURB')">🚫 방해금지 설정</button>
+<hr />
 
-    <script>
-      let socket;
+<button onclick="checkStatus()">🔍 상태 조회</button>
+<pre id="result">[상태 출력 영역]</pre>
 
-      function connectWebSocket() {
-        const token = document.getElementById("token").value;
-        const roomId = "testroom"; // 테스트용 roomId
-        socket = new WebSocket(
-          `ws://localhost:8080/ws/chat/${roomId}?token=${token}`
-        );
+<script>
+  let socket;
 
-        socket.onopen = () => console.log("✅ WebSocket 연결됨");
-        socket.onmessage = (event) =>
-          console.log("📩 메시지 수신:", event.data);
-        socket.onclose = () => console.log("❌ WebSocket 종료");
-      }
+  function connectWebSocket() {
+    const token = document.getElementById("token").value;
+    const roomId = "testroom"; // 테스트용 roomId
+    const url = `ws://localhost:8080/ws/chat/${roomId}?token=${token}`;
 
-      function sendPing() {
-        socket.send("ping");
-        console.log("💓 ping 전송됨");
-      }
+    socket = new WebSocket(url);
 
-      function sendTabHidden() {
-        socket.send("tab_hidden");
-        console.log("🙈 tab_hidden 전송됨");
-      }
+    socket.onopen = () => {
+      console.log("✅ WebSocket 연결됨");
+      alert("✅ WebSocket 연결 성공!");
+    };
+    socket.onmessage = (event) => {
+      console.log("📩 메시지 수신:", event.data);
+    };
+    socket.onclose = () => console.log("❌ WebSocket 종료");
+    socket.onerror = (e) => console.error("🔥 WebSocket 오류 발생", e);
+  }
 
-      async function setManualStatus(status) {
-        const token = document.getElementById("token").value;
-        const res = await fetch("/api/v1/presence/manual-status", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ status }),
-        });
+  function sendPing() {
+    if (socket && socket.readyState === 1) {
+      socket.send("ping");
+      console.log("💓 ping 전송됨");
+    } else {
+      alert("⚠️ WebSocket이 연결되지 않았습니다.");
+    }
+  }
 
-        const resultEl = document.getElementById("result");
-        if (res.ok) {
-          resultEl.innerText = `✅ 수동 상태 "${status}" 설정 완료`;
-        } else {
-          resultEl.innerText = `❌ 상태 설정 실패 (${res.status})`;
-        }
-      }
+  function sendTabHidden() {
+    if (socket && socket.readyState === 1) {
+      socket.send("tab_hidden");
+      console.log("🙈 tab_hidden 전송됨");
+    } else {
+      alert("⚠️ WebSocket이 연결되지 않았습니다.");
+    }
+  }
 
-      async function checkStatus() {
-        const userId = document.getElementById("userId").value;
-        const res = await fetch("http://localhost:8080/api/v1/presence/1");
-        const data = await res.json();
-        document.getElementById("result").innerText = JSON.stringify(
-          data,
-          null,
-          2
-        );
-      }
-    </script>
-  </body>
+  async function setManualStatus(status) {
+    const token = document.getElementById("token").value;
+    const res = await fetch("http://localhost:8080/api/v1/presence/manual-status", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ status }),
+    });
+
+    const resultEl = document.getElementById("result");
+    if (res.ok) {
+      resultEl.innerText = `✅ 수동 상태 "${status}" 설정 완료`;
+    } else {
+      const errText = await res.text();
+      resultEl.innerText = `❌ 상태 설정 실패 (${res.status})\n${errText}`;
+    }
+  }
+
+  async function checkStatus() {
+    const userId = document.getElementById("userId").value;
+    const res = await fetch(`http://localhost:8080/api/v1/presence/${userId}`);
+    const resultEl = document.getElementById("result");
+
+    if (res.ok) {
+      const data = await res.json();
+      resultEl.innerText = JSON.stringify(data, null, 2);
+    } else {
+      resultEl.innerText = `❌ 상태 조회 실패 (${res.status})`;
+    }
+  }
+</script>
+</body>
 </html>

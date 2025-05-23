@@ -3,15 +3,11 @@ package com.example.mingle.domain.chat.archive.entity;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
-import lombok.experimental.SuperBuilder;
 
 @Entity
 @Getter
