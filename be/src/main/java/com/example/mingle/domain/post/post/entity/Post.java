@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Where;
+import java.util.*;
 
 @Getter
 @Setter
@@ -49,8 +50,10 @@ public class Post extends BaseEntity{
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
+    @ElementCollection
+    @CollectionTable(name = "post_images", joinColumns = @JoinColumn(name = "post_id"))
     @Column(name = "image_url")
-    private String[] imageUrl;
+    private List<String> imageUrl;
 
     @Column(name = "is_deleted")
     private boolean isDeleted;
@@ -61,7 +64,7 @@ public class Post extends BaseEntity{
     private NoticeType noticeType;
 
     //게시글 수정 메소드
-    public void update(String title, String content, BusinessDocumentCategory category, String[] imageUrl) {
+    public void update(String title, String content, BusinessDocumentCategory category, List<String> imageUrl) {
         this.title = title;
         this.content = content;
         this.category = category;
