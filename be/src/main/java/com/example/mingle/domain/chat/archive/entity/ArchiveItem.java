@@ -11,6 +11,7 @@ import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Getter
@@ -41,6 +42,7 @@ public class ArchiveItem extends BaseEntity {
 
     // @ElementCollection → 태그를 개별 엔티티 ArchiveTag로 분리
     // 이유: 태그 검색, 연동, 수정 등 확장성 고려
+    @Builder.Default
     @OneToMany(mappedBy = "archiveItem", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ArchiveTag> tags = new ArrayList<>();
 

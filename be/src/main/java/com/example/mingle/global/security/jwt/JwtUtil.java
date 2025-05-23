@@ -17,7 +17,7 @@ import java.util.Map;
 public class JwtUtil {
 
     // WebSocket 등에서 secret 주입 받기 위해 추가된 필드
-    @Value("${jwt.secret}")
+    @Value("${custom.jwt.secretKey}")
     private String rawSecret;
 
     private SecretKey secretKey; // 내부 캐싱용
