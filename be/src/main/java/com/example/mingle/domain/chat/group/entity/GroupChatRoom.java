@@ -5,6 +5,7 @@ import com.example.mingle.domain.chat.common.enums.RoomType;
 import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
 import lombok.experimental.SuperBuilder;

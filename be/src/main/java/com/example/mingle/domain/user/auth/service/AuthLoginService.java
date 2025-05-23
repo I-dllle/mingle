@@ -113,17 +113,17 @@ public class AuthLoginService {
 
         if (payload == null) return null;
 
-        long id = ((Number) payload.get("id")).longValue();
+        long userId = ((Number) payload.get("userId")).longValue();
         String email = (String) payload.get("email");
         String nickname = (String) payload.get("nickname");
         String roleString = (String) payload.get("role");
         UserRole role = UserRole.valueOf(roleString);
 
         // department 조회 (없을 경우 null 가능)
-        Department department = departmentRepository.findByUserId(id);
+        Department department = departmentRepository.findByUserId(userId);
 
         return User.builder()
-                .id(id)
+                .id(userId)
                 .email(email)
                 .nickname(nickname)
                 .role(role)
