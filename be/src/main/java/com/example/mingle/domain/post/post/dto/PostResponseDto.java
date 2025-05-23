@@ -6,6 +6,7 @@ import com.example.mingle.domain.post.post.entity.Post;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -28,7 +29,7 @@ public class PostResponseDto {
     private String writerName;
     private String title;
     private String content;
-    private String[] imageUrl;
+    private List<String> imageUrl;
 
     private boolean isDeleted;
 
