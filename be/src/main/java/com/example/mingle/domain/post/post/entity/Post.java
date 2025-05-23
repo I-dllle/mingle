@@ -55,6 +55,9 @@ public class Post extends BaseEntity{
     @Column(name = "is_deleted")
     private boolean isDeleted;
 
+    // 공지사항 분류 (전체공지/부서별 공지)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "noticeType")
     private NoticeType noticeType;
 
     //게시글 수정 메소드
