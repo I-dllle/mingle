@@ -55,8 +55,8 @@ public interface SettlementRepository extends JpaRepository<Settlement, Long> {
       AND s.status != :excludedStatus
 """)
     Optional<BigDecimal> getTotalRevenueBetweenExcludingStatus(
-            @Param("start") LocalDate start,
-            @Param("end") LocalDate end,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end,
             @Param("excludedStatus") SettlementStatus excludedStatus
     );
 

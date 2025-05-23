@@ -13,7 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.jpa.repository.Modifying;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface SettlementDetailRepository extends JpaRepository<SettlementDetail, Long> {
@@ -37,11 +40,10 @@ public interface SettlementDetailRepository extends JpaRepository<SettlementDeta
     WHERE sd.ratioType = :ratioType
       AND sd.status != :excludedStatus
 """)
-    BigDecimal calculateTotalByRatioType(
+    Optional<BigDecimal> calculateTotalByRatioType(
             @Param("ratioType") RatioType ratioType,
             @Param("excludedStatus") SettlementStatus excludedStatus
     );
-
     @Query("""
     SELECT 
         FUNCTION('DATE_FORMAT', sd.createdAt, '%Y-%m') AS month,
@@ -96,4 +98,19 @@ public interface SettlementDetailRepository extends JpaRepository<SettlementDeta
     void deleteBySettlementId(@Param("settlementId") Long settlementId);
 
     List<SettlementDetail> findAllBySettlement(Settlement settlement);
+
+
+    @Query("""
+    SELECT SUM(sd.amount)
+    FROM SettlementDetail sd
+    WHERE sd.ratioType = :ratioType
+      AND sd.status != :excludedStatus
+      AND sd.createdAt BETWEEN :startDate AND :endDate
+""")
+    Optional<BigDecimal> calculateTotalByRatioTypeAndDateRange(
+            @Param("ratioType") RatioType ratioType,
+            @Param("excludedStatus") SettlementStatus excludedStatus,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
 }

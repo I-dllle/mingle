@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
@@ -49,7 +50,7 @@ public class SettlementService {
         // 1. 수익 단위 Settlement 생성
         Settlement settlement = Settlement.builder()
                 .contract(contract)
-                .incomeDate(LocalDate.now())
+                .incomeDate(LocalDateTime.now())
                 .totalAmount(totalRevenue)
                 .memo("정산 생성: " + contract.getSummary())
                 .status(SettlementStatus.ACTIVE)
@@ -157,7 +158,7 @@ public class SettlementService {
     }
 
 
-    public BigDecimal getTotalRevenue(LocalDate startDate, LocalDate endDate) {
+    public BigDecimal getTotalRevenue(LocalDateTime startDate, LocalDateTime endDate) {
         SettlementStatus excluded = SettlementStatus.DELETED;
         if (startDate != null && endDate != null) {
             return settlementRepository.getTotalRevenueBetweenExcludingStatus(startDate, endDate, excluded)
@@ -173,9 +174,19 @@ public class SettlementService {
         return settlementDetailRepository.getTotalRevenueByUser(userId, SettlementStatus.DELETED);
     }
 
-    public BigDecimal getAgencyRevenue() {
-        BigDecimal result = settlementDetailRepository.calculateTotalByRatioType(RatioType.AGENCY, SettlementStatus.DELETED);
-        return result != null ? result : BigDecimal.ZERO;
+    public BigDecimal getAgencyRevenue(LocalDateTime startDate, LocalDateTime endDate) {
+        RatioType ratioType = RatioType.AGENCY;
+        SettlementStatus excludedStatus = SettlementStatus.DELETED;
+
+        if (startDate != null && endDate != null) {
+            return settlementDetailRepository.calculateTotalByRatioTypeAndDateRange(
+                    ratioType, excludedStatus, startDate, endDate
+            ).orElse(BigDecimal.ZERO);
+        } else {
+            return settlementDetailRepository.calculateTotalByRatioType(
+                    ratioType, excludedStatus
+            ).orElse(BigDecimal.ZERO);
+        }
     }
 
     public Map<YearMonth, BigDecimal> getMonthlyRevenueSummary() {

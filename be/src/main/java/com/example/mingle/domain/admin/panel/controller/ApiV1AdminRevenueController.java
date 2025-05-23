@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
@@ -31,8 +32,8 @@ public class ApiV1AdminRevenueController {
     @GetMapping("/total-revenue")
     @Operation(summary = "전체 또는 기간별 총 수익 조회")
     public ResponseEntity<BigDecimal> getTotalRevenue(
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime endDate
     ) {
         return ResponseEntity.ok(settlementService.getTotalRevenue(startDate, endDate));
     }
@@ -47,8 +48,11 @@ public class ApiV1AdminRevenueController {
 
     @GetMapping("/net-agency")
     @Operation(summary = "회사의 순수익 조회")
-    public ResponseEntity<BigDecimal> getAgencyNetRevenue() {
-        return ResponseEntity.ok(settlementService.getAgencyRevenue());
+    public ResponseEntity<BigDecimal> getAgencyNetRevenue(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime endDate
+    ) {
+        return ResponseEntity.ok(settlementService.getAgencyRevenue(startDate, endDate));
     }
 
     @GetMapping("/monthly-summary")
