@@ -5,13 +5,14 @@ import com.example.mingle.domain.chat.common.enums.RoomType;
 import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 @Entity
 public class GroupChatRoom extends BaseEntity {
 

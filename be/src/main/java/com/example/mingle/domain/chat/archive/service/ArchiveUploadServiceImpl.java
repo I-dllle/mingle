@@ -6,8 +6,8 @@ import com.example.mingle.domain.chat.archive.entity.ArchiveTag;
 import com.example.mingle.domain.chat.archive.repository.ArchiveItemRepository;
 import com.example.mingle.domain.chat.archive.repository.ArchiveTagRepository;
 import com.example.mingle.domain.chat.common.util.ChatUtil;
-import com.example.mingle.domain.user.user.repository.UserRepository;
 import com.example.mingle.domain.user.user.entity.User;
+import com.example.mingle.domain.user.user.repository.UserRepository;
 import com.example.mingle.global.aws.AwsS3Uploader;
 import com.example.mingle.global.exception.ApiException;
 import com.example.mingle.global.exception.ErrorCode;
@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -68,7 +69,7 @@ public class ArchiveUploadServiceImpl implements ArchiveUploadService {
                             .name(tagName)
                             .archiveItem(archiveItem)
                             .build())
-                    .toList();
+                    .collect(Collectors.toList());
             archiveItem.getTags().addAll(tagEntities);
         }
 

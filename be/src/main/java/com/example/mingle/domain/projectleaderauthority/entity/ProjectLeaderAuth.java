@@ -4,6 +4,7 @@ import com.example.mingle.global.jpa.BaseEntity;
 import com.example.mingle.domain.user.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class ProjectLeaderAuth extends BaseEntity {
 
     // 내부 식별용 (teamId)
