@@ -229,7 +229,7 @@ public class ApiV1LegalController {
     @Operation(summary = "계약서 전자 서명 요청 생성 (대리)")
     public ResponseEntity<String> signOnBehalf(
             @PathVariable Long id,
-            @RequestParam Long userId // 👈 당사자 ID 받기
+            @RequestParam Long userId
     ) throws IOException {
         User signer = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
