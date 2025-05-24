@@ -77,7 +77,7 @@ const iconMenus = [
         <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
       </svg>
     ),
-    path: "/board/department",
+    path: "/dashboard",
   },
   {
     id: "store",
@@ -99,13 +99,13 @@ const iconMenus = [
         <polyline points="9 22 9 12 15 12 15 22"></polyline>
       </svg>
     ),
-    path: "/main/goods",
+    path: "/dashboard",
   },
   {
     id: "workdata",
     title: "업무자료",
     icon: <FiFileText className="w-5 h-5" />,
-    path: "/main/board/department",
+    path: "/dashboard",
   },
   {
     id: "reservation",
@@ -127,7 +127,7 @@ const iconMenus = [
         <circle cx="12" cy="10" r="3"></circle>
       </svg>
     ),
-    path: "/main/reservation",
+    path: "/dashboard",
   },
 ];
 
