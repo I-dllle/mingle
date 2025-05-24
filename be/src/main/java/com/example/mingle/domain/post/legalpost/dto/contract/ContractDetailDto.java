@@ -14,19 +14,20 @@ public record ContractDetailDto(
         ContractStatus status,
         LocalDate startDate,
         LocalDate endDate,
-        String fileUrl
+        String fileUrl,
+        Long userId // InternalContract 전용 필드
 ) {
     public static ContractDetailDto from(Contract c) {
         return new ContractDetailDto(
                 c.getId(), c.getSummary(), c.getSignerName(), c.getSignerMemo(),
-                c.getStatus(), c.getStartDate(), c.getEndDate(), c.getFileUrl()
+                c.getStatus(), c.getStartDate(), c.getEndDate(), c.getFileUrl(),0L
         );
     }
 
     public static ContractDetailDto fromInternal(InternalContract c) {
         return new ContractDetailDto(
                 c.getId(), "요약", c.getSignerName(), c.getSignerMemo(),
-                c.getStatus(), c.getStartDate(), c.getEndDate(), c.getFileUrl()
+                c.getStatus(), c.getStartDate(), c.getEndDate(), c.getFileUrl(),c.getUser().getId()
         );
     }
 }

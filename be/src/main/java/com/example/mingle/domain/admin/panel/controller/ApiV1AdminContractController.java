@@ -21,7 +21,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/admin/contracts")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
+//@PreAuthorize("hasRole('ADMIN')")
 @Tag(name = "AdminContract", description = "관리자 전용 계약서 관리 API")
 public class ApiV1AdminContractController {
 

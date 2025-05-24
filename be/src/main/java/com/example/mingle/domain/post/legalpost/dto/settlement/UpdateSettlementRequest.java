@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter @Setter
 public class UpdateSettlementRequest {
@@ -13,5 +14,5 @@ public class UpdateSettlementRequest {
     private String memo;
     private Boolean isSettled;
     private String source;
-    private LocalDate IncomeDate;
+    private LocalDateTime IncomeDate;
 }
