@@ -294,7 +294,33 @@ public class ContractService {
 //        return signatureUrl;
 //    }
 
-    public String signContract(Long contractId, SecurityUser user) throws IOException {
+//    public String signContract(Long contractId, SecurityUser user) throws IOException {
+//        InternalContract contract = internalContractRepository.findById(contractId)
+//                .orElseThrow(() -> new IllegalArgumentException("계약 없음"));
+//        System.out.println("✔ 계약 조회 완료: " + contract.getTitle());
+//
+//        byte[] fileBytes = downloadFileFromUrl(contract.getFileUrl());
+//        System.out.println("✔ 파일 다운로드 완료");
+//
+//        String fileName = extractFileNameFromUrl(contract.getFileUrl());
+//        File tempFile = new File(System.getProperty("java.io.tmpdir"), fileName);
+//        try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+//            fos.write(fileBytes);
+//        }
+//        System.out.println("✔ 임시 파일 생성 완료: " + tempFile.getAbsolutePath());
+//
+//        String signatureUrl = docusignService.sendEnvelope(tempFile, user.getNickname(), user.getEmail());
+//        System.out.println("✔ DocuSign 서명 URL 발급 완료");
+//
+//        contract.setDocusignUrl(signatureUrl);
+//        contract.setSignerName(user.getNickname());
+//        contract.setStatus(ContractStatus.SIGNED);
+//        internalContractRepository.save(contract);
+//
+//        return signatureUrl;
+//    }
+
+    public String signContract(Long contractId, User signer) throws IOException {
         InternalContract contract = internalContractRepository.findById(contractId)
                 .orElseThrow(() -> new IllegalArgumentException("계약 없음"));
         System.out.println("✔ 계약 조회 완료: " + contract.getTitle());
@@ -309,11 +335,11 @@ public class ContractService {
         }
         System.out.println("✔ 임시 파일 생성 완료: " + tempFile.getAbsolutePath());
 
-        String signatureUrl = docusignService.sendEnvelope(tempFile, user.getNickname(), user.getEmail());
+        String signatureUrl = docusignService.sendEnvelope(tempFile, signer.getNickname(), signer.getEmail());
         System.out.println("✔ DocuSign 서명 URL 발급 완료");
 
         contract.setDocusignUrl(signatureUrl);
-        contract.setSignerName(user.getNickname());
+        contract.setSignerName(signer.getNickname());
         contract.setStatus(ContractStatus.SIGNED);
         internalContractRepository.save(contract);
 
@@ -368,7 +394,7 @@ public class ContractService {
     private boolean canTransition(ContractStatus current, ContractStatus next) {
         return switch (current) {
             case DRAFT -> next == ContractStatus.REVIEW;
-            case REVIEW -> next == ContractStatus.CONFIRMED || next == ContractStatus.SIGNED_OFFLINE;
+            case REVIEW -> next == ContractStatus.SIGNED || next == ContractStatus.SIGNED_OFFLINE;
             case SIGNED_OFFLINE, SIGNED -> next == ContractStatus.CONFIRMED;
             default -> false;
         };

@@ -9,6 +9,8 @@ import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
 import com.example.mingle.domain.post.legalpost.repository.ContractRepository;
 import com.example.mingle.domain.post.legalpost.repository.InternalContractRepository;
 import com.example.mingle.domain.post.legalpost.service.ContractService;
+import com.example.mingle.domain.user.user.entity.User;
+import com.example.mingle.domain.user.user.repository.UserRepository;
 import com.example.mingle.global.security.auth.SecurityUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,6 +40,7 @@ public class ApiV1LegalController {
     private final ContractService contractService;
     private final ContractRepository contractRepository;
     private final InternalContractRepository internalContractRepository;
+    private final UserRepository userRepository;
 
     // 계약서 생성
     @PostMapping(value = "/contracts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -66,18 +69,6 @@ public class ApiV1LegalController {
     public ResponseEntity<?> changeStatus(@PathVariable Long id, @RequestBody ChangeStatusRequest request, @RequestParam ContractCategory category) {
         contractService.changeStatus(id, request.getNextStatus(), category);
         return ResponseEntity.ok("상태 변경 완료");
-    }
-
-    // 계약서 서명 (전자)
-    @PostMapping("/{id}/sign")
-    @PreAuthorize("hasRole('STAFF') or hasRole('ARTIST')")
-    @Operation(summary = "계약서 전자 서명")
-    public ResponseEntity<String> sign(
-            @PathVariable Long id,
-            @AuthenticationPrincipal SecurityUser user
-    ) throws IOException{
-        String signatureUrl = contractService.signContract(id, user);
-        return ResponseEntity.ok(signatureUrl);
     }
 
     // 계약서 서명 (종이 방식 - 외부 계약자용)
@@ -221,4 +212,31 @@ public class ApiV1LegalController {
         return ResponseEntity.ok("게시글 삭제 완료");
 
     }
+
+    // 계약서 서명 (전자)
+//    @PostMapping("/{id}/sign")
+//    @PreAuthorize("hasRole('STAFF') or hasRole('ARTIST')")
+//    @Operation(summary = "계약서 전자 서명")
+//    public ResponseEntity<String> sign(
+//            @PathVariable Long id,
+//            @AuthenticationPrincipal SecurityUser user
+//    ) throws IOException{
+//        String signatureUrl = contractService.signContract(id, user);
+//        return ResponseEntity.ok(signatureUrl);
+//    }
+
+    @PostMapping("/{id}/sign")
+    @Operation(summary = "계약서 전자 서명 요청 생성 (대리)")
+    public ResponseEntity<String> signOnBehalf(
+            @PathVariable Long id,
+            @RequestParam Long userId // 👈 당사자 ID 받기
+    ) throws IOException {
+        User signer = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
+
+        String signatureUrl = contractService.signContract(id, signer);
+        // 이메일 전송도 이 시점에서 수행 가능
+        return ResponseEntity.ok(signatureUrl);
+    }
+
 }
