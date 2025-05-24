@@ -14,7 +14,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
-  const [currentMenuName, setCurrentMenuName] = useState("계약서 관리");
+  const [currentMenuName, setCurrentMenuName] = useState("");
 
   // 메뉴 변경 핸들러
   const handleMenuChange = (menuName: string) => {
@@ -28,7 +28,7 @@ export default function RootLayout({
         <div className="flex flex-1 min-h-0">
           {/* 왼쪽 사이드바 컴포넌트 */}
           <LeftSideBar
-            department="marketing&PR"
+            department=""
             onMenuChange={handleMenuChange}
           />
 

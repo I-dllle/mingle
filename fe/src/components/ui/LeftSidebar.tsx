@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useReducer, useEffect } from "react";
 import {
   FiHome,
   FiCalendar,
@@ -10,6 +10,7 @@ import {
 } from "react-icons/fi";
 import styles from "./LeftSidebar.module.css";
 import { useRouter, usePathname } from "next/navigation";
+import { sidebarReducer, initialSidebarState } from "./sidebarReducer";
 
 interface LeftSideBarProps {
   department?: string;
@@ -131,7 +132,7 @@ const iconMenus = [
 ];
 
 // 부서별 메뉴 설정
-const departmentMenus = {
+export const departmentMenus = {
   "marketing&PR": [
     {
       id: "contract",
@@ -189,7 +190,7 @@ const departmentMenus = {
       id: "deploy",
       name: "배포 관리",
       icon: "chart",
-      path: "/main/board/department",
+      path: "/panel/revenue",
     },
     {
       id: "bug",
@@ -527,191 +528,95 @@ export default function LeftSideBar({
   department = "default",
   onMenuChange,
 }: LeftSideBarProps) {
-  const [userDepartment, setUserDepartment] = useState(department);
-  const [activeMenus, setActiveMenus] = useState<any[]>([]);
-  const [selectedMenuName, setSelectedMenuName] = useState<string>("");
-  const [activeIconId, setActiveIconId] = useState<string>(""); // 초기에는 아이콘 메뉴 비활성화 상태로 시작
   const router = useRouter();
   const pathname = usePathname();
+  const [state, dispatch] = useReducer(sidebarReducer, {
+    ...initialSidebarState,
+    userDepartment: department,
+  });
+
   // 사용자 정보 가져오기(임시 데이터 사용)
   useEffect(() => {
     // 임시 사용자 데이터에서 부서 정보를 가져옴
-    setUserDepartment(tempUserData.department);
+    dispatch({
+      type: "INIT_USER_DEPARTMENT",
+      payload: tempUserData.department,
+    });
 
     // 개발 확인용 로그
     console.log("현재 사용자:", tempUserData);
-  }, []); // 부서에 따라 메뉴 설정 및 현재 URL에 맞는 메뉴 활성화
+  }, []);
+
+  // URL 경로 변경에 따른 메뉴 업데이트
   useEffect(() => {
-    // 아이콘 메뉴가 활성화되어 있으면 메뉴 활성화를 건너뜀
-    if (activeIconId) {
-      return;
-    }
+    dispatch({
+      type: "UPDATE_MENUS_BY_PATH",
+      payload: {
+        pathname,
+        userDepartment: state.userDepartment,
+      },
+    });
+  }, [pathname, state.userDepartment]);
 
-    const menus =
-      departmentMenus[userDepartment as keyof typeof departmentMenus] ||
-      departmentMenus.default;
-
-    // 클라이언트 사이드에서만 실행되는 코드
-    if (typeof window !== "undefined") {
-      // 현재 URL과 일치하는 메뉴 찾기
-      const currentPath = window.location.pathname;
-      const updatedMenus = menus.map((menu) => ({
-        ...menu,
-        isActive: menu.path === currentPath,
-      }));
-
-      // 일치하는 메뉴가 없으면 첫 번째 메뉴를 활성화
-      if (!updatedMenus.some((menu) => menu.isActive)) {
-        if (updatedMenus.length > 0) {
-          updatedMenus[0].isActive = true;
-        }
-      }
-
-      setActiveMenus(updatedMenus);
-
-      // 활성화된 메뉴 찾기
-      const activeMenu = updatedMenus.find((menu) => menu.isActive);
-      if (activeMenu) {
-        setSelectedMenuName(activeMenu.name);
-        if (onMenuChange) {
-          onMenuChange(activeMenu.name);
-        }
-      }
-    } else {
-      // SSR 환경에서는 첫 번째 메뉴 선택
-      const updatedMenus = menus.map((menu, index) => ({
-        ...menu,
-        isActive: index === 0,
-      }));
-
-      setActiveMenus(updatedMenus);
-
-      if (updatedMenus.length > 0 && onMenuChange) {
-        setSelectedMenuName(updatedMenus[0].name);
-        onMenuChange(updatedMenus[0].name);
-      }
-    }
-  }, [userDepartment, onMenuChange, activeIconId]); // 라우터 변경 감지 및 현재 경로에 맞는 메뉴 활성화
+  // 네비게이션 처리를 위한 useEffect
   useEffect(() => {
-    // 아이콘 메뉴가 활성화되어 있으면 메뉴 활성화를 건너뜀
-    if (activeIconId) {
-      return;
+    if (state.navigateTo) {
+      router.push(state.navigateTo);
+      // 라우팅 후 상태 초기화
+      dispatch({ type: "RESET_NAVIGATION" });
     }
+  }, [state.navigateTo, router]);
 
-    // 현재 부서에 해당하는 메뉴 가져오기
-    const menus =
-      departmentMenus[userDepartment as keyof typeof departmentMenus] ||
-      departmentMenus.default;
-
-    // 현재 URL과 일치하는 메뉴 찾기
-    const updatedMenus = menus.map((menu) => ({
-      ...menu,
-      isActive: menu.path === pathname,
-    }));
-
-    // 일치하는 메뉴가 없으면 첫번째 메뉴 활성화
-    if (
-      !updatedMenus.some((menu) => menu.isActive) &&
-      updatedMenus.length > 0
-    ) {
-      updatedMenus[0].isActive = true;
+  // 페이지 새로고침 처리를 위한 useEffect
+  useEffect(() => {
+    if (state.shouldRefresh) {
+      router.refresh();
+      // 새로고침 후 상태 초기화
+      dispatch({ type: "RESET_NAVIGATION" });
     }
+  }, [state.shouldRefresh, router]);
 
-    setActiveMenus(updatedMenus);
-
-    // 활성화된 메뉴 찾기
-    const activeMenu = updatedMenus.find((menu) => menu.isActive);
-    if (activeMenu) {
-      setSelectedMenuName(activeMenu.name);
-      if (onMenuChange) {
-        onMenuChange(activeMenu.name);
-      }
+  // 선택된 메뉴가 변경될 때 콜백 호출
+  useEffect(() => {
+    if (onMenuChange && state.selectedMenuName) {
+      onMenuChange(state.selectedMenuName);
     }
-  }, [pathname, userDepartment, onMenuChange, activeIconId]); // 메뉴 선택 핸들러
+  }, [state.selectedMenuName, onMenuChange]);
+  // 메뉴 선택 핸들러
   const handleMenuClick = (menuItem: any) => {
-    // 현재 활성화된 메뉴 비활성화
-    const updatedMenus = activeMenus.map((menu) => ({
-      ...menu,
-      isActive: menu.id === menuItem.id,
-    }));
+    dispatch({
+      type: "SELECT_MENU",
+      payload: {
+        menuItem,
+        pathname,
+      },
+    });
 
-    setActiveMenus(updatedMenus);
-    setSelectedMenuName(menuItem.name);
-
-    // 아이콘 메뉴 선택 상태 초기화
-    setActiveIconId("");
-
-    // 상위 컴포넌트에 선택된 메뉴 이름 전달
-    if (onMenuChange) {
-      onMenuChange(menuItem.name);
-    }
-
-    // 해당 메뉴의 경로로 이동
-    if (menuItem.path) {
-      // 이미 현재 경로와 같다면 라우터를 새로고침하여 강제 리렌더링
-      if (menuItem.path === pathname) {
-        router.refresh();
-      } else {
-        router.push(menuItem.path);
-      }
-    }
-  }; // 왼쪽 아이콘 메뉴 선택 핸들러
+    // onMenuChange는 selectedMenuName이 변경될 때 useEffect에서 호출됨
+  };
+  // 왼쪽 아이콘 메뉴 선택 핸들러
   const handleIconMenuClick = (iconId: string, title: string, path: string) => {
     // 이전에 선택된 아이콘과 같은 아이콘을 클릭한 경우, 선택을 취소
-    if (activeIconId === iconId) {
-      setActiveIconId("");
-      // 현재 URL에 해당하는 메뉴를 찾아 활성화
-      const menus =
-        departmentMenus[userDepartment as keyof typeof departmentMenus] ||
-        departmentMenus.default;
-      const updatedMenus = menus.map((menu) => ({
-        ...menu,
-        isActive: menu.path === pathname,
-      }));
-
-      // 일치하는 메뉴가 없으면 첫 번째 메뉴 활성화
-      if (
-        !updatedMenus.some((menu) => menu.isActive) &&
-        updatedMenus.length > 0
-      ) {
-        updatedMenus[0].isActive = true;
-      }
-
-      setActiveMenus(updatedMenus);
-
-      // 활성화된 메뉴 찾기
-      const activeMenu = updatedMenus.find((menu) => menu.isActive);
-      if (activeMenu) {
-        setSelectedMenuName(activeMenu.name);
-        if (onMenuChange) {
-          onMenuChange(activeMenu.name);
-        }
-      }
+    if (state.activeIconId === iconId) {
+      dispatch({
+        type: "DESELECT_ICON_MENU",
+        payload: {
+          pathname,
+          lastSelectedMenuId: state.lastSelectedMenuId,
+          userDepartment: state.userDepartment,
+        },
+      });
     } else {
       // 새로운 아이콘 선택
-      setActiveIconId(iconId);
-
-      // 모든 기존 메뉴의 활성화 상태 해제
-      const deactivatedMenus = activeMenus.map((menu) => ({
-        ...menu,
-        isActive: false,
-      }));
-      setActiveMenus(deactivatedMenus);
-
-      // 상위 컴포넌트에 선택된 아이콘 타이틀 전달
-      if (onMenuChange) {
-        onMenuChange(title);
-      }
-      setSelectedMenuName(title);
-
-      // 해당 경로로 이동
-      if (path) {
-        if (path === pathname) {
-          router.refresh();
-        } else {
-          router.push(path);
-        }
-      }
+      dispatch({
+        type: "SELECT_ICON_MENU",
+        payload: {
+          iconId,
+          title,
+          path,
+          pathname,
+        },
+      });
     }
   };
 
@@ -725,7 +630,7 @@ export default function LeftSideBar({
             key={item.id}
             onClick={() => handleIconMenuClick(item.id, item.title, item.path)}
             className={`${styles.iconMenuItem} ${
-              activeIconId === item.id ? styles.iconMenuItemActive : ""
+              state.activeIconId === item.id ? styles.iconMenuItemActive : ""
             }`}
             title={item.title}
           >
@@ -742,11 +647,11 @@ export default function LeftSideBar({
           <div className={styles.logoSubtitle}>
             "Teamwork. Talent. Together."
           </div>
-          <div className={styles.departmentTitle}>{userDepartment}</div>
+          <div className={styles.departmentTitle}>{state.userDepartment}</div>
         </div>
         {/* 주 메뉴 아이템 */}
         <ul className={styles.menuList}>
-          {activeMenus.map((menu) => (
+          {state.activeMenus.map((menu) => (
             <li
               key={menu.id}
               className={`${styles.menuItem} ${
@@ -754,7 +659,9 @@ export default function LeftSideBar({
               }`}
               onClick={() => handleMenuClick(menu)}
             >
-              {menu.icon.startsWith("/") ? (
+              {menu.icon &&
+              menu.icon.startsWith &&
+              menu.icon.startsWith("/") ? (
                 <img
                   src={menu.icon}
                   alt={menu.name}
