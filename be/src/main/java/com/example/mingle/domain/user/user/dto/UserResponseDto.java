@@ -18,6 +18,7 @@ public class UserResponseDto {
     private String imageUrl;
     private UserRole role;
     private UserStatus status;
+    private String departmentName;
 
     public static UserResponseDto fromEntity(User user) {
         return UserResponseDto.builder()
@@ -29,6 +30,9 @@ public class UserResponseDto {
                 .imageUrl(user.getImageUrl())
                 .role(user.getRole())
                 .status(user.getStatus())
+                .departmentName(
+                        user.getDepartment() != null ? user.getDepartment().getDepartmentName() : null
+                )
                 .build();
     }
 }
