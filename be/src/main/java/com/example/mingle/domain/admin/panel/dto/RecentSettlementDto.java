@@ -6,12 +6,13 @@ import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Builder
 public class RecentSettlementDto {
     private Long id;
-    private LocalDate incomeDate;
+    private LocalDateTime incomeDate;
     private BigDecimal totalAmount;
     private String memo;
 

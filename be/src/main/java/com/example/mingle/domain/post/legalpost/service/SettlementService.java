@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
@@ -49,7 +50,7 @@ public class SettlementService {
         // 1. 수익 단위 Settlement 생성
         Settlement settlement = Settlement.builder()
                 .contract(contract)
-                .incomeDate(LocalDate.now())
+                .incomeDate(LocalDateTime.now())
                 .totalAmount(totalRevenue)
                 .memo("정산 생성: " + contract.getSummary())
                 .status(SettlementStatus.ACTIVE)
@@ -151,27 +152,45 @@ public class SettlementService {
     }
 
     public List<SettlementDto> getAllSettlements() {
-        return settlementRepository.findAll().stream()
+        return settlementRepository.findAllExcludingStatus(SettlementStatus.DELETED).stream()
                 .map(SettlementDto::from)
                 .toList();
     }
 
 
-    public BigDecimal getTotalRevenue() {
-        return settlementRepository.getTotalRevenue();
+    public BigDecimal getTotalRevenue(LocalDateTime startDate, LocalDateTime endDate) {
+        SettlementStatus excluded = SettlementStatus.DELETED;
+        if (startDate != null && endDate != null) {
+            return settlementRepository.getTotalRevenueBetweenExcludingStatus(startDate, endDate, excluded)
+                    .orElse(BigDecimal.ZERO);
+        } else {
+            return settlementRepository.getTotalRevenueExcludingStatus(excluded)
+                    .orElse(BigDecimal.ZERO);
+        }
     }
+
 
     public BigDecimal getTotalRevenueByUser(Long userId) {
-        return settlementDetailRepository.getTotalRevenueByUser(userId);
+        return settlementDetailRepository.getTotalRevenueByUser(userId, SettlementStatus.DELETED);
     }
 
-    public BigDecimal getAgencyRevenue() {
-        BigDecimal result = settlementDetailRepository.calculateTotalByRatioType(RatioType.AGENCY);
-        return result != null ? result : BigDecimal.ZERO;
+    public BigDecimal getAgencyRevenue(LocalDateTime startDate, LocalDateTime endDate) {
+        RatioType ratioType = RatioType.AGENCY;
+        SettlementStatus excludedStatus = SettlementStatus.DELETED;
+
+        if (startDate != null && endDate != null) {
+            return settlementDetailRepository.calculateTotalByRatioTypeAndDateRange(
+                    ratioType, excludedStatus, startDate, endDate
+            ).orElse(BigDecimal.ZERO);
+        } else {
+            return settlementDetailRepository.calculateTotalByRatioType(
+                    ratioType, excludedStatus
+            ).orElse(BigDecimal.ZERO);
+        }
     }
 
     public Map<YearMonth, BigDecimal> getMonthlyRevenueSummary() {
-        List<Object[]> rows = settlementDetailRepository.findMonthlyRevenueSummary();
+        List<Object[]> rows = settlementDetailRepository.findMonthlyRevenueSummary(SettlementStatus.DELETED);
 
         Map<YearMonth, BigDecimal> result = new LinkedHashMap<>();
         for (Object[] row : rows) {
@@ -184,7 +203,7 @@ public class SettlementService {
     }
 
     public List<ArtistRevenueDto> getTopArtistsByRevenue(int limit) {
-        List<Object[]> rows = settlementDetailRepository.findTopArtistRevenue();
+        List<Object[]> rows = settlementDetailRepository.findTopArtistRevenue(SettlementStatus.DELETED);
 
         return rows.stream()
                 .limit(limit)
@@ -210,7 +229,7 @@ public class SettlementService {
 
 
     public BigDecimal getRevenueByContract(Long contractId) {
-        BigDecimal result = settlementDetailRepository.getTotalRevenueByContract(contractId);
+        BigDecimal result = settlementDetailRepository.getTotalRevenueByContract(contractId, SettlementStatus.DELETED);
         return result != null ? result : BigDecimal.ZERO;
     }
 

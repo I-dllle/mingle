@@ -11,6 +11,7 @@ import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "settlement")
@@ -25,7 +26,7 @@ public class Settlement extends BaseEntity {
     private Contract contract;
 
     @Column(nullable = false)
-    private LocalDate incomeDate; // 수익 입금일
+    private LocalDateTime incomeDate; // 수익 입금일
 
 
     @Column(nullable = false, precision = 15, scale = 2)

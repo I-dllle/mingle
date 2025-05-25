@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import React from 'react';
-import LeftSidebar from '@/components/ui/LeftSidebar';
-import DepartmentSidebar from '@/components/ui/DepartmentSidebar';
-import RightMessenger from '@/components/ui/RightMessenger';
-import { SidebarProvider } from '@/hooks/useSidebar';
+import React from "react";
+import LeftSidebar from "@/components/ui/LeftSidebar";
+import DepartmentSidebar from "@/components/ui/DepartmentSidebar";
+import RightMessenger from "@/components/ui/RightMessenger";
+import { SidebarProvider } from "@/hooks/useSidebar";
 
 export default function MainLayout({
   children,
@@ -15,9 +15,9 @@ export default function MainLayout({
     <SidebarProvider>
       <div
         style={{
-          display: 'flex',
-          minHeight: '100vh',
-          background: '#f5f6fa',
+          display: "flex",
+          minHeight: "100vh",
+          background: "#f5f6fa",
         }}
       >
         <LeftSidebar />
@@ -27,9 +27,9 @@ export default function MainLayout({
             flex: 1,
             marginLeft: 80,
             marginRight: 320,
-            minHeight: '100vh',
+            minHeight: "100vh",
             padding: 32,
-            position: 'relative',
+            position: "relative",
             zIndex: 1,
           }}
         >
