@@ -2,8 +2,10 @@ package com.example.mingle.domain.admin.panel.service;
 
 import com.example.mingle.domain.admin.panel.dto.AdminRequestUser;
 import com.example.mingle.domain.admin.panel.dto.AdminUpdateUser;
+import com.example.mingle.domain.admin.panel.dto.UserSearchDto;
 import com.example.mingle.domain.user.team.entity.Department;
 import com.example.mingle.domain.user.team.repository.DepartmentRepository;
+import com.example.mingle.domain.user.user.dto.UserSimpleDto;
 import com.example.mingle.domain.user.user.entity.*;
 import com.example.mingle.domain.user.user.repository.UserPositionRepository;
 import com.example.mingle.domain.user.user.repository.UserRepository;
@@ -13,6 +15,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -65,5 +69,12 @@ public class AdminUserService {
         User user = userRepository.findById(id).orElseThrow();
         user.setStatus(status);
         userRepository.save(user);
+    }
+
+    public List<UserSearchDto> searchByName(String name) {
+        List<User> users = userRepository.findByNameContainingIgnoreCase(name);
+        return users.stream()
+                .map(UserSearchDto::from)
+                .toList();
     }
 }

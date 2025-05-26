@@ -60,5 +60,9 @@ public interface ContractRepository extends JpaRepository<Contract, Long>, JpaSp
     List<Contract> findAllByStatusAndUpdatedAtBefore(ContractStatus status, LocalDateTime time);
 
     // 외부 계약서 페이징 + TERMINATED 제외
-    Page<Contract> findAllByStatusNot(ContractStatus status, Pageable pageable);
+    @Query("""
+    SELECT c FROM Contract c
+    WHERE c.status NOT IN :excludedStatuses
+""")
+    Page<Contract> findAllByStatusNotIn(@Param("excludedStatuses") List<ContractStatus> excludedStatuses, Pageable pageable);
 }
