@@ -143,7 +143,7 @@ public class PostMenuInitializer implements ApplicationRunner {
             //경영진/관리자
             initializeMenu("DASHBOARD", "대시보드", "대시보드 시각화 요약", "System Operations", creator);
 
-            //아티스트/매니터
+            //아티스트/매니저
             initializeMenu("ARTIST_REPORT", "활동보고서", "매니저/아티스트 - 활동보고서 게시판", "Artist & Manager", creator);
             initializeMenu("SNS_CONTENT", "SNS컨텐츠", "마케팅 - SNS 콘텐츠 게시판", "Artist & Manager", creator);
             initializeMenu("EVENTS", "이벤트", "마케팅 - 이벤트 게시판", "Artist & Manager", creator);
