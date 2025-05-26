@@ -1,6 +1,7 @@
 package com.example.mingle.domain.post.legalpost.controller;
 
 import com.example.mingle.domain.admin.panel.dto.ContractResponse;
+import com.example.mingle.domain.admin.panel.dto.ContractSearchCondition;
 import com.example.mingle.domain.post.legalpost.dto.contract.*;
 import com.example.mingle.domain.post.legalpost.entity.Contract;
 import com.example.mingle.domain.post.legalpost.entity.InternalContract;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -153,11 +155,13 @@ public class ApiV1LegalController {
 
         switch (category) {
             case EXTERNAL -> {
-                Page<Contract> contracts = contractRepository.findAllByStatusNot(ContractStatus.TERMINATED, pageable);
+                List<ContractStatus> excluded = List.of(ContractStatus.TERMINATED, ContractStatus.CONFIRMED);
+                Page<Contract> contracts = contractRepository.findAllByStatusNotIn(excluded, pageable);
                 result = contracts.map(ContractSimpleDto::from);
             }
             case INTERNAL -> {
-                Page<InternalContract> internals = internalContractRepository.findAllByStatusNot(ContractStatus.TERMINATED, pageable);
+                List<ContractStatus> excluded = List.of(ContractStatus.TERMINATED, ContractStatus.CONFIRMED);
+                Page<InternalContract> internals = internalContractRepository.findAllByStatusNotIn(excluded, pageable);
                 result = internals.map(ContractSimpleDto::fromInternal);
             }
             default -> throw new IllegalArgumentException("지원하지 않는 계약 카테고리입니다.");
@@ -239,4 +243,14 @@ public class ApiV1LegalController {
         return ResponseEntity.ok(signatureUrl);
     }
 
+    @GetMapping("/filtered")
+
+    @Operation(summary = "계약서 목록 필터+페이징 조회")
+    public ResponseEntity<Page<ContractResponse>> getFilteredContracts(
+            ContractSearchCondition condition,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Page<ContractResponse> contracts = contractService.getContractsByFilter(condition, pageable);
+        return ResponseEntity.ok(contracts);
+    }
 }

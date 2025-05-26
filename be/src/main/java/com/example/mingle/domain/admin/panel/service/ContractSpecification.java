@@ -2,6 +2,7 @@ package com.example.mingle.domain.admin.panel.service;
 
 import com.example.mingle.domain.admin.panel.dto.ContractSearchCondition;
 import com.example.mingle.domain.post.legalpost.entity.Contract;
+import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
 import org.springframework.data.jpa.domain.Specification;
 
 import jakarta.persistence.criteria.Predicate;
@@ -22,8 +23,13 @@ public class ContractSpecification {
                 predicates.add(cb.equal(root.get("team").get("id"), condition.getTeamId()));
             }
 
+            // status 필터 적용
             if (condition.getStatus() != null) {
+                // 사용자가 명시적으로 상태를 선택했을 경우
                 predicates.add(cb.equal(root.get("status"), condition.getStatus()));
+            } else {
+                // 선택하지 않은 경우에는 TERMINATED 제외
+                predicates.add(cb.notEqual(root.get("status"), ContractStatus.TERMINATED));
             }
 
             if (condition.getContractType() != null) {

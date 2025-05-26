@@ -333,6 +333,17 @@ export interface ContractSearchCondition {
   startDateTo?: string; // 시작일 범위 종료 (ISO 형식의 날짜 문자열) (선택적)
 }
 
+// 페이징된 응답을 위한 제네릭 인터페이스
+export interface PagedResponse<T = any> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  first: boolean;
+  last: boolean;
+}
+
 // 최근 계약 DTO - Java의 RecentContractDto 클래스와 동일한 구조
 export interface RecentContractDto {
   id: number; // 계약 ID
@@ -353,3 +364,10 @@ export const RecentContractDtoUtils = {
     };
   },
 };
+
+// 사용자 검색 DTO
+export interface UserSearchDto {
+  id: number;
+  name: string;
+  email: string;
+}

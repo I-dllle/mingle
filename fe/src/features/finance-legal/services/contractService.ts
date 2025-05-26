@@ -9,6 +9,8 @@ import {
   ContractSimpleDto,
   ContractDetailDto,
   ContractResponse,
+  ContractSearchCondition,
+  UserSearchDto,
 } from "../types/Contract";
 
 const API_BASE_URL = "http://localhost:8080/api/v1/legal";
@@ -320,6 +322,77 @@ export const deleteContract = async (
   }
 };
 
+// 계약서 필터링 조회 (GET 방식)
+export const getFilteredContracts = async (
+  condition: ContractSearchCondition,
+  page: number = 0,
+  size: number = 10,
+  sort: string = "createdAt",
+  direction: string = "desc"
+): Promise<{
+  content: ContractResponse[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  first: boolean;
+  last: boolean;
+}> => {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    size: size.toString(),
+    sort: `${sort},${direction}`,
+  });
+
+  // 검색 조건이 있는 경우만 파라미터에 추가
+  if (condition.teamId) params.append("teamId", condition.teamId.toString());
+  if (condition.status) params.append("status", condition.status);
+  if (condition.contractType)
+    params.append("contractType", condition.contractType);
+  if (condition.contractCategory)
+    params.append("contractCategory", condition.contractCategory);
+  if (condition.startDateFrom)
+    params.append("startDateFrom", condition.startDateFrom);
+  if (condition.startDateTo)
+    params.append("startDateTo", condition.startDateTo);
+
+  const response = await fetch(`${API_BASE_URL}/filtered?${params}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("계약서 필터링 조회에 실패했습니다.");
+  }
+
+  return await response.json();
+};
+
+// 사용자 이름으로 검색
+export const searchUsers = async (name: string): Promise<UserSearchDto[]> => {
+  const params = new URLSearchParams({
+    name: name,
+  });
+
+  const response = await fetch(
+    `http://localhost:8080/api/v1/admin/users/search?${params}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("사용자 검색에 실패했습니다.");
+  }
+
+  return await response.json();
+};
+
 // 계약서 서비스 객체
 export const contractService = {
   createContract,
@@ -335,4 +408,6 @@ export const contractService = {
   getExpiringContracts,
   updateContract,
   deleteContract,
+  getFilteredContracts,
+  searchUsers,
 };
