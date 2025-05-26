@@ -859,7 +859,7 @@ export default function ContractsPage({ searchParams }: ContractsPageProps) {
         {/* 계약서 목록 */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">계약서 목록</h2>{" "}
+            <h2 className="text-lg font-semibold">대기중인 계약서 목록</h2>{" "}
             <select
               value={category}
               onChange={(e) => {
