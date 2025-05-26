@@ -1,8 +1,10 @@
 package com.example.mingle.global.rq;
 
+import com.example.mingle.domain.user.auth.service.AuthLoginService;
+import com.example.mingle.domain.user.auth.service.AuthTokenService;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.domain.user.user.service.UserService;
-import com.example.mingle.global.security.SecurityUser;
+import com.example.mingle.global.security.auth.SecurityUser;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -28,7 +30,8 @@ import java.util.Optional;
 public class Rq {
     private final HttpServletRequest req;
     private final HttpServletResponse resp;
-    private final UserService userService;
+    private final AuthTokenService authTokenService;
+    private final AuthLoginService authLoginService;
 
     {
         log.info("📍 Rq 생성됨");
@@ -36,7 +39,7 @@ public class Rq {
 
     // accessToken → 사용자 추출
     public User getUserFromAccessToken(String accessToken) {
-        return userService.getUserFromAccessToken(accessToken);
+        return authLoginService.getUserFromAccessToken(accessToken);
     }
 
     // 로그인 상태 설정
@@ -47,6 +50,8 @@ public class Rq {
                     user.getEmail(),
                     "", // password는 사용하지 않음
                     user.getNickname(),
+                    user.getRole(),
+                    user.getDepartment().getId(),
                     user.getAuthorities()
             );
 
@@ -72,6 +77,7 @@ public class Rq {
                         .id(su.getId())
                         .email(su.getUsername())
                         .nickname(su.getNickname())
+                        .role(su.getRole())
                         .build())
                 .orElse(null);
     }
@@ -114,7 +120,7 @@ public class Rq {
 
     // 인증 쿠키 일괄 설정
     public String makeAuthCookies(User user) {
-        String accessToken = userService.genAccessToken(user);
+        String accessToken = authTokenService.genAccessToken(user);
 
         setCookie("accessToken", accessToken);
         setCookie("refreshToken", user.getRefreshToken());
@@ -134,14 +140,14 @@ public class Rq {
 
     // accessToken 재발급
     public void refreshAccessToken(User user) {
-        String newToken = userService.genAccessToken(user);
+        String newToken = authTokenService.genAccessToken(user);
         setHeader("Authorization", "Bearer " + newToken);
         setCookie("accessToken", newToken);
     }
 
     // refreshToken으로 accessToken 재발급
     public User refreshAccessTokenByRefreshToken(String refreshToken) {
-        return userService.findByRefreshToken(refreshToken)
+        return authLoginService.findByRefreshToken(refreshToken)
                 .map(user -> {
                     refreshAccessToken(user);
                     return user;

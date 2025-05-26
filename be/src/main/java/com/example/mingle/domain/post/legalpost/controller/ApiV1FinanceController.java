@@ -2,43 +2,50 @@ package com.example.mingle.domain.post.legalpost.controller;
 
 import com.example.mingle.domain.post.legalpost.dto.settlement.*;
 import com.example.mingle.domain.post.legalpost.entity.Settlement;
+import com.example.mingle.domain.post.legalpost.enums.RatioType;
 import com.example.mingle.domain.post.legalpost.repository.SettlementRepository;
 import com.example.mingle.domain.post.legalpost.service.SettlementService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/finance")
 @RequiredArgsConstructor
-//@PreAuthorize("hasRole('ADMIN')")
+//@PreAuthorize("@authService.isInDepartment(authentication, 3L)") // 부서 ID로 판단
 @Tag(name = "finance", description = "회계팀 API")
 public class ApiV1FinanceController {
 
     private final SettlementService settlementService;
     private final SettlementRepository settlementRepository;
 
-    // 관리자/회계팀이 수익 입력 시 호출
-    @PostMapping("/contracts/{id}/settlements")
+    // 정산 생성 (확정된 계약 기준, SettlementRatio 기준으로 Detail 생성)
+    @PostMapping("/contracts/{contractId}/settlements")
     @Operation(summary = "정산 생성(확정)")
     public ResponseEntity<?> createSettlement(
-            @PathVariable Long id,
+            @PathVariable Long contractId,
             @RequestBody SettlementRequest request
     ) {
-        settlementService.createSettlement(id, request.getTotalRevenue());
+        settlementService.createSettlement(contractId, request.getTotalRevenue());
         return ResponseEntity.ok("정산 생성 완료");
     }
 
-    // 특정 계약의 정산 리스트
-    @GetMapping("/{id}/settlements")
+    // 특정 계약의 정산 목록 조회
+    @GetMapping("/contracts/{contractId}/settlementList")
     @Operation(summary = "특정 계약의 정산 리스트")
-    public ResponseEntity<List<SettlementDto>> getSettlementsByContract(@PathVariable Long id) {
-        List<Settlement> settlements = settlementRepository.findByContractId(id);
+    public ResponseEntity<List<SettlementDto>> getSettlementsByContract(@PathVariable Long contractId) {
+        List<Settlement> settlements = settlementRepository.findByContractId(contractId);
         List<SettlementDto> result = settlements.stream()
                 .map(SettlementDto::from)
                 .toList();
@@ -46,7 +53,7 @@ public class ApiV1FinanceController {
     }
 
     // 정산 수정
-    @PutMapping("/settlements/{settlementId}")
+    @PutMapping("/{settlementId}")
     @Operation(summary = "정산 수정")
     public ResponseEntity<?> updateSettlement(
             @PathVariable Long settlementId,
@@ -57,15 +64,15 @@ public class ApiV1FinanceController {
     }
 
     // 정산 삭제
-    @DeleteMapping("/settlements/{settlementId}")
+    @DeleteMapping("/{settlementId}")
     @Operation(summary = "정산 삭제")
     public ResponseEntity<?> deleteSettlement(@PathVariable Long settlementId) {
         settlementService.deleteSettlement(settlementId);
         return ResponseEntity.ok("정산 삭제 완료");
     }
 
-    // 정산 상태 변경
-    @PutMapping("/settlements/{settlementId}/status")
+    // 정산 상태 변경 (정산 확정 여부만 true/false)
+    @PutMapping("/{settlementId}/status")
     @Operation(summary = "정산 상태 변경")
     public ResponseEntity<?> updateSettlementStatus(
             @PathVariable Long settlementId,
@@ -75,11 +82,72 @@ public class ApiV1FinanceController {
         return ResponseEntity.ok("정산 확정 상태 변경 완료");
     }
 
-    // 정산 통계
+    // 전체 정산 통계 요약 (합계 등)
     @GetMapping("/summary")
     @Operation(summary = "정산 통계")
     public ResponseEntity<SettlementSummaryDto> getSettlementSummary() {
         return ResponseEntity.ok(settlementService.getSummary());
     }
+
+    // 전체 수익
+    @GetMapping("/total-revenue")
+    @Operation(summary = "전체 또는 기간별 총 수익 조회")
+    public ResponseEntity<BigDecimal> getTotalRevenue(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime endDate
+    ) {
+        return ResponseEntity.ok(settlementService.getTotalRevenue(startDate, endDate));
+    }
+
+
+    // 특정 유저 수익
+    @GetMapping("/users/{userId}/total-revenue")
+    @Operation(summary = "특정 유저의 총 수익 조회")
+    public ResponseEntity<BigDecimal> getTotalRevenueByUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(settlementService.getTotalRevenueByUser(userId));
+    }
+
+    @GetMapping("/net-agency")
+    @Operation(summary = "회사의 순수익 조회")
+    public ResponseEntity<BigDecimal> getAgencyNetRevenue(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime endDate
+    ) {
+        return ResponseEntity.ok(settlementService.getAgencyRevenue(startDate, endDate));
+    }
+
+    @GetMapping("/monthly-summary")
+    @Operation(summary = "월별 수익 요약 통계")
+    public ResponseEntity<Map<YearMonth, BigDecimal>> getMonthlyRevenueSummary() {
+        return ResponseEntity.ok(settlementService.getMonthlyRevenueSummary());
+    }
+
+
+    @GetMapping("/top-artists")
+    @Operation(summary = "수익 상위 아티스트 리스트")
+    public ResponseEntity<List<ArtistRevenueDto>> getTopArtists(
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        return ResponseEntity.ok(settlementService.getTopArtistsByRevenue(limit));
+    }
+
+    @GetMapping("/ratio-summary")
+    @Operation(summary = "RatioType별 총 수익 분배 요약")
+    public ResponseEntity<Map<RatioType, BigDecimal>> getRevenueByRatioType() {
+        return ResponseEntity.ok(settlementService.getRevenueByRatioType());
+    }
+
+    @GetMapping("/contracts/{contractId}/revenue")
+    @Operation(summary = "특정 계약서 기준 수익 조회")
+    public ResponseEntity<BigDecimal> getRevenueByContract(@PathVariable Long contractId) {
+        return ResponseEntity.ok(settlementService.getRevenueByContract(contractId));
+    }
+
+    @GetMapping("/contracts/{contractId}/settlements")
+    @Operation(summary = "계약서 기준 정산 상세 내역 조회")
+    public ResponseEntity<List<SettlementDetailResponse>> getSettlementDetailsByContract(@PathVariable Long contractId) {
+        return ResponseEntity.ok(settlementService.getSettlementDetailsByContract(contractId));
+    }
+
 
 }

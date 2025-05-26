@@ -27,16 +27,16 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class DocusignAuthService {
 
-    @Value("${docusign.client-id}")
+    @Value("${external.docusign.client-id}")
     private String clientId;
 
-    @Value("${docusign.user-id}")
+    @Value("${external.docusign.user-id}")
     private String userId;
 
-    @Value("${docusign.private-key-path}")
+    @Value("${external.docusign.private-key-path}")
     private String privateKeyPath;
 
-    @Value("${docusign.auth-url}")
+    @Value("${external.docusign.auth-url}")
     private String authUrl;
 
     private final WebClient.Builder webClientBuilder;
@@ -80,7 +80,7 @@ public class DocusignAuthService {
             return response.get("access_token").toString();
 
         } catch (Exception e) {
-            e.printStackTrace(); // 로그 꼭 찍자
+            e.printStackTrace();
             throw new RuntimeException("DocuSign access token 발급 실패", e);
         }
     }

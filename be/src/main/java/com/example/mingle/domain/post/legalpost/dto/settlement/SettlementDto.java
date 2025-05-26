@@ -5,19 +5,19 @@ import com.example.mingle.domain.post.legalpost.enums.SettlementCategory;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public record SettlementDto(
         Long id,
         BigDecimal amount,
         Boolean isSettled,
-        LocalDate date,
-        String memo,
-        SettlementCategory category
+        LocalDateTime date,
+        String memo
 ) {
     public static SettlementDto from(Settlement s) {
         return new SettlementDto(
-                s.getId(), s.getAmount(), s.getIsSettled(),
-                s.getDate(), s.getMemo(), s.getCategory()
+                s.getId(), s.getTotalAmount(), s.getIsSettled(),
+                s.getIncomeDate(), s.getMemo()
         );
     }
 }

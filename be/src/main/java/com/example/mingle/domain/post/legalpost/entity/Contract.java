@@ -4,14 +4,16 @@ import com.example.mingle.domain.post.legalpost.enums.ContractCategory;
 import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
 import com.example.mingle.domain.post.legalpost.enums.ContractType;
 import com.example.mingle.domain.user.team.entity.ArtistTeam;
-import com.example.mingle.domain.user.team.entity.Department;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter@Setter
@@ -22,6 +24,9 @@ public class Contract extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @Column(precision = 15, scale = 2)
+    private BigDecimal contractAmount; // 계약 약정 금액 (선택사항)
 
     // 소속팀
     @ManyToOne(fetch = FetchType.LAZY)
@@ -61,11 +66,8 @@ public class Contract extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String signerMemo;
 
-    @Column(nullable = false)
-    private Boolean isSettlementCreated = false;
-
     @Column(length = 200)
-    private String title; // 계약서 제목 (ex. "홍길동 저작권 계약서")
+    private String title; // 계약서 제목
 
     @Column(length = 100)
     private String companyName; // 서명 발신자 or 회사명 (ex. Mingle엔터)
@@ -76,4 +78,11 @@ public class Contract extends BaseEntity {
     @Column(name = "docusign_url", columnDefinition = "TEXT")
     private String docusignUrl;
 
+    @ManyToMany
+    @JoinTable(
+            name = "contract_participant",
+            joinColumns = @JoinColumn(name = "contract_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> participants = new ArrayList<>();
 }

@@ -5,12 +5,12 @@ spring:
     ansi:
       enabled: ALWAYS
   profiles:
-    active: dev
+    active: prod
     include: secret
   datasource:
-    url: jdbc:mysql://localhost:3307/mingle_dev
-    username: su
-    password: sususu1234
+    url: jdbc:mysql://mingle-mysql:3306/mingle_dev
+    username: ll_local
+    password: mingleservice
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     open-in-view: false
@@ -61,4 +61,3 @@ admin:
     email: admin@admin.com
     password: Admin1234!
     nickname: ???
-
