@@ -30,7 +30,7 @@ interface UserData {
 const tempUserData: UserData = {
   id: "USER001",
   name: "김민준",
-  department: "Finance & Legal",
+  department: "Admin",
   role: "선임 개발자",
   email: "minjun.kim@example.com",
 };
@@ -217,13 +217,7 @@ export const departmentMenus = {
       id: "settlement",
       name: "정산 내역 관리",
       icon: "document",
-      path: "/panel/attendance",
-    },
-    {
-      id: "property",
-      name: "지적 재산권 관리",
-      icon: "chart",
-      path: "/panel/posts",
+      path: "/revenue",
     },
     {
       id: "regulation",
@@ -233,7 +227,7 @@ export const departmentMenus = {
     },
     {
       id: "legal",
-      name: "법률 자문",
+      name: "법적 분쟁 내역",
       icon: "shield",
       path: "/finance-legal/legal",
     },
@@ -368,6 +362,39 @@ export const departmentMenus = {
       name: "의사결정 관리",
       icon: "book",
       path: "/executive/decisions",
+    },
+  ],
+  Admin: [
+    {
+      id: "dashboard",
+      name: "대시보드",
+      icon: "document",
+      isActive: true,
+      path: "/dashboard",
+    },
+    {
+      id: "contractsAdmin",
+      name: "계약 현황",
+      icon: "chart",
+      path: "/panel/contracts",
+    },
+    {
+      id: "postsAdmin",
+      name: "게시판 관리",
+      icon: "document",
+      path: "/panel/posts",
+    },
+    {
+      id: "board_meeting",
+      name: "사용자 관리",
+      icon: "user",
+      path: "/panel/users",
+    },
+    {
+      id: "revenueAdmin",
+      name: "수익 관리",
+      icon: "book",
+      path: "/panel/revenue",
     },
   ],
   default: [
