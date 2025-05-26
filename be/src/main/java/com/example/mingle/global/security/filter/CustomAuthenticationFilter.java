@@ -60,7 +60,9 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 
     // 토큰이 있는지 먼저 검증
     @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
         log.info("요청 URI: {}", request.getRequestURI());
@@ -113,28 +115,15 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 
                 log.warn("로그인 인증 실패: 유효한 토큰이 아님");
 
-                // accessToken 쿠키 삭제
-                ResponseCookie expiredAccessToken = ResponseCookie.from("accessToken", "")
-                        .path("/")
-                        .httpOnly(true)
-                        .secure(false) // 개발 환경에서는 false, 배포는 true
-                        .maxAge(0)
-                        .build();
-                response.addHeader(HttpHeaders.SET_COOKIE, expiredAccessToken.toString());
-
-                // refreshToken도 함께 삭제
-                ResponseCookie expiredRefreshToken = ResponseCookie.from("refreshToken", "")
-                        .path("/")
-                        .httpOnly(true)
-                        .secure(false)
-                        .maxAge(0)
-                        .build();
-                response.addHeader(HttpHeaders.SET_COOKIE, expiredRefreshToken.toString());
+                // 쿠키 삭제 로직 일괄 관리 (secure, sameSite 자동 반영)
+                rq.deleteCookie("accessToken");
+                rq.deleteCookie("refreshToken");
             }
         } catch (Exception e) {
             log.error("CustomAuthenticationFilter 예외 발생", e);
         }
 
+        // 다음 필터로 넘김
         filterChain.doFilter(request, response);
     }
 }

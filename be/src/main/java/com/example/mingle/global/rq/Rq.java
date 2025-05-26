@@ -3,13 +3,13 @@ package com.example.mingle.global.rq;
 import com.example.mingle.domain.user.auth.service.AuthLoginService;
 import com.example.mingle.domain.user.auth.service.AuthTokenService;
 import com.example.mingle.domain.user.user.entity.User;
-import com.example.mingle.domain.user.user.service.UserService;
 import com.example.mingle.global.security.auth.SecurityUser;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -32,6 +32,13 @@ public class Rq {
     private final HttpServletResponse resp;
     private final AuthTokenService authTokenService;
     private final AuthLoginService authLoginService;
+
+    // application.yml의 값 주입
+    @Value("${custom.site.cookie.secure}")
+    private boolean cookieSecure;
+
+    @Value("${custom.site.cookie.sameSite}")
+    private String cookieSameSite;
 
     {
         log.info("Rq 생성됨");
@@ -109,8 +116,8 @@ public class Rq {
     public void setCookie(String name, String value) {
         ResponseCookie cookie = ResponseCookie.from(name, value)
                 .path("/")
-                .secure(true)
-                .sameSite("Strict")
+                .secure(cookieSecure)   // 환경별 설정값 적용
+                .sameSite(cookieSameSite)   // 환경별 설정값 적용
                 .httpOnly(true)
                 .build();
 
@@ -122,8 +129,8 @@ public class Rq {
         ResponseCookie cookie = ResponseCookie.from(name, null)
                 .path("/")
                 .maxAge(0)
-                .secure(true)
-                .sameSite("Strict")
+                .secure(cookieSecure)  // 환경별 설정값 적용
+                .sameSite(cookieSameSite)  // 환경별 설정값 적용
                 .httpOnly(true)
                 .build();
 
