@@ -2,12 +2,13 @@ server:
   port: 8080
 spring:
   datasource:
-    url: jdbc:mysql://15.164.227.173:3307/mingle_dev
+    url: jdbc:mysql://mysql-mingle:3307/mingle_dev
     username: lll
     password: ${custom.prod.db.password}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       auto-commit: false
+  data:
     redis:
       host: redis_1
       port: 6379
@@ -20,6 +21,16 @@ spring:
         format_sql: false
         highlight_sql: false
         use_sql_comments: false
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
 logging:
   level:
     com.back: INFO
@@ -27,6 +38,8 @@ logging:
     org.hibernate.orm.jdbc.bind: INFO
     org.hibernate.orm.jdbc.extract: INFO
     org.springframework.transaction.interceptor: INFO
+    io.lettuce.core: DEBUG
+    org.springframework.data.redis: DEBUG
 custom:
   site:
     cookieDomain: "${custom.prod.cookieDomain}"
