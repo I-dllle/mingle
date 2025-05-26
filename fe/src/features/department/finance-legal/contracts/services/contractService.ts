@@ -11,9 +11,9 @@ import {
   ContractResponse,
   ContractSearchCondition,
   UserSearchDto,
-} from "../types/Contract";
+} from '../types/Contract';
 
-const API_BASE_URL = "http://localhost:8080/api/v1/legal";
+const API_BASE_URL = 'http://localhost:8080/api/v1/legal';
 
 // 계약서 생성 (외부 계약)
 export const createContract = async (
@@ -22,18 +22,18 @@ export const createContract = async (
 ): Promise<number> => {
   const formData = new FormData();
   formData.append(
-    "request",
-    new Blob([JSON.stringify(request)], { type: "application/json" })
+    'request',
+    new Blob([JSON.stringify(request)], { type: 'application/json' })
   );
-  formData.append("file", file);
+  formData.append('file', file);
 
   const response = await fetch(`${API_BASE_URL}/contracts`, {
-    method: "POST",
+    method: 'POST',
     body: formData,
   });
 
   if (!response.ok) {
-    throw new Error("계약서 생성에 실패했습니다.");
+    throw new Error('계약서 생성에 실패했습니다.');
   }
 
   return await response.json();
@@ -46,18 +46,18 @@ export const createInternalContract = async (
 ): Promise<number> => {
   const formData = new FormData();
   formData.append(
-    "request",
-    new Blob([JSON.stringify(request)], { type: "application/json" })
+    'request',
+    new Blob([JSON.stringify(request)], { type: 'application/json' })
   );
-  formData.append("file", file);
+  formData.append('file', file);
 
   const response = await fetch(`${API_BASE_URL}/internal-contracts`, {
-    method: "POST",
+    method: 'POST',
     body: formData,
   });
 
   if (!response.ok) {
-    throw new Error("내부 계약 생성에 실패했습니다.");
+    throw new Error('내부 계약 생성에 실패했습니다.');
   }
 
   return await response.json();
@@ -72,16 +72,16 @@ export const changeContractStatus = async (
   const response = await fetch(
     `${API_BASE_URL}/${id}/status?category=${category}`,
     {
-      method: "PUT",
+      method: 'PUT',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(request),
     }
   );
 
   if (!response.ok) {
-    throw new Error("계약서 상태 변경에 실패했습니다.");
+    throw new Error('계약서 상태 변경에 실패했습니다.');
   }
 };
 
@@ -91,15 +91,15 @@ export const signOfflineAsAdmin = async (
   request: OfflineSignRequest
 ): Promise<void> => {
   const response = await fetch(`${API_BASE_URL}/${id}/sign-offline`, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify(request),
   });
 
   if (!response.ok) {
-    throw new Error("오프라인 서명 처리에 실패했습니다.");
+    throw new Error('오프라인 서명 처리에 실패했습니다.');
   }
 };
 
@@ -109,14 +109,14 @@ export const signOnBehalf = async (
   userId: number
 ): Promise<string> => {
   const response = await fetch(`${API_BASE_URL}/${id}/sign?userId=${userId}`, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
   });
 
   if (!response.ok) {
-    throw new Error("전자 서명 요청 생성에 실패했습니다.");
+    throw new Error('전자 서명 요청 생성에 실패했습니다.');
   }
 
   return await response.text();
@@ -137,14 +137,14 @@ export const getContractsByUser = async (
   });
 
   const response = await fetch(`${API_BASE_URL}/by-user?${params}`, {
-    method: "GET",
+    method: 'GET',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
   });
 
   if (!response.ok) {
-    throw new Error("사용자 계약서 목록 조회에 실패했습니다.");
+    throw new Error('사용자 계약서 목록 조회에 실패했습니다.');
   }
 
   return await response.json();
@@ -160,14 +160,14 @@ export const getContractDetail = async (
   });
 
   const response = await fetch(`${API_BASE_URL}/${id}?${params}`, {
-    method: "GET",
+    method: 'GET',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
   });
 
   if (!response.ok) {
-    throw new Error("계약서 상세 조회에 실패했습니다.");
+    throw new Error('계약서 상세 조회에 실패했습니다.');
   }
 
   return await response.json();
@@ -194,14 +194,14 @@ export const getAllContracts = async (
   });
 
   const response = await fetch(`${API_BASE_URL}?${params}`, {
-    method: "GET",
+    method: 'GET',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
   });
 
   if (!response.ok) {
-    throw new Error("계약서 목록 조회에 실패했습니다.");
+    throw new Error('계약서 목록 조회에 실패했습니다.');
   }
 
   return await response.json();
@@ -217,14 +217,14 @@ export const confirmContract = async (
   });
 
   const response = await fetch(`${API_BASE_URL}/${id}/confirm?${params}`, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
   });
 
   if (!response.ok) {
-    throw new Error("계약서 확정에 실패했습니다.");
+    throw new Error('계약서 확정에 실패했습니다.');
   }
 };
 
@@ -238,14 +238,14 @@ export const getContractFileUrl = async (
   });
 
   const response = await fetch(`${API_BASE_URL}/${id}/file-url?${params}`, {
-    method: "GET",
+    method: 'GET',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
   });
 
   if (!response.ok) {
-    throw new Error("계약서 파일 URL 조회에 실패했습니다.");
+    throw new Error('계약서 파일 URL 조회에 실패했습니다.');
   }
 
   return await response.text();
@@ -260,14 +260,14 @@ export const getExpiringContracts = async (
   });
 
   const response = await fetch(`${API_BASE_URL}/expiring?${params}`, {
-    method: "GET",
+    method: 'GET',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
   });
 
   if (!response.ok) {
-    throw new Error("만료 예정 계약 조회에 실패했습니다.");
+    throw new Error('만료 예정 계약 조회에 실패했습니다.');
   }
 
   return await response.json();
@@ -281,21 +281,21 @@ export const updateContract = async (
 ): Promise<number> => {
   const formData = new FormData();
   formData.append(
-    "request",
-    new Blob([JSON.stringify(request)], { type: "application/json" })
+    'request',
+    new Blob([JSON.stringify(request)], { type: 'application/json' })
   );
 
   if (file) {
-    formData.append("file", file);
+    formData.append('file', file);
   }
 
   const response = await fetch(`${API_BASE_URL}/${contractId}`, {
-    method: "PUT",
+    method: 'PUT',
     body: formData,
   });
 
   if (!response.ok) {
-    throw new Error("계약서 수정에 실패했습니다.");
+    throw new Error('계약서 수정에 실패했습니다.');
   }
 
   return await response.json();
@@ -311,14 +311,14 @@ export const deleteContract = async (
   });
 
   const response = await fetch(`${API_BASE_URL}/${contractId}?${params}`, {
-    method: "DELETE",
+    method: 'DELETE',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
   });
 
   if (!response.ok) {
-    throw new Error("계약서 삭제에 실패했습니다.");
+    throw new Error('계약서 삭제에 실패했습니다.');
   }
 };
 
@@ -327,8 +327,8 @@ export const getFilteredContracts = async (
   condition: ContractSearchCondition,
   page: number = 0,
   size: number = 10,
-  sort: string = "createdAt",
-  direction: string = "desc"
+  sort: string = 'createdAt',
+  direction: string = 'desc'
 ): Promise<{
   content: ContractResponse[];
   totalElements: number;
@@ -345,26 +345,26 @@ export const getFilteredContracts = async (
   });
 
   // 검색 조건이 있는 경우만 파라미터에 추가
-  if (condition.teamId) params.append("teamId", condition.teamId.toString());
-  if (condition.status) params.append("status", condition.status);
+  if (condition.teamId) params.append('teamId', condition.teamId.toString());
+  if (condition.status) params.append('status', condition.status);
   if (condition.contractType)
-    params.append("contractType", condition.contractType);
+    params.append('contractType', condition.contractType);
   if (condition.contractCategory)
-    params.append("contractCategory", condition.contractCategory);
+    params.append('contractCategory', condition.contractCategory);
   if (condition.startDateFrom)
-    params.append("startDateFrom", condition.startDateFrom);
+    params.append('startDateFrom', condition.startDateFrom);
   if (condition.startDateTo)
-    params.append("startDateTo", condition.startDateTo);
+    params.append('startDateTo', condition.startDateTo);
 
   const response = await fetch(`${API_BASE_URL}/filtered?${params}`, {
-    method: "GET",
+    method: 'GET',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
   });
 
   if (!response.ok) {
-    throw new Error("계약서 필터링 조회에 실패했습니다.");
+    throw new Error('계약서 필터링 조회에 실패했습니다.');
   }
 
   return await response.json();
@@ -379,15 +379,15 @@ export const searchUsers = async (name: string): Promise<UserSearchDto[]> => {
   const response = await fetch(
     `http://localhost:8080/api/v1/admin/users/search?${params}`,
     {
-      method: "GET",
+      method: 'GET',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
     }
   );
 
   if (!response.ok) {
-    throw new Error("사용자 검색에 실패했습니다.");
+    throw new Error('사용자 검색에 실패했습니다.');
   }
 
   return await response.json();

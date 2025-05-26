@@ -1,4 +1,4 @@
-import { RatioType } from "./Contract";
+import { RatioType } from '../../contracts/types/Contract';
 
 // 아티스트 수익 DTO - Java의 ArtistRevenueDto 클래스와 동일한 구조
 export interface ArtistRevenueDto {
@@ -13,9 +13,9 @@ export const ArtistRevenueDtoUtils = {
   from: (data: any): ArtistRevenueDto => {
     return {
       artistId: data.artistId || data.userId || 0,
-      artistName: data.artistName || data.userName || "",
+      artistName: data.artistName || data.userName || '',
       totalRevenue:
-        typeof data.totalRevenue === "string"
+        typeof data.totalRevenue === 'string'
           ? parseFloat(data.totalRevenue)
           : data.totalRevenue || 0,
     };
@@ -37,12 +37,12 @@ export const UpdateSettlementRequestUtils = {
   from: (data: any): UpdateSettlementRequest => {
     return {
       totalAmount:
-        typeof data.totalAmount === "string"
+        typeof data.totalAmount === 'string'
           ? parseFloat(data.totalAmount)
           : data.totalAmount,
-      memo: data.memo || "",
+      memo: data.memo || '',
       isSettled: data.isSettled,
-      source: data.source || "",
+      source: data.source || '',
       incomeDate: data.incomeDate,
     };
   },
@@ -60,7 +60,7 @@ export const SettlementSummaryDtoUtils = {
   from: (data: any): SettlementSummaryDto => {
     return {
       totalAmount:
-        typeof data.totalAmount === "string"
+        typeof data.totalAmount === 'string'
           ? parseFloat(data.totalAmount)
           : data.totalAmount,
       count: data.count,
@@ -79,7 +79,7 @@ export const SettlementRequestUtils = {
   from: (data: any): SettlementRequest => {
     return {
       totalRevenue:
-        typeof data.totalRevenue === "string"
+        typeof data.totalRevenue === 'string'
           ? parseFloat(data.totalRevenue)
           : data.totalRevenue,
     };
@@ -129,7 +129,7 @@ export const SettlementRatioDtoUtils = {
       contractInternalId: data.contractInternalId,
       ratioType: data.ratioType,
       percentage:
-        typeof data.percentage === "string"
+        typeof data.percentage === 'string'
           ? parseFloat(data.percentage)
           : data.percentage,
     };
@@ -144,7 +144,7 @@ export const SettlementCreateRequestUtils = {
       contractExternalId: data.contractExternalId,
       incomeDate: data.incomeDate,
       totalAmount:
-        typeof data.totalAmount === "string"
+        typeof data.totalAmount === 'string'
           ? parseFloat(data.totalAmount)
           : data.totalAmount,
       ratios: Array.isArray(data.ratios)
@@ -162,11 +162,11 @@ export const SettlementDetailResponseUtils = {
       settlementId: settlementDetail.settlement?.id,
       userId: settlementDetail.user?.id || null,
       amount:
-        typeof settlementDetail.amount === "string"
+        typeof settlementDetail.amount === 'string'
           ? parseFloat(settlementDetail.amount)
           : settlementDetail.amount,
       percentage:
-        typeof settlementDetail.percentage === "string"
+        typeof settlementDetail.percentage === 'string'
           ? parseFloat(settlementDetail.percentage)
           : settlementDetail.percentage,
       ratioType: settlementDetail.ratioType,
@@ -181,12 +181,12 @@ export const SettlementDtoUtils = {
     return {
       id: settlement.id,
       amount:
-        typeof settlement.totalAmount === "string"
+        typeof settlement.totalAmount === 'string'
           ? parseFloat(settlement.totalAmount)
           : settlement.totalAmount,
       isSettled: settlement.isSettled,
       date: settlement.incomeDate,
-      memo: settlement.memo || "",
+      memo: settlement.memo || '',
     };
   },
 };
@@ -222,10 +222,10 @@ export const RecentSettlementDtoUtils = {
       id: settlement.id,
       incomeDate: settlement.incomeDate,
       totalAmount:
-        typeof settlement.totalAmount === "string"
+        typeof settlement.totalAmount === 'string'
           ? parseFloat(settlement.totalAmount)
           : settlement.totalAmount,
-      memo: settlement.memo || "",
+      memo: settlement.memo || '',
     };
   },
 };

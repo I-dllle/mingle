@@ -1,4 +1,4 @@
-import { apiClient } from "@/lib/apiClient";
+import { apiClient } from '@/lib/apiClient';
 import {
   ArtistRevenueDto,
   SettlementCreateRequest,
@@ -9,7 +9,7 @@ import {
   ChangeSettlementStatusRequest,
   RecentSettlementDto,
   SettlementRequest,
-} from "../types/Settlement";
+} from '../types/Settlement';
 
 // 정산 생성 (확정된 계약 기준)
 const createSettlementForContract = async (
@@ -55,7 +55,7 @@ const changeSettlementStatus = async (
 
 // 정산 통계 요약
 const getSettlementSummary = async (): Promise<SettlementSummaryDto> => {
-  const response = await apiClient.get("/api/v1/finance/summary");
+  const response = await apiClient.get('/api/v1/finance/summary');
   return response.data;
 };
 
@@ -65,8 +65,8 @@ const getTotalRevenue = async (
   endDate?: string
 ): Promise<number> => {
   const params = new URLSearchParams();
-  if (startDate) params.append("startDate", startDate);
-  if (endDate) params.append("endDate", endDate);
+  if (startDate) params.append('startDate', startDate);
+  if (endDate) params.append('endDate', endDate);
 
   const response = await apiClient.get(
     `/api/v1/finance/total-revenue?${params.toString()}`
@@ -88,8 +88,8 @@ const getAgencyNetRevenue = async (
   endDate?: string
 ): Promise<number> => {
   const params = new URLSearchParams();
-  if (startDate) params.append("startDate", startDate);
-  if (endDate) params.append("endDate", endDate);
+  if (startDate) params.append('startDate', startDate);
+  if (endDate) params.append('endDate', endDate);
 
   const response = await apiClient.get(
     `/api/v1/finance/net-agency?${params.toString()}`
@@ -99,7 +99,7 @@ const getAgencyNetRevenue = async (
 
 // 월별 수익 요약 통계
 const getMonthlyRevenueSummary = async (): Promise<Record<string, number>> => {
-  const response = await apiClient.get("/api/v1/finance/monthly-summary");
+  const response = await apiClient.get('/api/v1/finance/monthly-summary');
   return response.data;
 };
 
@@ -115,7 +115,7 @@ const getTopArtists = async (
 
 // RatioType별 총 수익 분배 요약
 const getRevenueByRatioType = async (): Promise<Record<string, number>> => {
-  const response = await apiClient.get("/api/v1/finance/ratio-summary");
+  const response = await apiClient.get('/api/v1/finance/ratio-summary');
   return response.data;
 };
 
@@ -139,7 +139,7 @@ const getSettlementDetailsByContract = async (
 
 // 모든 정산 리스트 조회
 const getAllSettlements = async (): Promise<SettlementDto[]> => {
-  const response = await apiClient.get("/api/v1/finance");
+  const response = await apiClient.get('/api/v1/finance');
   return response.data;
 };
 

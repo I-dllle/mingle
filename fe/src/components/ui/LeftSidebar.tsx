@@ -11,7 +11,7 @@ const iconMenus = [
     path: '/schedule',
   },
   {
-    id: 'notice',
+    id: 'board',
     title: '공지사항',
     icon: <FiFileText className="w-5 h-5" />,
     path: '/board/common',
@@ -23,16 +23,16 @@ const iconMenus = [
     path: '/attendance',
   },
   {
-    id: 'attendance',
-    title: '공고',
+    id: 'recruit',
+    title: '모집공고',
     icon: <FiBell className="w-5 h-5" />,
-    path: '/board/recruit',
+    path: '/recruit',
   },
   {
-    id: 'workdata',
+    id: 'documents',
     title: '업무자료',
     icon: <FiFileText className="w-5 h-5" />,
-    path: '/workdata',
+    path: '/',
   },
   {
     id: 'reservation',
