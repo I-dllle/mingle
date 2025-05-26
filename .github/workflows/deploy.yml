@@ -3,10 +3,10 @@ on:
   push:
     paths:
       - ".github/workflows/**"
-      - "backend/src/**"
-      - "backend/build.gradle.kts"
-      - "backend/settings.gradle.kts"
-      - "backend/Dockerfile"
+      - "be/src/**"
+      - "be/build.gradle.kts"
+      - "be/settings.gradle.kts"
+      - "be/Dockerfile"
     branches:
       - main
 jobs:
@@ -47,7 +47,7 @@ jobs:
       - name: application-secret.yml 생성
         env:
           APPLICATION_SECRET: ${{ secrets.APPLICATION_SECRET_YML }}
-        run: echo "$APPLICATION_SECRET" > backend/src/main/resources/application-secret.yml
+        run: echo "$APPLICATION_SECRET" > be/src/main/resources/application-secret.yml
       - name: Docker Buildx 설치
         uses: docker/setup-buildx-action@v2
       - name: 레지스트리 로그인
@@ -64,7 +64,7 @@ jobs:
       - name: 빌드 앤 푸시
         uses: docker/build-push-action@v3
         with:
-          context: backend
+          context: be
           push: true
           cache-from: type=registry,ref=ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:cache
           cache-to: type=registry,ref=ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:cache,mode=max
@@ -87,7 +87,7 @@ jobs:
       - name: 인스턴스 ID 가져오기
         id: get_instance_id
         run: |
-          INSTANCE_ID=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=dev-ec2-1" "Name=instance-state-name,Values=running" --query "Reservations[].Instances[].InstanceId" --output text)
+          INSTANCE_ID=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=dev-4-ec2-1" "Name=instance-state-name,Values=running" --query "Reservations[].Instances[].InstanceId" --output text)
           echo "INSTANCE_ID=$INSTANCE_ID" >> $GITHUB_ENV
           echo $INSTANCE_ID
       - name: AWS SSM Send-Command
