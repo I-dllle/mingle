@@ -74,6 +74,8 @@ public class SecurityConfig {
                                 "/api/v1/finance/**",
                                 "/api/v1/admin/**"
                         ).permitAll() // 회원가입, 로그인, 토큰 재발급 : 허용✔️
+                        .requestMatchers("/actuator/health")
+                        .permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/**").permitAll() // GET 요청 : 모두 허용✔️
                         .requestMatchers("/api/**").authenticated() // 그 외 /api/** 요청 : 인증 필요⚠️
                         .anyRequest().permitAll() // 나머지 요청 : 모두 허용✔️
