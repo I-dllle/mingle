@@ -6,6 +6,10 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.lang.NonNull;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -35,6 +39,8 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
         String refreshToken = rq.getCookieValue("refreshToken");
         String accessToken = rq.getCookieValue("accessToken");
 
+        log.info("🍪 accessToken from cookie: {}", accessToken);
+
         if (accessToken != null) {
             return new AuthTokens(refreshToken, accessToken);
         }
@@ -54,8 +60,10 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 
     // 토큰이 있는지 먼저 검증
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
             throws ServletException, IOException {
+
+        log.info("요청 URI: {}", request.getRequestURI());
 
         // API 요청이 아니면 통과
         if (!request.getRequestURI().startsWith("/api/")) {
@@ -88,6 +96,7 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
             String accessToken = authTokens.accessToken();
 
             User user = getUserFromAccessToken(accessToken);
+            log.info("토큰 기반 사용자 확인 결과: {}", user != null ? user.getEmail() : "유저 없음");
 
             // accessToken이 유효하지 않으면 refreshToken으로 재발급 시도
             if (user == null && refreshToken != null) {
@@ -100,7 +109,27 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
                 rq.setLogin(user);
                 log.info("SecurityContext에 로그인 설정 완료");
             } else {
+                // 유효한 accessToken도 없고, refreshToken도 실패 → 인증 실패 처리
+
                 log.warn("로그인 인증 실패: 유효한 토큰이 아님");
+
+                // accessToken 쿠키 삭제
+                ResponseCookie expiredAccessToken = ResponseCookie.from("accessToken", "")
+                        .path("/")
+                        .httpOnly(true)
+                        .secure(false) // 개발 환경에서는 false, 배포는 true
+                        .maxAge(0)
+                        .build();
+                response.addHeader(HttpHeaders.SET_COOKIE, expiredAccessToken.toString());
+
+                // refreshToken도 함께 삭제
+                ResponseCookie expiredRefreshToken = ResponseCookie.from("refreshToken", "")
+                        .path("/")
+                        .httpOnly(true)
+                        .secure(false)
+                        .maxAge(0)
+                        .build();
+                response.addHeader(HttpHeaders.SET_COOKIE, expiredRefreshToken.toString());
             }
         } catch (Exception e) {
             log.error("CustomAuthenticationFilter 예외 발생", e);

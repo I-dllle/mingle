@@ -73,10 +73,10 @@ public class SecurityConfig {
                                 "/api/v1/legal/**",
                                 "/api/v1/finance/**",
                                 "/api/v1/admin/**"
-                        ).permitAll() // 회원가입, 로그인, 토큰 재발급 : 허용✔️
-                        .requestMatchers(HttpMethod.GET, "/api/**").permitAll() // GET 요청 : 모두 허용✔️
-                        .requestMatchers("/api/**").authenticated() // 그 외 /api/** 요청 : 인증 필요⚠️
-                        .anyRequest().permitAll() // 나머지 요청 : 모두 허용✔️
+                        ).permitAll() // 회원가입, 로그인, 토큰 재발급 : 허용✔
+                        .requestMatchers(HttpMethod.GET, "/api/**").permitAll() // GET 요청 : 모두 허용
+                        .requestMatchers("/api/**").authenticated() // 그 외 /api/** 요청 : 인증 필요
+                        .anyRequest().permitAll() // 나머지 요청 : 모두 허용
                 )
 
                 // 커스텀 인증 필터를 UsernamePasswordAuthenticationFilter 앞에 넣음
@@ -92,23 +92,11 @@ public class SecurityConfig {
      * CORS 설정
      * → 모든 origin, method, header 허용
      */
-//    @Bean
-//    public CorsConfigurationSource corsConfigurationSource() {
-//        CorsConfiguration config = new CorsConfiguration();
-//        config.setAllowedOrigins(List.of("*"));
-//        config.setAllowedMethods(List.of("*"));
-//        config.setAllowedHeaders(List.of("*"));
-//        config.setAllowCredentials(true);
-//
-//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//        source.registerCorsConfiguration("/**", config);
-//        return source;
-//    }
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("*")); // ✅ 이걸로 대체
-        config.setAllowedMethods(List.of("*"));
+        config.setAllowedOrigins(List.of("http://localhost:3000"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true); // 인증정보 허용 (쿠키 등)
 

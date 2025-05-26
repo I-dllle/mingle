@@ -34,24 +34,36 @@ public class Rq {
     private final AuthLoginService authLoginService;
 
     {
-        log.info("📍 Rq 생성됨");
+        log.info("Rq 생성됨");
     }
 
     // accessToken → 사용자 추출
     public User getUserFromAccessToken(String accessToken) {
-        return authLoginService.getUserFromAccessToken(accessToken);
+        log.info("getUserFromAccessToken() 호출됨");
+        log.info("전달받은 accessToken: {}", accessToken);
+
+        try {
+            User user = authLoginService.getUserFromAccessToken(accessToken);
+            log.info("user 반환됨: {}", user != null ? user.getEmail() : "null");
+            return user;
+        } catch (Exception e) {
+            log.error("getUserFromAccessToken() 예외 발생", e);
+            return null;
+        }
     }
 
     // 로그인 상태 설정
     public void setLogin(User user) {
         try {
+            Long departmentId = user.getDepartment() != null ? user.getDepartment().getId() : null;
+
             UserDetails userDetails = new SecurityUser(
                     user.getId(),
                     user.getEmail(),
                     "", // password는 사용하지 않음
                     user.getNickname(),
                     user.getRole(),
-                    user.getDepartment().getId(),
+                    departmentId,
                     user.getAuthorities()
             );
 

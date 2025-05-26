@@ -1,42 +1,21 @@
-"use client";
+// 로그인 후 업무용 레이아웃
+// 공통 사이드바, 부서별 사이드바, 우측 채팅 고정 포함
 
-import React from "react";
-import LeftSidebar from "@/components/ui/LeftSidebar";
-import DepartmentSidebar from "@/components/ui/DepartmentSidebar";
-import RightMessenger from "@/components/ui/RightMessenger";
-import { SidebarProvider } from "@/hooks/useSidebar";
+import React from 'react';
+import { SidebarProvider } from '@/hooks/useSidebar'; // 사이드바 열림/닫힘 상태 관리
+import ClientFetcher from '@/components/layout/ClientFetcher';
 
-export default function MainLayout({
+// Server Component로 동작하는 레이아웃
+// 실제 유저 정보 fetch는 ClientFetcher 안에서 처리됨
+export default async function MainLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
     <SidebarProvider>
-      <div
-        style={{
-          display: "flex",
-          minHeight: "100vh",
-          background: "#f5f6fa",
-        }}
-      >
-        <LeftSidebar />
-        <DepartmentSidebar />
-        <main
-          style={{
-            flex: 1,
-            marginLeft: 80,
-            marginRight: 320,
-            minHeight: "100vh",
-            padding: 32,
-            position: "relative",
-            zIndex: 1,
-          }}
-        >
-          {children}
-        </main>
-        <RightMessenger />
-      </div>
+      {/* 유저 정보를 브라우저에서 fetch하고, 조건부 렌더링 처리 */}
+      <ClientFetcher>{children}</ClientFetcher>
     </SidebarProvider>
   );
 }
