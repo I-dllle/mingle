@@ -1,3 +1,4 @@
+import { apiClient } from '@/lib/api/apiClient';
 import {
   ContractCategory,
   ContractStatus,
@@ -13,7 +14,7 @@ import {
   UserSearchDto,
 } from '../types/Contract';
 
-const API_BASE_URL = 'http://localhost:8080/api/v1/legal';
+const API_BASE_URL = '/legal';
 
 // 계약서 생성 (외부 계약)
 export const createContract = async (
@@ -27,16 +28,12 @@ export const createContract = async (
   );
   formData.append('file', file);
 
-  const response = await fetch(`${API_BASE_URL}/contracts`, {
+  // FormData를 사용하는 경우 Content-Type 헤더를 설정하지 않음 (브라우저가 자동으로 설정)
+  return await apiClient<number>(`${API_BASE_URL}/contracts`, {
     method: 'POST',
     body: formData,
+    headers: {}, // Content-Type을 설정하지 않아야 함
   });
-
-  if (!response.ok) {
-    throw new Error('계약서 생성에 실패했습니다.');
-  }
-
-  return await response.json();
 };
 
 // 내부 계약 생성
@@ -51,16 +48,11 @@ export const createInternalContract = async (
   );
   formData.append('file', file);
 
-  const response = await fetch(`${API_BASE_URL}/internal-contracts`, {
+  return await apiClient<number>(`${API_BASE_URL}/internal-contracts`, {
     method: 'POST',
     body: formData,
+    headers: {}, // Content-Type을 설정하지 않아야 함
   });
-
-  if (!response.ok) {
-    throw new Error('내부 계약 생성에 실패했습니다.');
-  }
-
-  return await response.json();
 };
 
 // 계약서 상태 변경
@@ -69,20 +61,10 @@ export const changeContractStatus = async (
   request: ChangeStatusRequest,
   category: ContractCategory
 ): Promise<void> => {
-  const response = await fetch(
-    `${API_BASE_URL}/${id}/status?category=${category}`,
-    {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(request),
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error('계약서 상태 변경에 실패했습니다.');
-  }
+  await apiClient(`${API_BASE_URL}/${id}/status?category=${category}`, {
+    method: 'PUT',
+    body: JSON.stringify(request),
+  });
 };
 
 // 오프라인 서명 처리 (외부 계약자용)
@@ -90,17 +72,10 @@ export const signOfflineAsAdmin = async (
   id: number,
   request: OfflineSignRequest
 ): Promise<void> => {
-  const response = await fetch(`${API_BASE_URL}/${id}/sign-offline`, {
+  await apiClient(`${API_BASE_URL}/${id}/sign-offline`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify(request),
   });
-
-  if (!response.ok) {
-    throw new Error('오프라인 서명 처리에 실패했습니다.');
-  }
 };
 
 // 계약서 전자 서명 요청 생성 (대리)
@@ -108,18 +83,9 @@ export const signOnBehalf = async (
   id: number,
   userId: number
 ): Promise<string> => {
-  const response = await fetch(`${API_BASE_URL}/${id}/sign?userId=${userId}`, {
+  return await apiClient<string>(`${API_BASE_URL}/${id}/sign?userId=${userId}`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
   });
-
-  if (!response.ok) {
-    throw new Error('전자 서명 요청 생성에 실패했습니다.');
-  }
-
-  return await response.text();
 };
 
 // 특정 유저 계약서 리스트 조회
@@ -136,18 +102,9 @@ export const getContractsByUser = async (
     size: size.toString(),
   });
 
-  const response = await fetch(`${API_BASE_URL}/by-user?${params}`, {
+  return await apiClient<ContractSimpleDto[]>(`${API_BASE_URL}/by-user?${params}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
   });
-
-  if (!response.ok) {
-    throw new Error('사용자 계약서 목록 조회에 실패했습니다.');
-  }
-
-  return await response.json();
 };
 
 // 계약 상세 조회
@@ -159,18 +116,9 @@ export const getContractDetail = async (
     category: category,
   });
 
-  const response = await fetch(`${API_BASE_URL}/${id}?${params}`, {
+  return await apiClient<ContractDetailDto>(`${API_BASE_URL}/${id}?${params}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
   });
-
-  if (!response.ok) {
-    throw new Error('계약서 상세 조회에 실패했습니다.');
-  }
-
-  return await response.json();
 };
 
 // 모든 계약서 리스트 조회 (페이징 포함)
@@ -193,18 +141,16 @@ export const getAllContracts = async (
     size: size.toString(),
   });
 
-  const response = await fetch(`${API_BASE_URL}?${params}`, {
+  return await apiClient<{
+    content: ContractSimpleDto[];
+    totalElements: number;
+    totalPages: number;
+    size: number;
+    number: number;
+    first: boolean;
+    last: boolean;  }>(`${API_BASE_URL}?${params}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
   });
-
-  if (!response.ok) {
-    throw new Error('계약서 목록 조회에 실패했습니다.');
-  }
-
-  return await response.json();
 };
 
 // 계약서 최종 확정
@@ -216,16 +162,9 @@ export const confirmContract = async (
     category: category,
   });
 
-  const response = await fetch(`${API_BASE_URL}/${id}/confirm?${params}`, {
+  await apiClient(`${API_BASE_URL}/${id}/confirm?${params}`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
   });
-
-  if (!response.ok) {
-    throw new Error('계약서 확정에 실패했습니다.');
-  }
 };
 
 // 계약서 파일 URL 조회
@@ -237,18 +176,9 @@ export const getContractFileUrl = async (
     category: category,
   });
 
-  const response = await fetch(`${API_BASE_URL}/${id}/file-url?${params}`, {
+  return await apiClient<string>(`${API_BASE_URL}/${id}/file-url?${params}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
   });
-
-  if (!response.ok) {
-    throw new Error('계약서 파일 URL 조회에 실패했습니다.');
-  }
-
-  return await response.text();
 };
 
 // 만료 예정 계약 조회
@@ -259,18 +189,9 @@ export const getExpiringContracts = async (
     category: category,
   });
 
-  const response = await fetch(`${API_BASE_URL}/expiring?${params}`, {
+  return await apiClient<ContractResponse[]>(`${API_BASE_URL}/expiring?${params}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
   });
-
-  if (!response.ok) {
-    throw new Error('만료 예정 계약 조회에 실패했습니다.');
-  }
-
-  return await response.json();
 };
 
 // 계약서 수정
@@ -289,16 +210,11 @@ export const updateContract = async (
     formData.append('file', file);
   }
 
-  const response = await fetch(`${API_BASE_URL}/${contractId}`, {
+  return await apiClient<number>(`${API_BASE_URL}/${contractId}`, {
     method: 'PUT',
     body: formData,
+    headers: {}, // Content-Type을 설정하지 않아야 함
   });
-
-  if (!response.ok) {
-    throw new Error('계약서 수정에 실패했습니다.');
-  }
-
-  return await response.json();
 };
 
 // 계약서 삭제
@@ -310,16 +226,9 @@ export const deleteContract = async (
     category: category,
   });
 
-  const response = await fetch(`${API_BASE_URL}/${contractId}?${params}`, {
+  await apiClient(`${API_BASE_URL}/${contractId}?${params}`, {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-    },
   });
-
-  if (!response.ok) {
-    throw new Error('계약서 삭제에 실패했습니다.');
-  }
 };
 
 // 계약서 필터링 조회 (GET 방식)
@@ -356,18 +265,17 @@ export const getFilteredContracts = async (
   if (condition.startDateTo)
     params.append('startDateTo', condition.startDateTo);
 
-  const response = await fetch(`${API_BASE_URL}/filtered?${params}`, {
+  return await apiClient<{
+    content: ContractResponse[];
+    totalElements: number;
+    totalPages: number;
+    size: number;
+    number: number;
+    first: boolean;
+    last: boolean;
+  }>(`${API_BASE_URL}/filtered?${params}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
   });
-
-  if (!response.ok) {
-    throw new Error('계약서 필터링 조회에 실패했습니다.');
-  }
-
-  return await response.json();
 };
 
 // 사용자 이름으로 검색
@@ -376,21 +284,12 @@ export const searchUsers = async (name: string): Promise<UserSearchDto[]> => {
     name: name,
   });
 
-  const response = await fetch(
-    `http://localhost:8080/api/v1/admin/users/search?${params}`,
+  return await apiClient<UserSearchDto[]>(
+    `/api/v1/admin/users/search?${params}`, 
     {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     }
   );
-
-  if (!response.ok) {
-    throw new Error('사용자 검색에 실패했습니다.');
-  }
-
-  return await response.json();
 };
 
 // 계약서 서비스 객체

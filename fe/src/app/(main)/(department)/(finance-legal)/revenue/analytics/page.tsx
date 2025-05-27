@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { settlementService } from "@/features/finance-legal/services/settlementService";
-import { ArtistRevenueDto } from "@/features/finance-legal/types/Settlement";
+import { settlementService } from "@/features/department/finance-legal/revenue/services/settlementService";
+import { ArtistRevenueDto } from "@/features/department/finance-legal/revenue/types/Settlement";
 
 export default function RevenueAnalyticsPage() {
   const [topArtists, setTopArtists] = useState<ArtistRevenueDto[]>([]);
