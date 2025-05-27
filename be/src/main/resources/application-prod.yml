@@ -2,7 +2,7 @@ server:
   port: 8080
 spring:
   datasource:
-    url: jdbc:mysql://mysql-mingle:3307/mingle_dev
+    url: jdbc:mysql://mysql-mingle:3306/mingle_dev
     username: lll
     password: ${custom.prod.db.password}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -10,7 +10,7 @@ spring:
       auto-commit: false
   data:
     redis:
-      host: redis_1
+      host: redis
       port: 6379
       password: mingleservice
   jpa:

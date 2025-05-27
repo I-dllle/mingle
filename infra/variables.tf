@@ -1,6 +1,6 @@
 variable "prefix" {
   description = "Prefix for all resources"
-  default     = "dev-2"
+  default     = "dev-4"
 }
 
 variable "region" {

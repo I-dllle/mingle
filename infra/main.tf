@@ -267,7 +267,7 @@ docker run -d \
   -v /dockerProjects/mysql-mingle/volumes/var/lib/mysql:/var/lib/mysql \
   -v /dockerProjects/mysql-mingle/volumes/etc/mysql/conf.d:/etc/mysql/conf.d \
   --network common \
-  -p 3307:3306 \
+  -p 3306:3306 \
   -e MYSQL_ROOT_PASSWORD=${var.password_1} \
   -e TZ=Asia/Seoul \
   mysql:latest
@@ -300,10 +300,36 @@ echo "${var.github_access_token_1}" | docker login ghcr.io -u ${var.github_acces
 END_OF_FILE
 }
 
+# 최신 Amazon Linux 2023 AMI 조회 (프리 티어 호환)
+data "aws_ami" "latest_amazon_linux" {
+  most_recent = true
+  owners = ["amazon"]
+
+  filter {
+    name = "name"
+    values = ["al2023-ami-2023.*-x86_64"]
+  }
+
+  filter {
+    name = "architecture"
+    values = ["x86_64"]
+  }
+
+  filter {
+    name = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name = "root-device-type"
+    values = ["ebs"]
+  }
+}
+
 # EC2 인스턴스 생성
 resource "aws_instance" "ec2_1" {
   # 사용할 AMI ID
-  ami = "ami-04c596dcf23eb98d8"
+  ami = data.aws_ami.latest_amazon_linux.id
   # EC2 인스턴스 유형
   instance_type = "t2.micro"
   # 사용할 서브넷 ID
