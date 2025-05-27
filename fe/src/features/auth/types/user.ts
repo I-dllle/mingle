@@ -8,7 +8,7 @@ export interface CurrentUser {
   id: number;
   name: string;
   nickname: string;
-  department: Department | null | undefined;
+  departmentName: string;
   role: string;
   email: string;
 }

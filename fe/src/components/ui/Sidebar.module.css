@@ -33,7 +33,7 @@
 
 /* 메인 사이드바 스타일 */
 .mainSidebar {
-  width: 200px;
+  width: 250px;
   background-color: #f7f7f8;
   border-right: 1px solid #e9e9ea;
   display: flex;
@@ -43,6 +43,7 @@
   padding-right: 0.75rem;
   flex-shrink: 0;
   overflow-y: auto;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
 }
 
 .logoContainer {
@@ -53,12 +54,12 @@
 }
 
 .logoImage {
-  height: 2.5rem;
+  height: 3.5rem;
   width: auto;
 }
 
 .logoSubtitle {
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   color: #6b7280;
 }
 .departmentTitle {
@@ -115,7 +116,7 @@
 }
 
 .menuItemActive::after {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: -8px;
