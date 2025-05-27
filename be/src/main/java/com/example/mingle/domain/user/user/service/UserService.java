@@ -117,7 +117,7 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public User findById(Long id) {
-        return userRepository.findById(id)
+        return userRepository.findByIdWithRelations(id)
                 .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
     }
 

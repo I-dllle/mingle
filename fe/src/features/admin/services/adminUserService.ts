@@ -1,14 +1,14 @@
-import { apiClient } from "@/lib/apiClient";
+import { apiClient } from '@/lib/api/apiClient';
 import {
   AdminRequestUser,
   AdminUpdateUser,
   AdminRoleUpdate,
   UserRole,
   PositionCode,
-} from "../types/AdminUser";
-import { UserSearchDto } from "@/features/finance-legal/types/Contract";
+} from '../types/AdminUser';
+import { UserSearchDto } from '@/features/finance-legal/types/Contract';
 
-const API_BASE_URL = "/api/v1/admin/users";
+const API_BASE_URL = '/api/v1/admin/users';
 
 // 페이지네이션된 응답 타입
 interface PageResponse<T> {
@@ -34,10 +34,10 @@ const getUsersFiltered = async (
   });
 
   if (departmentId !== undefined) {
-    params.append("departmentId", departmentId.toString());
+    params.append('departmentId', departmentId.toString());
   }
   if (positionCode !== undefined) {
-    params.append("positionCode", positionCode);
+    params.append('positionCode', positionCode);
   }
 
   const response = await apiClient.get(`${API_BASE_URL}?${params}`);

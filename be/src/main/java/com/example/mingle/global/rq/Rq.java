@@ -3,6 +3,7 @@ package com.example.mingle.global.rq;
 import com.example.mingle.domain.user.auth.service.AuthLoginService;
 import com.example.mingle.domain.user.auth.service.AuthTokenService;
 import com.example.mingle.domain.user.user.entity.User;
+import com.example.mingle.domain.user.user.service.UserService;
 import com.example.mingle.global.security.auth.SecurityUser;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,6 +33,7 @@ public class Rq {
     private final HttpServletResponse resp;
     private final AuthTokenService authTokenService;
     private final AuthLoginService authLoginService;
+    private final UserService userService;
 
     // application.yml의 값 주입
     @Value("${custom.site.cookie.secure}")
@@ -92,12 +94,7 @@ public class Rq {
                 .map(Authentication::getPrincipal)
                 .filter(p -> p instanceof SecurityUser)
                 .map(p -> (SecurityUser) p)
-                .map(su -> User.builder()
-                        .id(su.getId())
-                        .email(su.getUsername())
-                        .nickname(su.getNickname())
-                        .role(su.getRole())
-                        .build())
+                .map(su -> userService.findById(su.getId())) // 전체 유저 객체 fetch
                 .orElse(null);
     }
 

@@ -12,13 +12,13 @@ import lombok.experimental.SuperBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
+@ToString(exclude = "users")
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-@ToString
 @Table(name = "department")
 public class Department extends BaseEntity {
     @Builder.Default
