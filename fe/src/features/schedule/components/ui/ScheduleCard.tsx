@@ -1,7 +1,7 @@
 "use client";
 
 import { EventInput } from "@fullcalendar/core";
-import { formatDate } from "../../utils/calendarUtils";
+import { formatDate } from "@/features/schedule/utils/calendarUtils";
 
 interface ScheduleCardProps {
   event: EventInput;

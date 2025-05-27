@@ -1,0 +1,232 @@
+/* ModernCalendarView.module.css - 모던 캘린더 컴포넌트 전용 스타일 */
+
+/* 기본 레이아웃 */
+.calendarContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: white;
+  overflow: auto;
+}
+
+.calendarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background-color: white;
+  border-bottom: 1px solid #f3f4f6;
+  width: 100%;
+}
+
+.calendarTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #6d28d9;
+  white-space: nowrap;
+}
+
+.dateControls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.dateButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background-color: #f9fafb;
+  border-radius: 50%;
+  color: #6d28d9;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dateButton:hover {
+  background-color: #f3e8ff;
+}
+
+.todayButton {
+  background-color: #f3e8ff;
+  color: #6d28d9;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.todayButton:hover {
+  background-color: #e9d5ff;
+}
+
+/* 필터 스타일 */
+.filterSection {
+  padding: 0.75rem 1.5rem;
+  background-color: #ffffff;
+  border-bottom: 1px solid #f3f4f6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.viewSelector {
+  display: flex;
+  background-color: #f3f4f6;
+  border-radius: 0.5rem;
+  padding: 0.25rem;
+}
+
+.viewButton {
+  padding: 0.5rem 1rem;
+  border: none;
+  background-color: transparent;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.viewButton.active {
+  background-color: white;
+  color: #6d28d9;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.typeFilters {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.typeButton {
+  padding: 0.5rem 1rem;
+  border: none;
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.typeButton.active {
+  background-color: #8b5cf6;
+  color: white;
+}
+
+.typeButton:hover:not(.active) {
+  background-color: #f3e8ff;
+}
+
+/* 버튼 지시자 컬러 */
+.typeIndicator {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+}
+
+.indicatorAll {
+  background: linear-gradient(135deg, #9333ea 33%, #6366f1 66%, #ec4899 100%);
+}
+
+.indicatorCompany {
+  background-color: #ec4899;
+}
+
+.indicatorDepartment {
+  background-color: #6366f1;
+}
+
+.indicatorPersonal {
+  background-color: #9333ea;
+}
+
+/* 캘린더 래퍼 설정 */
+.calendarWrapper {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden !important;
+}
+
+/* 새 일정 버튼 */
+.newScheduleButton {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background-color: #8b5cf6;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+  z-index: 10;
+}
+
+.newScheduleButton:hover {
+  background-color: #7c3aed;
+  transform: translateY(-2px);
+}
+
+/* 반응형 스타일 */
+@media (max-width: 768px) {
+  .filterSection {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .viewSelector,
+  .typeFilters {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+  }
+
+  .typeFilters {
+    justify-content: flex-start;
+  }
+
+  .calendarHeader {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .calendarWrapper :global(.fc-view-harness-active) {
+    flex: 1 !important;
+    height: 100% !important;
+    min-height: 0 !important;
+  }
+
+  .calendarWrapper :global(.fc-scrollgrid-sync-table) {
+    height: 100% !important;
+  }
+}

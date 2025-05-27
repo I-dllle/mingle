@@ -1,11 +1,9 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { scheduleService } from "../../services/scheduleService";
 import { ScheduleResponse } from "../../types/Schedule";
-import { formatDate } from "../../utils/calendarUtils";
+import { formatDate } from "@/features/schedule/utils/calendarUtils";
 import { useDebounce } from "@/hooks/useDebounce";
-import Modal from "../ui/Modal";
-import { SearchIcon } from "@heroicons/react/outline";
+import Modal from "@/features/schedule/components/ui/Modal";
 
 interface ScheduleSearchModalProps {
   onClose: () => void;
@@ -33,33 +31,9 @@ export function ScheduleSearchModal({
     }
     onClose();
   };
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onClose={onClose} title="일정 검색">
       <div className="w-full max-w-3xl mx-auto p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold text-gray-900">일정 검색</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-500"
-          >
-            <span className="sr-only">닫기</span>
-            <svg
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
-
         <div className="relative mb-6">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <SearchIcon className="h-5 w-5 text-gray-400" />

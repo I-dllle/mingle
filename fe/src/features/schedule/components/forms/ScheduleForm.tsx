@@ -2,13 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import { ko } from "date-fns/locale";
 import { scheduleService } from "@/features/schedule/services/scheduleService";
-import { userService } from "@/features/auth/services/userService";
 import { ScheduleType, ScheduleStatus } from "@/features/schedule/types/Enums";
-import { scheduleStatusLabels } from "@/features/schedule/constants/scheduleLabels";
+import {
+  scheduleStatusLabels,
+  scheduleTypeLabels,
+} from "@/features/schedule/constants/scheduleLabels";
 import { Schedule, ScheduleFormData } from "@/features/schedule/types/Schedule";
 
 interface ScheduleFormProps {
@@ -55,10 +54,10 @@ export default function ScheduleForm({
           title: "",
           description: "",
           memo: "",
-          startTime: startDate.toISOString().slice(0, 16),
-          endTime: endDate.toISOString().slice(0, 16),
+          startTime: scheduleService.formatScheduleTime(startDate), // 서비스 함수 사용
+          endTime: scheduleService.formatScheduleTime(endDate), // 서비스 함수 사용
           scheduleType: ScheduleType.PERSONAL, // 기본값은 개인 일정
-          scheduleStatus: ScheduleStatus.NONE, // 기본값을 없음으로 변경
+          scheduleStatus: ScheduleStatus.NONE, // 기본값을 없음으로 설정
           departmentId: undefined,
           postId: undefined,
         };
@@ -86,13 +85,16 @@ export default function ScheduleForm({
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >
   ) => {
-    const { name, value } = e.target;
-
-    // 부서ID는 숫자로 변환
+    const { name, value } = e.target; // 부서ID는 숫자로 변환
     if (name === "departmentId") {
       setFormData({
         ...formData,
         departmentId: value ? parseInt(value) : undefined,
+      });
+    } else if (name === "scheduleStatus") {
+      setFormData({
+        ...formData,
+        scheduleStatus: value as ScheduleStatus,
       });
     } else {
       setFormData({
@@ -126,14 +128,19 @@ export default function ScheduleForm({
     e.preventDefault();
     setLoading(true);
     setError(null);
-    setSuccess(null);
-
-    // 일정 시간 유효성 검증
+    setSuccess(null); // 일정 시간 유효성 검증
     const startTime = new Date(formData.startTime);
     const endTime = new Date(formData.endTime);
 
     if (endTime <= startTime) {
       setError("종료 시간은 시작 시간보다 이후여야 합니다.");
+      setLoading(false);
+      return;
+    }
+
+    // 타이틀 길이 제한 검증
+    if (formData.title.length > 100) {
+      setError("일정 제목은 100자를 초과할 수 없습니다.");
       setLoading(false);
       return;
     }
@@ -249,7 +256,7 @@ export default function ScheduleForm({
             className="block text-gray-700 font-medium mb-2"
           >
             일정 유형
-          </label>
+          </label>{" "}
           <select
             id="scheduleType"
             name="scheduleType"
@@ -257,9 +264,11 @@ export default function ScheduleForm({
             onChange={handleTypeChange}
             className="w-full border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value={ScheduleType.PERSONAL}>개인 일정</option>
-            <option value={ScheduleType.DEPARTMENT}>부서 일정</option>
-            <option value={ScheduleType.COMPANY}>회사 일정</option>
+            {Object.entries(scheduleTypeLabels).map(([type, label]) => (
+              <option key={type} value={type}>
+                {label}
+              </option>
+            ))}
           </select>
         </div>
 

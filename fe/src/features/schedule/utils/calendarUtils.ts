@@ -89,7 +89,18 @@ export const convertToCalendarEvents = (schedules: any[]) => {
   }));
 };
 
-// 종일 일정인지 확인하는 함수
+/**
+ * 종일 일정인지 확인하는 함수
+ * @param startTime 시작 시간
+ * @param endTime 종료 시간
+ * @returns 종일 일정이면 true, 아니면 false
+ *
+ * 00:00:00부터 23:59:00 또는 23:59:59까지인 일정을 종일 일정으로 간주합니다.
+ * 23:59:00과 23:59:59 모두 허용하는 이유:
+ * 1. 다양한 백엔드 시스템이 초(second) 값을 00 또는 59로 다르게 설정할 수 있음
+ * 2. 일부 API는 정확히 23:59:00을, 다른 API는 23:59:59를 하루의 끝으로 사용함
+ * 3. 사용자 관점에서는 둘 다 '하루 종일'로 인식하는 것이 자연스러움
+ */
 export const isAllDayEvent = (startTime: string, endTime: string): boolean => {
   // startTime이 00:00:00이고 endTime이 23:59:59 또는 23:59:00인 경우 종일 일정으로 간주
   if (!startTime || !endTime) return false;

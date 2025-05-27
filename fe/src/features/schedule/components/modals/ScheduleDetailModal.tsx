@@ -2,9 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import Modal from "../ui/Modal";
+import Modal from "@/features/schedule/components/ui/Modal";
 import { Schedule } from "../../types/Schedule";
-import { formatDate } from "../../utils/calendarUtils";
+import { formatDate } from "@/features/schedule/utils/calendarUtils";
 import StatusBadge from "../ui/StatusBadge";
 import { scheduleService } from "../../services/scheduleService";
 import { useAuth } from "@/features/auth/hooks/useAuth";
@@ -74,8 +74,9 @@ export default function ScheduleDetailModal({
 
   return (
     <>
-      <Modal onClose={onClose}>
-        <div className="w-full max-w-2xl bg-white rounded-lg">
+      {" "}
+      <Modal onClose={onClose} title={schedule?.title || "일정 상세"}>
+        <div className="w-full max-w-2xl bg-white rounded-lg p-5">
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
               <p>{error}</p>
@@ -88,31 +89,8 @@ export default function ScheduleDetailModal({
             </div>
           ) : schedule ? (
             <>
-              <div className="flex justify-between items-start mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                    {schedule.title}
-                  </h2>
-                  <StatusBadge status={schedule.scheduleStatus} />
-                </div>
-                <button
-                  onClick={onClose}
-                  className="text-gray-400 hover:text-gray-500"
-                >
-                  <svg
-                    className="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
+              <div className="mb-4">
+                <StatusBadge status={schedule.scheduleStatus} />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -189,7 +167,6 @@ export default function ScheduleDetailModal({
           ) : null}
         </div>
       </Modal>
-
       {isEditModalOpen && schedule && (
         <ScheduleFormModal
           onClose={() => setIsEditModalOpen(false)}

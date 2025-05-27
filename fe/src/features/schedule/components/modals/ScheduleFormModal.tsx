@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Schedule, ScheduleFormData } from "../../types/Schedule";
 import { ScheduleType, ScheduleStatus } from "../../types/Enums";
 import { scheduleService } from "../../services/scheduleService";
-import { formatDate } from "../../utils/calendarUtils";
+import { formatDate } from "@/features/schedule/utils/calendarUtils";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import Modal from "@/features/schedule/components/ui/Modal";
 import { scheduleStatusLabels } from "../../constants/scheduleLabels";
@@ -100,16 +100,12 @@ export function ScheduleFormModal({
       setIsLoading(false);
     }
   };
-
   return (
-    <Modal onClose={onClose}>
-      <div className="p-8">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-semibold text-gray-900">
-            {mode === "create" ? "새 일정 만들기" : "일정 수정하기"}
-          </h2>
-        </div>
-
+    <Modal
+      onClose={onClose}
+      title={mode === "create" ? "새 일정 만들기" : "일정 수정하기"}
+    >
+      <div className="p-6">
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
             {error}

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useCallback, useEffect } from "react";
 import { EventInput } from "@fullcalendar/core";
 import Modal from "@/features/schedule/components/ui/Modal";
-import { formatDate } from "../../utils/calendarUtils";
+import { formatDate } from "@/features/schedule/utils/calendarUtils";
 import { scheduleService } from "@/features/schedule/services/scheduleService";
 import { ScheduleType } from "../../types/Enums";
 import ScheduleCard from "@/features/schedule/components/ui/ScheduleCard";
@@ -91,20 +91,12 @@ export default function ScheduleListModal({
       onClose();
     }
   };
-
   return (
     <>
-      <Modal onClose={onClose}>
-        {" "}
+      <Modal onClose={onClose} title={formattedDate}>
         <div>
           {/* 제목 및 새 일정 버튼 */}
-          <div className="flex items-center justify-between mb-6 px-5 pt-4">
-            <div className="flex items-center">
-              <CalendarIcon className="w-6 h-6 text-purple-600 mr-2 shrink-0" />
-              <h2 className="text-xl font-semibold text-gray-900">
-                {formattedDate}
-              </h2>
-            </div>
+          <div className="flex justify-end px-5 mb-6">
             <button
               onClick={handleAddSchedule}
               className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-lg text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
