@@ -10,7 +10,7 @@ export default function RightMessenger() {
         position: 'fixed',
         right: 0,
         top: 0,
-        width: 296,
+        width: 250,
         height: '100vh',
         background: '#f8f8fc',
         borderLeft: '1px solid #ececf3',
@@ -26,7 +26,7 @@ export default function RightMessenger() {
         <div
           style={{
             fontWeight: 700,
-            fontSize: 19,
+            fontSize: 12,
             marginBottom: 18,
             color: '#222',
           }}
@@ -47,7 +47,7 @@ export default function RightMessenger() {
                 marginRight: 8,
               }}
             />
-            <span style={{ fontWeight: 600, color: '#222', fontSize: 15 }}>
+            <span style={{ fontWeight: 600, color: '#222', fontSize: 14 }}>
               채팅방
             </span>
           </div>
@@ -62,7 +62,7 @@ export default function RightMessenger() {
                 marginRight: 8,
               }}
             />
-            <span style={{ fontWeight: 600, color: '#222', fontSize: 15 }}>
+            <span style={{ fontWeight: 600, color: '#222', fontSize: 14 }}>
               자료방
             </span>
           </div>
@@ -70,7 +70,7 @@ export default function RightMessenger() {
         <div
           style={{
             fontWeight: 700,
-            fontSize: 19,
+            fontSize: 12,
             marginBottom: 18,
             color: '#222',
           }}
@@ -91,7 +91,7 @@ export default function RightMessenger() {
                 marginRight: 8,
               }}
             />
-            <span style={{ fontWeight: 600, color: '#222', fontSize: 15 }}>
+            <span style={{ fontWeight: 600, color: '#222', fontSize: 14 }}>
               채팅방
             </span>
           </div>
@@ -106,7 +106,7 @@ export default function RightMessenger() {
                 marginRight: 8,
               }}
             />
-            <span style={{ fontWeight: 600, color: '#222', fontSize: 15 }}>
+            <span style={{ fontWeight: 600, color: '#222', fontSize: 14 }}>
               자료방
             </span>
           </div>
@@ -114,7 +114,7 @@ export default function RightMessenger() {
         <div
           style={{
             fontWeight: 700,
-            fontSize: 19,
+            fontSize: 12,
             marginBottom: 18,
             color: '#222',
           }}
@@ -140,7 +140,7 @@ export default function RightMessenger() {
             >
               😀
             </span>
-            <span style={{ fontWeight: 600, color: '#222', fontSize: 15 }}>
+            <span style={{ fontWeight: 600, color: '#222', fontSize: 14 }}>
               통통통 사후르
             </span>
             <span
@@ -172,7 +172,7 @@ export default function RightMessenger() {
             >
               🦁
             </span>
-            <span style={{ fontWeight: 600, color: '#222', fontSize: 15 }}>
+            <span style={{ fontWeight: 600, color: '#222', fontSize: 14 }}>
               발레리나 카푸치나
             </span>
             <span
@@ -202,7 +202,7 @@ export default function RightMessenger() {
             >
               🥑
             </span>
-            <span style={{ fontWeight: 600, color: '#222', fontSize: 15 }}>
+            <span style={{ fontWeight: 600, color: '#222', fontSize: 14 }}>
               아보카도
             </span>
             <span
