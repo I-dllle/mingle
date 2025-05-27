@@ -79,14 +79,14 @@ public class UserPositionSeeder implements CommandLineRunner {
                             newPosition(PositionCode.WEBOPS_MANAGER, "WebOps Manager"),
                             newPosition(PositionCode.INFRA_COORDINATOR, "Infra Coordinator"),
                             newPosition(PositionCode.TECHOPS_PARTNER, "TechOps Partner")
-                    ),
-
-                    // Executive 부서
-                    "Executive", List.of(
-                            newPosition(PositionCode.STRATEGY_LEAD, "Strategy Lead"),
-                            newPosition(PositionCode.EXECUTIVE_ASSISTANT, "Executive Assistant"),
-                            newPosition(PositionCode.CHIEF_CULTURE_OFFICER, "Chief Culture Officer")
                     )
+
+//                    // Executive 부서
+//                    "Executive", List.of(
+//                            newPosition(PositionCode.STRATEGY_LEAD, "Strategy Lead"),
+//                            newPosition(PositionCode.EXECUTIVE_ASSISTANT, "Executive Assistant"),
+//                            newPosition(PositionCode.CHIEF_CULTURE_OFFICER, "Chief Culture Officer")
+//                    )
             );
 
             // 각 부서에 매핑된 포지션 저장

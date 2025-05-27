@@ -55,6 +55,8 @@ public enum ErrorCode {
     ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 방입니다."),
     SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 일정입니다."),
     ATTENDANCE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 출결 기록입니다."),
+    NOT_FOUND_ARCHIVE(HttpStatus.NOT_FOUND, "해당 자료를 찾을 수 없습니다."),
+    NOT_FOUND_CHATROOM(HttpStatus.NOT_FOUND, "해당 채팅방을 찾을 수 없습니다."),
 
     // 409 CONFLICT
     EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 등록된 이메일입니다."),

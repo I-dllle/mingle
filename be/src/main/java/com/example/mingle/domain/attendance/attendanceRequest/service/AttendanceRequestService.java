@@ -245,10 +245,18 @@ public class AttendanceRequestService {
             AttendanceStatus status = leaveType.toAttendanceStatus();
             attendance.setAttendanceStatus(status);
             attendance.setReason(request.getReason());
+            attendance.setLeaveType(leaveType);
 
             // 양방향 연결 설정 - 기존 연결 제거 후 새로 설정
             if (attendance.getAttendanceRequest() != null) {
                 attendance.getAttendanceRequest().getAttendances().remove(attendance);
+            }
+
+            // 특별휴가일 경우 사유 자동 설정
+            if (status == AttendanceStatus.ON_SPECIAL_LEAVE) {
+                attendance.setReason(leaveType.getDisplayName());
+            } else {
+                attendance.setReason(request.getReason());
             }
 
             // AttendanceRequest의 편의 메서드 사용하여 양방향 설정

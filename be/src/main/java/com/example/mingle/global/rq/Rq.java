@@ -1,5 +1,7 @@
 package com.example.mingle.global.rq;
 
+import com.example.mingle.domain.user.auth.service.AuthLoginService;
+import com.example.mingle.domain.user.auth.service.AuthTokenService;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.domain.user.user.service.UserService;
 import com.example.mingle.global.security.auth.SecurityUser;
@@ -8,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -28,27 +31,48 @@ import java.util.Optional;
 public class Rq {
     private final HttpServletRequest req;
     private final HttpServletResponse resp;
+    private final AuthTokenService authTokenService;
+    private final AuthLoginService authLoginService;
     private final UserService userService;
 
+    // application.yml의 값 주입
+    @Value("${custom.site.cookie.secure}")
+    private boolean cookieSecure;
+
+    @Value("${custom.site.cookie.sameSite}")
+    private String cookieSameSite;
+
     {
-        log.info("📍 Rq 생성됨");
+        log.info("Rq 생성됨");
     }
 
     // accessToken → 사용자 추출
     public User getUserFromAccessToken(String accessToken) {
-        return userService.getUserFromAccessToken(accessToken);
+        log.info("getUserFromAccessToken() 호출됨");
+        log.info("전달받은 accessToken: {}", accessToken);
+
+        try {
+            User user = authLoginService.getUserFromAccessToken(accessToken);
+            log.info("user 반환됨: {}", user != null ? user.getEmail() : "null");
+            return user;
+        } catch (Exception e) {
+            log.error("getUserFromAccessToken() 예외 발생", e);
+            return null;
+        }
     }
 
     // 로그인 상태 설정
     public void setLogin(User user) {
         try {
+            Long departmentId = user.getDepartment() != null ? user.getDepartment().getId() : null;
+
             UserDetails userDetails = new SecurityUser(
                     user.getId(),
                     user.getEmail(),
                     "", // password는 사용하지 않음
                     user.getNickname(),
                     user.getRole(),
-                    user.getDepartment().getId(),
+                    departmentId,
                     user.getAuthorities()
             );
 
@@ -70,12 +94,7 @@ public class Rq {
                 .map(Authentication::getPrincipal)
                 .filter(p -> p instanceof SecurityUser)
                 .map(p -> (SecurityUser) p)
-                .map(su -> User.builder()
-                        .id(su.getId())
-                        .email(su.getUsername())
-                        .nickname(su.getNickname())
-                        .role(su.getRole())
-                        .build())
+                .map(su -> userService.findById(su.getId())) // 전체 유저 객체 fetch
                 .orElse(null);
     }
 
@@ -94,8 +113,8 @@ public class Rq {
     public void setCookie(String name, String value) {
         ResponseCookie cookie = ResponseCookie.from(name, value)
                 .path("/")
-                .secure(true)
-                .sameSite("Strict")
+                .secure(cookieSecure)   // 환경별 설정값 적용
+                .sameSite(cookieSameSite)   // 환경별 설정값 적용
                 .httpOnly(true)
                 .build();
 
@@ -107,8 +126,8 @@ public class Rq {
         ResponseCookie cookie = ResponseCookie.from(name, null)
                 .path("/")
                 .maxAge(0)
-                .secure(true)
-                .sameSite("Strict")
+                .secure(cookieSecure)  // 환경별 설정값 적용
+                .sameSite(cookieSameSite)  // 환경별 설정값 적용
                 .httpOnly(true)
                 .build();
 
@@ -117,7 +136,7 @@ public class Rq {
 
     // 인증 쿠키 일괄 설정
     public String makeAuthCookies(User user) {
-        String accessToken = userService.genAccessToken(user);
+        String accessToken = authTokenService.genAccessToken(user);
 
         setCookie("accessToken", accessToken);
         setCookie("refreshToken", user.getRefreshToken());
@@ -137,14 +156,14 @@ public class Rq {
 
     // accessToken 재발급
     public void refreshAccessToken(User user) {
-        String newToken = userService.genAccessToken(user);
+        String newToken = authTokenService.genAccessToken(user);
         setHeader("Authorization", "Bearer " + newToken);
         setCookie("accessToken", newToken);
     }
 
     // refreshToken으로 accessToken 재발급
     public User refreshAccessTokenByRefreshToken(String refreshToken) {
-        return userService.findByRefreshToken(refreshToken)
+        return authLoginService.findByRefreshToken(refreshToken)
                 .map(user -> {
                     refreshAccessToken(user);
                     return user;

@@ -20,11 +20,17 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     //부서별 게시글 목록(부서id로 검색)
     List<Post> findByDepartment_IdOrderByCreatedAtDesc(Long deptId);
 
-    //메뉴타입과 카테고리로 게시글 조회(카테고리 분기가 있는 메뉴 - 업무자료(전체공지/부서별공지/회사소식))
+    //메뉴타입과 카테고리로 게시글 조회(카테고리 분기가 있는 메뉴 - 업무자료)
     List<Post> findByMenuAndCategory(PostMenu postMenu, BusinessDocumentCategory businessDocumentCategory);
+
+    //공지사항 찾기
+    List<Post>  findByMenuAndNoticeType(PostMenu postMenu, NoticeType noticeType);
 
     //소프트 삭제(isDeleted)
     List<Post> findByMenuAndIsDeletedFalse(PostMenu menu);
+
+    //메뉴타입으로 게시글 찾기
+    List<Post> findByMenu(PostMenu menu);
 
     //페이징 처리
     Page<Post> findByMenu_Id(Long menuId, Pageable pageable);

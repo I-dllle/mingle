@@ -2,6 +2,8 @@ package com.example.mingle.domain.post.post.controller;
 
 import com.example.mingle.domain.post.post.dto.PostRequestDto;
 import com.example.mingle.domain.post.post.dto.PostResponseDto;
+import com.example.mingle.domain.post.post.entity.BusinessDocumentCategory;
+import com.example.mingle.domain.post.post.entity.NoticeType;
 import com.example.mingle.domain.post.post.service.PostService;
 import com.example.mingle.global.security.auth.SecurityUser;
 import io.swagger.v3.oas.annotations.Operation;
@@ -52,41 +54,61 @@ public class ApiV1PostController {
                 user.getId(),
                 requestDto,
                 postImage
-                //만약 postType이 업무자료 카테고리라면? 검증필요
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
-    //전체 공지사항 READ
-    @GetMapping("/notices/global")
-    public ResponseEntity<List<PostResponseDto>> getGlobalNotices() {
-        return ResponseEntity.ok(postService.getGlobalNotices()); // isGlobalNotice == true
-    }
-
-    //부서별 공지사항 READ
-    @GetMapping("/notices/department")
-    public ResponseEntity<List<PostResponseDto>> getDepartmentNotices(@RequestParam Long departmentId) {
-        return ResponseEntity.ok(postService.getDepartmentNotices(departmentId)); // postType.name == '공지사항' AND isGlobalNotice == false
-    }
-
-    //TODO : 회사소식READ?
-
-    //공통 게시판 READ (category : 공지사항/업무자료/오디션공고)
+    //공지사항 READ (회사전체공지/부서별공지/회사소식)
     @Operation(
-            summary = "공통 메뉴의 게시글 조회",
-            description = "게시판 ID를 통해 해당 카테고리에 속한 게시글들을 조회합니다.",
+            summary = "공지사항 유형별 조회",
+            description = "공지사항 유형(GENERAL_NOTICE, DEPARTMENT_NOTICE, COMPANY_NEWS)에 따라 게시글을 조회합니다.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "조회 성공"),
-                    @ApiResponse(responseCode = "404", description = "해당 카테고리 없음")
+                    @ApiResponse(responseCode = "200", description = "공지사항 조회 성공"),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않는 부서 혹은 메뉴입니다")
             }
     )
-    @GetMapping("/menus/{postMenuId}/posts")
-    public ResponseEntity<List<PostResponseDto>> getCommonPosts(
+    @GetMapping("/notices")
+    public ResponseEntity<List<PostResponseDto>> getNoticesByType(
+            @Parameter(description = "공지사항 유형(GENERAL_NOTICE, DEPARTMENT_NOTICE, COMPANY_NEWS)", required = true)
+            @RequestParam NoticeType noticeType,
+            @Parameter(description = "부서 ID(부서별 공지사항 조회시 필수입력)", required = false)
+            @RequestParam(required = false) Long departmentId
+    ) {
+        List<PostResponseDto> notices = postService.getNoticesByType(noticeType, departmentId);
+        return ResponseEntity.ok(notices);
+    }
+
+    //업무자료 게시판 READ (category : 회의록/업무문서)
+    @Operation(
+            summary = "업무자료 게시판 게시글 조회",
+            description = "게시판 ID를 통해 업무자료 게시판 카테고리에 속한 게시글들을 조회합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "조회 성공"),
+                    @ApiResponse(responseCode = "404", description = "해당 카테고리를 찾을 수 없습니다")
+            }
+    )
+    @GetMapping("/menu/{postMenuId}/posts")
+    public ResponseEntity<List<PostResponseDto>> getBusinessDocuments(
             @Parameter(description = "게시판 ID", required = true) @PathVariable Long postMenuId,
-            @RequestParam(required = false) String category
-            //required = false -> 카테고리값이 들어오지 않으면 전체 게시글 출력
+            @RequestParam(required = false) BusinessDocumentCategory category
     ){
-        List<PostResponseDto> posts = postService.getCommonPosts(postMenuId, category);
+        List<PostResponseDto> posts = postService.getBusinessDocuments(postMenuId, category);
+        return ResponseEntity.ok(posts);
+    }
+
+    //오디션공고 게시판 READ
+    @Operation(
+            summary = "오디션공고 게시판 게시글 조회",
+            description = "게시판 ID를 통해 오디션공고 게시글을 조회합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "조회 성공"),
+                    @ApiResponse(responseCode = "404", description = "해당 게시판을 찾을 수 없습니다")
+            }
+    )
+    @GetMapping("/audition/{postMenuId}")
+    public ResponseEntity<List<PostResponseDto>> getAuditionPosts(
+            @Parameter(description = "게시판 ID", required = true ) @PathVariable Long postMenuId){
+        List<PostResponseDto> posts = postService.getAuditionPosts(postMenuId);
         return ResponseEntity.ok(posts);
     }
 

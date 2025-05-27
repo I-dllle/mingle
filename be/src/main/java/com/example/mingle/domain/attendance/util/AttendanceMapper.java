@@ -78,6 +78,7 @@ public class AttendanceMapper {
                 .appliedAt(attendanceRequest.getAppliedAt())
                 .approvedAt(attendanceRequest.getApprovedAt())
                 .attendances(summary)
+                .leaveType(attendanceRequest.getLeaveType())
                 .build();
     }
 

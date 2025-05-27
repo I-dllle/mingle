@@ -4,6 +4,8 @@ import com.example.mingle.domain.post.legalpost.entity.Contract;
 import com.example.mingle.domain.post.legalpost.entity.InternalContract;
 import com.example.mingle.domain.post.legalpost.enums.ContractCategory;
 import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -47,9 +49,20 @@ public interface ContractRepository extends JpaRepository<Contract, Long>, JpaSp
 
     List<Contract> findByCreatedAtAfterOrderByCreatedAtDesc(LocalDateTime time);
 
-    List<Contract> findByParticipants_IdAndContractCategory(Long userId, ContractCategory category);
+    Page<Contract> findByParticipants_IdAndContractCategoryAndStatusNot(
+            Long userId,
+            ContractCategory category,
+            ContractStatus status,
+            Pageable pageable
+    );
 
     // 특정 시간이 지난 게시물을 가져오는 메서드
     List<Contract> findAllByStatusAndUpdatedAtBefore(ContractStatus status, LocalDateTime time);
 
+    // 외부 계약서 페이징 + TERMINATED 제외
+    @Query("""
+    SELECT c FROM Contract c
+    WHERE c.status NOT IN :excludedStatuses
+""")
+    Page<Contract> findAllByStatusNotIn(@Param("excludedStatuses") List<ContractStatus> excludedStatuses, Pageable pageable);
 }

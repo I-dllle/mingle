@@ -14,7 +14,9 @@ import java.time.LocalDate;
 @Getter@Setter
 @Entity
 public class InternalContract extends BaseEntity {
-    @ManyToOne
+    // 계약 당사자: 아티스트 또는 일반 유저
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     private LocalDate startDate;

@@ -49,6 +49,8 @@ public class AttendanceDetailDto {
     @Schema(description = "근태 요청서 ID", example = "1")
     private Long requestId;
 
+    @Schema(description = "특별 휴가 사유", example = "결혼 휴가")
+    private String leaveType;
 }
 
 
