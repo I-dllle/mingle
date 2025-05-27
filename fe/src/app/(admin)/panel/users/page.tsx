@@ -10,7 +10,7 @@ import {
   UserStatus,
   PositionCode,
 } from "@/features/admin/types/AdminUser";
-import { UserSearchDto } from "@/features/finance-legal/types/Contract";
+import { UserSearchDto } from "@/features/department/finance-legal/contracts/types/Contract";
 
 interface PageResponse<T> {
   content: T[];

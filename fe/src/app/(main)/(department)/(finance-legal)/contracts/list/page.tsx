@@ -8,8 +8,8 @@ import {
   ContractStatus,
   ContractType,
   ContractCategory,
-} from "@/features/finance-legal/types/Contract";
-import { getFilteredContracts } from "@/features/finance-legal/services/contractService";
+} from "@/features/department/finance-legal/contracts/types/Contract";
+import { getFilteredContracts } from "@/features/department/finance-legal/contracts/services/contractService";
 
 interface PagedResponse {
   content: ContractResponse[];

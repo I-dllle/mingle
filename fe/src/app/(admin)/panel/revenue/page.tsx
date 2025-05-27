@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { settlementService } from "@/features/finance-legal/services/settlementService";
+import { settlementService } from "@/features/department/finance-legal/revenue/services/settlementService";
 import {
   SettlementDto,
   SettlementSummaryDto,
   ArtistRevenueDto,
-} from "@/features/finance-legal/types/Settlement";
+} from "@/features/department/finance-legal/revenue/types/Settlement";
 
 export default function RevenueManagementPage() {
   const [activeTab, setActiveTab] = useState("dashboard");

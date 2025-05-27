@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { settlementService } from "@/features/finance-legal/services/settlementService";
+import { settlementService } from "@/features/department/finance-legal/revenue/services/settlementService";
 import {
   SettlementDto,
   SettlementDetailResponse,
-} from "@/features/finance-legal/types/Settlement";
+} from "@/features/department/finance-legal/revenue/types/Settlement";
 
 export default function ContractsPage() {
   const [contractId, setContractId] = useState<number>(0);

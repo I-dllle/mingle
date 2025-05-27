@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { settlementService } from "@/features/finance-legal/services/settlementService";
-import { contractService } from "@/features/finance-legal/services/contractService";
-import { ContractCategory } from "@/features/finance-legal/types/Contract";
+import { settlementService } from "@/features/department/finance-legal/revenue/services/settlementService";
+import { contractService } from "@/features/department/finance-legal/contracts/services/contractService";
+import { ContractCategory } from "@/features/department/finance-legal/contracts/types/Contract";
 import {
   SettlementSummaryDto,
   ArtistRevenueDto,
-} from "@/features/finance-legal/types/Settlement";
+} from "@/features/department/finance-legal/revenue/types/Settlement";
 
 interface DashboardData {
   settlementSummary: SettlementSummaryDto | null;
