@@ -55,6 +55,11 @@ public interface InternalContractRepository extends JpaRepository<InternalContra
     List<InternalContract> findAllByStatusAndUpdatedAtBefore(ContractStatus status, LocalDateTime time);
 
 
-    // 외부 계약서 페이징 + TERMINATED 제외
-    Page<InternalContract> findAllByStatusNot(ContractStatus status, Pageable pageable);
+    // 내부 계약서 페이징 + TERMINATED 제외
+    @Query("""
+    SELECT c FROM InternalContract c
+    WHERE c.status NOT IN :excludedStatuses
+""")
+    Page<InternalContract> findAllByStatusNotIn(@Param("excludedStatuses") List<ContractStatus> excludedStatuses, Pageable pageable);
+
 }

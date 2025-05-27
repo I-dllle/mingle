@@ -14,7 +14,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
@@ -149,5 +148,9 @@ public class ApiV1FinanceController {
         return ResponseEntity.ok(settlementService.getSettlementDetailsByContract(contractId));
     }
 
-
+    @GetMapping
+    @Operation(summary = "모든 정산 리스트")
+    public ResponseEntity<List<SettlementDto>> getAll() {
+        return ResponseEntity.ok(settlementService.getAllSettlements());
+    }
 }

@@ -8,17 +8,21 @@ import com.example.mingle.global.rq.Rq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 // 인증 관련 API 컨트롤러
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
@@ -56,7 +60,33 @@ public class ApiV1AuthController {
             @ApiResponse(responseCode = "401", description = "아이디 또는 비밀번호 불일치")
     })
     @PostMapping("/login")
-    public ResponseEntity<TokenResponseDto> login(@Valid @RequestBody LoginRequestDto request) {
+    public ResponseEntity<TokenResponseDto> login(
+            @Valid @RequestBody LoginRequestDto request,
+            HttpServletResponse response) {
+        TokenResponseDto tokenDto = authLoginService.login(request);
+
+        // accessToken을 쿠키로 설정
+        ResponseCookie accessCookie = ResponseCookie.from("accessToken", tokenDto.getAccessToken())
+                .httpOnly(true) // JS에서 접근 불가 (보안상 안전)
+                .secure(false) // https 환경에서는 true, 로컬에선 false
+                .path("/")
+                .sameSite("Lax")
+                .maxAge(60 * 60) // 1시간
+                .build();
+
+        // refreshToken도 쿠키로 설정
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", tokenDto.getRefreshToken())
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .sameSite("Lax")
+                .maxAge(60 * 60 * 24 * 7) // 7일
+                .build();
+
+        // 헤더에 쿠키 추가
+        response.addHeader("Set-Cookie", accessCookie.toString());
+        response.addHeader("Set-Cookie", refreshCookie.toString());
+
         return ResponseEntity.ok(authLoginService.login(request));
     }
 
@@ -105,14 +135,27 @@ public class ApiV1AuthController {
     @Operation(summary = "내 정보 조회", description = "현재 로그인한 사용자의 정보를 조회합니다.")
     @ApiResponse(responseCode = "200", description = "조회 성공")
     @GetMapping("/me")
-    public ResponseEntity<UserResponseDto> getMyProfile() {
-        User user = rq.getActor(); // 현재 로그인한 사용자 가져오기
+    public ResponseEntity<?> getMyProfile() {
+        try{
+            User user = rq.getActor(); // 현재 로그인한 사용자 가져오기
 
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 인증 안 된 경우
+            if (user == null) {
+                System.out.println("user is null from rq.getActor()");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 인증 안 된 경우
+            }
+
+            System.out.println("user id: " + user.getId());
+            System.out.println("department: " + user.getDepartment());
+            System.out.println("status: " + user.getStatus());
+            System.out.println("phoneNum: " + user.getPhoneNum());
+            System.out.println("imageUrl: " + user.getImageUrl());
+
+            return ResponseEntity.ok(UserResponseDto.fromEntity(user)); // DTO 변환 후 반환
+        } catch (Exception e) {
+            log.error("사용자 정보 조회 중 예외 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("서버 에러 발생: " + e.getMessage());
         }
-
-        return ResponseEntity.ok(UserResponseDto.fromEntity(user)); // DTO 변환 후 반환
     }
 
 

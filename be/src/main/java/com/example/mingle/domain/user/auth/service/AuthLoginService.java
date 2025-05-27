@@ -10,6 +10,7 @@ import com.example.mingle.domain.user.user.repository.UserRepository;
 import com.example.mingle.global.exception.ApiException;
 import com.example.mingle.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthLoginService {
@@ -59,7 +61,7 @@ public class AuthLoginService {
         user.setRefreshToken(refreshToken);
         userRepository.save(user);
 
-        return new TokenResponseDto(accessToken);
+        return new TokenResponseDto(accessToken, refreshToken);
     }
 
 
@@ -99,7 +101,7 @@ public class AuthLoginService {
         userRepository.save(user);
 
         // 5. 응답
-        return new TokenResponseDto(newAccessToken);
+        return new TokenResponseDto(newAccessToken, refreshToken);
     }
 
 
@@ -109,6 +111,13 @@ public class AuthLoginService {
      * → Rq.getUserFromAccessToken()에서 사용
      */
     public User getUserFromAccessToken(String accessToken) {
+        log.info("accessToken 파싱 시도 중");
+
+        if (!authTokenService.isValid(accessToken)) {
+            log.warn("accessToken 유효하지 않음");
+            return null;
+        }
+
         Map<String, Object> payload = authTokenService.payload(accessToken);
 
         if (payload == null) return null;
@@ -121,6 +130,8 @@ public class AuthLoginService {
 
         // department 조회 (없을 경우 null 가능)
         Department department = departmentRepository.findByUserId(userId);
+
+        log.info("token payload userId: {}", userId);
 
         return User.builder()
                 .id(userId)
