@@ -46,6 +46,7 @@ public class PostService {
     private final AwsS3Uploader awsS3Uploader;
     private final MenuRepository menuRepository;
     private final PostTypeRepository postTypeRepository;
+    private final UserService userService;
 
     //게시글 CREATE
     @Transactional
