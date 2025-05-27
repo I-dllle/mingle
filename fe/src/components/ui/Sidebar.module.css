@@ -53,12 +53,12 @@
 }
 
 .logoImage {
-  height: 2.5rem;
+  height: 3.5rem;
   width: auto;
 }
 
 .logoSubtitle {
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   color: #6b7280;
 }
 .departmentTitle {
@@ -115,7 +115,7 @@
 }
 
 .menuItemActive::after {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: -8px;
