@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { contractService } from "@/features/finance-legal/services/contractService";
+import { contractService } from "@/features/department/finance-legal/contracts/services/contractService";
 import {
   ContractCategory,
   ContractResponse,
@@ -12,7 +12,7 @@ import {
   ContractSimpleDto,
   PagedResponse,
   UserSearchDto,
-} from "@/features/finance-legal/types/Contract";
+} from "@/features/department/finance-legal/contracts/types/Contract";
 
 export default function AdminContractsPage() {
   // 상태 관리

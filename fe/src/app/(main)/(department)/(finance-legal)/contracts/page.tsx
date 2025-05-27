@@ -13,8 +13,8 @@ import {
   RatioType,
   SettlementRatioDto,
   OfflineSignRequest,
-} from "@/features/finance-legal/types/Contract";
-import { contractService } from "@/features/finance-legal/services/contractService";
+} from "@/features/department/finance-legal/contracts/types/Contract";
+import { contractService } from "@/features/department/finance-legal/contracts/services/contractService";
 
 interface ContractsPageProps {
   searchParams: { [key: string]: string | string[] | undefined };
