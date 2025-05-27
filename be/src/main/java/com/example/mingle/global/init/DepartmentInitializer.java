@@ -28,8 +28,8 @@ public class DepartmentInitializer implements CommandLineRunner {
             "Finance & Legal",
             "Marketing & PR",
             "Artist & Manager",
-            "System Operations",
-            "Executive"
+            "System Operations"
+//            "Executive"
     );
 
     @Override

@@ -1,4 +1,4 @@
-import { apiClient } from "@/lib/apiClient";
+import { apiClient } from "@/lib/api/apiClient";
 import {
   AdminRequestUser,
   AdminUpdateUser,
@@ -6,9 +6,9 @@ import {
   UserRole,
   PositionCode,
 } from "../types/AdminUser";
-import { UserSearchDto } from "@/features/finance-legal/types/Contract";
+import { UserSearchDto } from "@/features/department/finance-legal/contracts/types/Contract";
 
-const API_BASE_URL = "/api/v1/admin/users";
+const API_BASE_URL = "/admin/users";
 
 // 페이지네이션된 응답 타입
 interface PageResponse<T> {
@@ -40,14 +40,17 @@ const getUsersFiltered = async (
     params.append("positionCode", positionCode);
   }
 
-  const response = await apiClient.get(`${API_BASE_URL}?${params}`);
-  return response.data;
+  return await apiClient<PageResponse<AdminRequestUser>>(
+    `${API_BASE_URL}?${params}`,
+    { method: "GET" }
+  );
 };
 
 // 유저 상세 조회
 const getUser = async (id: number): Promise<AdminRequestUser> => {
-  const response = await apiClient.get(`${API_BASE_URL}/${id}`);
-  return response.data;
+  return await apiClient<AdminRequestUser>(`${API_BASE_URL}/${id}`, {
+    method: "GET",
+  });
 };
 
 // 유저 정보 변경 (부서, 포지션 등)
@@ -55,7 +58,10 @@ const updateUser = async (
   userId: number,
   updateData: AdminUpdateUser
 ): Promise<void> => {
-  await apiClient.put(`${API_BASE_URL}/${userId}`, updateData);
+  await apiClient(`${API_BASE_URL}/${userId}`, {
+    method: "PUT",
+    body: JSON.stringify(updateData),
+  });
 };
 
 // 유저 권한 변경
@@ -63,14 +69,18 @@ const updateRole = async (
   id: number,
   roleData: AdminRoleUpdate
 ): Promise<void> => {
-  await apiClient.patch(`${API_BASE_URL}/${id}/role`, roleData);
+  await apiClient(`${API_BASE_URL}/${id}/role`, {
+    method: "PATCH",
+    body: JSON.stringify(roleData),
+  });
 };
 
 // 이름으로 유저 검색
 const searchByName = async (name: string): Promise<UserSearchDto[]> => {
   const params = new URLSearchParams({ name });
-  const response = await apiClient.get(`${API_BASE_URL}/search?${params}`);
-  return response.data;
+  return await apiClient<UserSearchDto[]>(`${API_BASE_URL}/search?${params}`, {
+    method: "GET",
+  });
 };
 
 export const adminUserService = {

@@ -1,16 +1,14 @@
-export interface User {
-  id: number;
-  loginId: string;
-  email?: string;
-  nickname?: string;
-  role: string;
-  phoneNum?: string;
-  imageUrl?: string;
-  departmentId?: number;
-  departmentName?: string;
-  positionId?: number;
-  createdAt: string;
-  updatedAt: string;
+// 사용자 타입 정의
+
+export interface Department {
+  departmentName: string;
 }
 
-export type UserRole = "ADMIN" | "STAFF" | "ARTIST";
+export interface CurrentUser {
+  id: number;
+  name: string;
+  nickname: string;
+  department: Department | null | undefined;
+  role: string;
+  email: string;
+}
