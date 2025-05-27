@@ -8,44 +8,44 @@ export const departmentMenus: Record<
     isActive?: boolean;
   }[]
 > = {
-  'Planning & A&R': [
-    {
-      id: 'team_composition',
-      name: '팀/유닛 구성',
-      icon: 'user',
-      path: '/main/board/team',
-    },
-    {
-      id: 'artists',
-      name: '아티스트',
-      icon: 'document',
-      path: '/main/board/artists',
-    },
-    {
-      id: 'activity_planning',
-      name: '활동기획',
-      icon: 'calendar',
-      path: '/main/board/plan',
-    },
-  ],
   'Creative Studio': [
     {
       id: 'audio_video',
       name: '음원/영상',
       icon: 'document',
-      path: '/main/board/media',
+      path: '/audio_video',
     },
     {
       id: 'press_releases',
       name: '보도자료',
       icon: 'text',
-      path: '/main/board/press',
+      path: 'press_releases',
     },
     {
       id: 'album_covers',
       name: '앨범커버',
       icon: 'palette',
-      path: '/main/board/cover',
+      path: '/contentclassification-albumcovers',
+    },
+  ],
+  'Planning & A&R': [
+    {
+      id: 'team_composition',
+      name: '팀/유닛 구성',
+      icon: 'user',
+      path: '/team-composition',
+    },
+    {
+      id: 'artists',
+      name: '아티스트',
+      icon: 'document',
+      path: '/artists',
+    },
+    {
+      id: 'activity_planning',
+      name: '활동기획',
+      icon: 'calendar',
+      path: '/activity-planning',
     },
   ],
   'Marketing & PR': [
@@ -53,63 +53,39 @@ export const departmentMenus: Record<
       id: 'sns_content',
       name: 'SNS컨텐츠',
       icon: 'document',
-      path: '/main/board/sns',
+      path: '/sns-content',
     },
     {
       id: 'events',
       name: '이벤트',
       icon: 'calendar',
-      path: '/main/board/event',
-    },
-    {
-      id: 'press_releases',
-      name: '보도자료',
-      icon: 'text',
-      path: '/main/board/press',
+      path: '/events',
     },
   ],
   'Finance & Legal': [
     {
-      id: 'noticeboard_management',
-      name: '공지사항',
+      id: 'contract_management',
+      name: '계약서관리',
       icon: 'document',
-      path: '/main/board/notice',
-    },
-    {
-      id: 'user_management',
-      name: '사용자 관리',
-      icon: 'user',
-      path: '/main/user/manage',
-    },
-    {
-      id: 'attendance_management',
-      name: '근태관리',
-      icon: 'clock',
-      path: '/main/attendance',
+      path: '/contracts',
     },
     {
       id: 'revenue_analysis',
       name: '수익분석',
       icon: 'chart',
-      path: '/main/board/revenue',
+      path: '/revenue',
     },
     {
-      id: 'settlement_management',
-      name: '정산관리',
+      id: 'internal_policy',
+      name: '내부 규정',
       icon: 'book',
-      path: '/main/board/settlement',
+      path: '/policy',
     },
     {
-      id: 'contract_management',
-      name: '계약서관리',
-      icon: 'document',
-      path: '/main/board/contract',
-    },
-    {
-      id: 'renewals',
-      name: '갱신 관리',
+      id: 'legal_disputes',
+      name: '법률 분쟁 내역',
       icon: 'refresh',
-      path: '/main/board/renewal',
+      path: '/legal-disputes',
     },
   ],
   'System Operations': [
@@ -117,8 +93,32 @@ export const departmentMenus: Record<
       id: 'dashboard',
       name: '대시보드',
       icon: 'chart',
-      path: '/main/dashboard',
+      path: '/dashboard',
       isActive: true,
+    },
+    {
+      id: 'user_management',
+      name: '사용자 관리',
+      icon: 'user',
+      path: '/panel/users',
+    },
+    {
+      id: 'attendance_management',
+      name: '근태관리',
+      icon: 'clock',
+      path: '/panel/attendance',
+    },
+    {
+      id: 'revenue_management',
+      name: '수익/정산관리',
+      icon: 'money',
+      path: '/panel/revenue',
+    },
+    {
+      id: 'contract_management',
+      name: '계약서 관리',
+      icon: 'document',
+      path: '/panel/contracts',
     },
   ],
   'Artist & Manager': [
@@ -126,25 +126,25 @@ export const departmentMenus: Record<
       id: 'artist_report',
       name: '활동보고서',
       icon: 'document',
-      path: '/main/board/report',
-    },
-    {
-      id: 'sns_content',
-      name: 'SNS컨텐츠',
-      icon: 'text',
-      path: '/main/board/sns',
-    },
-    {
-      id: 'events',
-      name: '이벤트',
-      icon: 'calendar',
-      path: '/main/board/event',
+      path: '/artist-report',
     },
     {
       id: 'studio_reservation',
       name: '연습실 예약',
       icon: 'calendar',
-      path: '/main/reservation/studio',
+      path: '/studio-reservation',
+    },
+    {
+      id: 'sns_content',
+      name: 'SNS컨텐츠',
+      icon: 'text',
+      path: '/sns-content', // marketing 부서와 동일
+    },
+    {
+      id: 'events',
+      name: '이벤트',
+      icon: 'calendar',
+      path: '/events', // marketing 부서와 동일
     },
   ],
   default: [

@@ -35,13 +35,9 @@ export default function ClientFetcher({
 
   if (loading || !user) return null; // 로딩 중
 
-  console.log('user.department:', user.department);
-
   // [3] 레이아웃 구성 유지
   return (
-    <ClientDepartmentProvider
-      name={user.department?.departmentName ?? 'default'}
-    >
+    <ClientDepartmentProvider name={user.departmentName ?? 'default'}>
       <div
         style={{
           display: 'flex',
