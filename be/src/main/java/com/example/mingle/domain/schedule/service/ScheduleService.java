@@ -71,7 +71,6 @@ public class ScheduleService {
                 .map(scheduleMapper::toResponse)
                 .collect(Collectors.toList());
     }
-1
 
     // 개인 일정 생성
     @Transactional
