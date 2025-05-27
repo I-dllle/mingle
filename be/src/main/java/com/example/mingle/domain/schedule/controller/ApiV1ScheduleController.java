@@ -50,6 +50,33 @@ public class ApiV1ScheduleController {
         return ResponseEntity.ok(response);
     }
 
+    // 단건 조회
+    @Operation(summary = "일정 단건 조회",
+            description = "스케줄 ID로 단건 일정을 가져옵니다.")
+    @GetMapping("/{scheduleId}")
+    public ResponseEntity<ScheduleResponse> getSchedule(
+            @PathVariable Long scheduleId
+    ) {
+        Long userId = rq.getActor().getId();
+        ScheduleResponse response = scheduleService.getScheduleById(userId, scheduleId);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<ScheduleResponse>> searchSchedules(
+            @RequestParam("keyword") String keyword,
+            @RequestParam(value = "memo", defaultValue = "false") boolean memo
+    ) {
+        Long userId = rq.getActor().getId();
+
+        Long deptId = rq.getActor().getDepartment().getId();
+
+        List<ScheduleResponse> results =
+                scheduleService.searchVisibleSchedules(userId, deptId, keyword, memo);
+
+        return ResponseEntity.ok(results);
+    }
+
     // 상태별 일정 조회
     @Operation(summary = "상태별 일정 조회", description = "특정 상태의 일정을 조회합니다.")
     @GetMapping("/status")
@@ -74,11 +101,12 @@ public class ApiV1ScheduleController {
             @Parameter(description = "일정 타입", example = "DEPARTMENT, COMPANY, PERSONAL")
             @RequestParam(required = false) ScheduleType type,
             @Parameter(description = "조회 기준 날짜(ISO)", example = "2025-05-13")
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(required = false) Long departmentId
     ) {
         Long userId = rq.getActor().getId();
-        List<ScheduleResponse> responses = scheduleService.getMonthlyView(userId, type, date, departmentId);
+        LocalDate targetDate = date != null ? date : LocalDate.now();
+        List<ScheduleResponse> responses = scheduleService.getMonthlyView(userId, type, targetDate, departmentId);
         return ResponseEntity.ok(responses);
     }
 
@@ -89,11 +117,12 @@ public class ApiV1ScheduleController {
             @Parameter(description = "일정 타입", example = "DEPARTMENT, COMPANY, PERSONAL")
             @RequestParam(required = false) ScheduleType type,
             @Parameter(description = "조회 기준 날짜(ISO)", example = "2025-05-13")
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(required = false) Long departmentId
     ) {
         Long userId = rq.getActor().getId();
-        List<ScheduleResponse> responses = scheduleService.getWeeklyView(userId, date, type, departmentId);
+        LocalDate targetDate = date != null ? date : LocalDate.now();
+        List<ScheduleResponse> responses = scheduleService.getWeeklyView(userId, targetDate, type, departmentId);
         return ResponseEntity.ok(responses);
     }
 
@@ -104,11 +133,12 @@ public class ApiV1ScheduleController {
             @Parameter(description = "일정 타입", example = "DEPARTMENT, COMPANY, PERSONAL")
             @RequestParam(required = false) ScheduleType type,
             @Parameter(description = "조회 기준 날짜(ISO)", example = "2025-05-13")
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(required = false) Long departmentId
     ) {
         Long userId = rq.getActor().getId();
-        List<ScheduleResponse> responses = scheduleService.getDailyView(userId, date, type, departmentId);
+        LocalDate targetDate = date != null ? date : LocalDate.now();
+        List<ScheduleResponse> responses = scheduleService.getDailyView(userId, targetDate, type, departmentId);
         return ResponseEntity.ok(responses);
     }
 

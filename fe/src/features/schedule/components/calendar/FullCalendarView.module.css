@@ -1,0 +1,65 @@
+.calendarContainer {
+  padding: 1rem;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+.actionBar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.createButton {
+  padding: 0.5rem 1rem;
+  background-color: #3b82f6;
+  color: white;
+  border-radius: 0.375rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s;
+  border: none;
+  cursor: pointer;
+}
+
+.createButton:hover {
+  background-color: #2563eb;
+}
+
+/* 레이아웃 관련 스타일 */
+.contentWrapper {
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+/* 이벤트 스타일 오버라이드를 위한 추가 클래스들 */
+.personal {
+  border-left: 4px solid #eab308;
+  background-color: #fefce8;
+}
+
+.department {
+  border-left: 4px solid #3b82f6;
+  background-color: #eff6ff;
+}
+
+.company {
+  border-left: 4px solid #ef4444;
+  background-color: #fef2f2;
+}
+
+/* 모바일 반응형 스타일 */
+@media (max-width: 640px) {
+  .actionBar {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+  }
+
+  .createButton {
+    width: 100%;
+    justify-content: center;
+  }
+}

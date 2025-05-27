@@ -157,4 +157,18 @@ export const scheduleService = {
     );
     return response.data;
   },
+
+  // 일정 검색
+  searchSchedules: async (keyword: string, includeMemo: boolean = false) => {
+    const response = await apiClient.get<ScheduleResponse[]>(
+      `${BASE_URL}/search`,
+      {
+        params: {
+          keyword,
+          memo: includeMemo,
+        },
+      }
+    );
+    return response.data;
+  },
 };

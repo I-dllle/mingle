@@ -27,10 +27,7 @@ export default function RootLayout({
         {" "}
         <div className="flex flex-1 min-h-0">
           {/* 왼쪽 사이드바 컴포넌트 */}
-          <LeftSideBar
-            department=""
-            onMenuChange={handleMenuChange}
-          />
+          <LeftSideBar department="" onMenuChange={handleMenuChange} />
 
           {/* 중앙 콘텐츠 영역 */}
           <div className="flex-1 flex flex-col bg-white overflow-y-auto">

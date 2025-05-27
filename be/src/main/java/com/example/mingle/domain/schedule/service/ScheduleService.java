@@ -29,6 +29,7 @@ import java.time.YearMonth;
 import java.time.temporal.WeekFields;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -39,6 +40,38 @@ public class ScheduleService {
     private final PostRepository postRepository;
     private final ScheduleMapper scheduleMapper;
     private final DepartmentRepository departmentRepository;
+
+    // 단건 조회
+    @Transactional(readOnly = true)
+    public ScheduleResponse getScheduleById(Long userId, Long scheduleId) {
+        if (!userRepository.existsById(userId)) {
+            throw new ApiException(ErrorCode.USER_NOT_FOUND);
+        }
+        Schedule schedule = scheduleRepository.findByUser_IdAndId(userId, scheduleId)
+                .orElseThrow(() -> new ApiException(ErrorCode.SCHEDULE_NOT_FOUND));
+        // 2) 변환해서 리턴
+        return scheduleMapper.toResponse(schedule);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ScheduleResponse> searchVisibleSchedules(
+            Long userId,
+            Long departmentId,
+            String keyword,
+            boolean includeMemo
+    ) {
+        // 키워드 null·빈값 방어
+        String kw = keyword == null ? "" : keyword.trim();
+
+        List<Schedule> list = includeMemo
+                ? scheduleRepository.searchTitleOrMemoAllVisible(userId, departmentId, kw)
+                : scheduleRepository.searchTitleAllVisible(userId, departmentId, kw);
+
+        return list.stream()
+                .map(scheduleMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
 
     // 개인 일정 생성
     @Transactional
@@ -307,7 +340,7 @@ public class ScheduleService {
         }
 
         // request dto로부터 받은 정보를 entity에 적용
-        scheduleMapper.updateEntityFromRequest(schedule, request,null);
+        scheduleMapper.updateEntityFromRequest(schedule, request, null);
 
         // 슈뢰딩거 고양이기 때문에 post 업데이트 따로 처리하도록 하자.
         Post post = request.getPostId() != null
