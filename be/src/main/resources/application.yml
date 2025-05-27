@@ -44,18 +44,6 @@ custom:
     cookieDomain: "${custom.dev.cookieDomain}"
     frontUrl: "${custom.dev.frontUrl}"
     backUrl: "${custom.dev.backUrl}"
-cloud:
-  aws:
-    s3:
-      bucket: mingle-images
-    credentials:
-      accessKey: ${cloud.aws.credentials.access-key}
-      secretKey: ${cloud.aws.credentials.secret-key}
-    region:
-      static: ap-northeast-2
-    stack:
-      auto: false
-
 admin:
   initial:
     email: admin@admin.com
