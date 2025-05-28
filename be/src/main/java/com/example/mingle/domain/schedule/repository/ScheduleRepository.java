@@ -18,7 +18,12 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     @Query("SELECT s FROM Schedule s JOIN FETCH s.user WHERE s.user.id = :userId " +
             "AND s.scheduleType = :type AND s.startTime BETWEEN :start AND :end")
     List<Schedule> findByUserIdAndScheduleTypeBetweenWithUser(
-            Long userId, ScheduleType scheduleType, LocalDateTime startTime, LocalDateTime endTime);
+            @Param("userId") Long userId,
+            @Param("type")   ScheduleType scheduleType,
+            @Param("start")  LocalDateTime startTime,
+            @Param("end")    LocalDateTime endTime
+    );
+
 
     // 유저, 스케쥴로 찾기
     Optional<Schedule> findByUser_IdAndId(Long userId, Long scheduleId);

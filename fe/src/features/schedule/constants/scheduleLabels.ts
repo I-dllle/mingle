@@ -1,9 +1,10 @@
 import { ScheduleStatus, ScheduleType } from "../types/Enums";
 
 // 상태 표시용 레이블
-export const scheduleStatusLabels = {
+export const scheduleStatusLabels: Record<ScheduleStatus, string> = {
   [ScheduleStatus.NONE]: "없음",
   [ScheduleStatus.IMPORTANT_MEETING]: "중요회의",
+  [ScheduleStatus.MEETING]: "회의",
   [ScheduleStatus.BUSINESS_TRIP]: "출장",
   [ScheduleStatus.COMPLETED]: "일정완료",
   [ScheduleStatus.CANCELED]: "일정취소",
@@ -28,6 +29,7 @@ export const scheduleTypeColors = {
 export const scheduleStatusColors = {
   [ScheduleStatus.NONE]: "#BDBDBD", // 연한 회색
   [ScheduleStatus.IMPORTANT_MEETING]: "#E91E63", // 핑크색
+  [ScheduleStatus.MEETING]: "#FF9800", // 오렌지색
   [ScheduleStatus.BUSINESS_TRIP]: "#9C27B0", // 보라색
   [ScheduleStatus.COMPLETED]: "#8BC34A", // 연두색
   [ScheduleStatus.CANCELED]: "#9E9E9E", // 회색

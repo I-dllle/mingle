@@ -5,7 +5,7 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100%;
+  height: 100vh;
   margin: 0;
   padding: 0;
   background-color: white;
@@ -161,12 +161,9 @@
 
 /* 캘린더 래퍼 설정 */
 .calendarWrapper {
-  flex: 1;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow: hidden !important;
+  flex: 1 1 auto; /* 남은 공간을 전부 차지 */
+  min-height: 0; /* flex 자식에서 overflow가 작동하게 해줌 */
+  overflow-y: auto; /* 달력 자체가 높아지면 여기만 스크롤 */
 }
 
 /* 새 일정 버튼 */
@@ -228,5 +225,10 @@
 
   .calendarWrapper :global(.fc-scrollgrid-sync-table) {
     height: 100% !important;
+  }
+
+  .footerWrapper {
+    flex: 0 0 auto;
+    /* 필요하면 padding/margin 조절 */
   }
 }

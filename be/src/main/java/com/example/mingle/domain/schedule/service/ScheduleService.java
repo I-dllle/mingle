@@ -92,7 +92,7 @@ public class ScheduleService {
         return scheduleMapper.toResponse(saved);
     }
 
-    // 개인 상태에따라서 일정 조회
+    // 개인 상태에 따라서 일정 조회
     @Transactional(readOnly = true)
     public Page<ScheduleResponse> getSchedulesByStatus(
             Long userId,

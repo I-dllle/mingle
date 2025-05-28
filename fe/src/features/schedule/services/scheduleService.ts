@@ -1,4 +1,4 @@
-import { apiClient } from "@/lib/apiClient";
+import { apiClient } from "@/lib/api/apiClient";
 import {
   Schedule,
   ScheduleFormData,
@@ -7,6 +7,8 @@ import {
   DepartmentResponse,
 } from "@/features/schedule/types/Schedule";
 import { ScheduleType } from "@/features/schedule/types/Enums";
+
+const BASE = "/schedule";
 
 /**
  * 날짜 문자열에 초(":00") 추가하는 함수
@@ -69,12 +71,35 @@ function prepareScheduleDataForApi(formData: ScheduleFormData) {
 /**
  * 백엔드 응답을 프론트엔드 모델로 변환하는 함수
  */
-function mapResponseToSchedule(response: ScheduleResponse): Schedule {
-  return {
-    ...response,
-    startTime: response.startTime,
-    endTime: response.endTime,
-  };
+function mapResponseToSchedule(r: ScheduleResponse): Schedule {
+  return { ...r, startTime: r.startTime, endTime: r.endTime };
+}
+
+//공통 fetch 헬퍼: view(monthly/weekly/daily)
+async function fetchSchedules(
+  view: "monthly" | "weekly" | "daily",
+  date: Date,
+  scheduleType?: ScheduleType,
+  departmentId?: number
+): Promise<Schedule[]> {
+  const params = new URLSearchParams();
+  // 한국 로컬 타임존 기준 yyyy-MM-dd
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  params.append("date", `${yyyy}-${mm}-${dd}`);
+
+  if (scheduleType != null) {
+    params.append("type", scheduleType);
+  }
+  if (departmentId != null) {
+    params.append("departmentId", String(departmentId));
+  }
+
+  // BASE만 쓰면 apiClient(baseURL=/api/v1) + "/schedule/..." → /api/v1/schedule/...
+  const url = `${BASE}/${view}?${params.toString()}`;
+  const resp = await apiClient<ScheduleResponse[]>(url);
+  return resp.map(mapResponseToSchedule);
 }
 
 /**
@@ -201,67 +226,29 @@ export async function searchSchedules(
   return response.map(mapResponseToSchedule);
 }
 
-/**
- * 월간 일정 조회
- */
-export async function getMonthlySchedules(date: Date): Promise<Schedule[]> {
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1; // JavaScript의 월은 0부터 시작
-
-  const url = `/api/v1/schedule/monthly?year=${year}&month=${month}`;
-  const response = await apiClient<ScheduleResponse[]>(url);
-
-  return response.map(mapResponseToSchedule);
-}
-
-/**
- * 주간 일정 조회
- */
-export async function getWeeklyView(
+// --- 월간/주간/일간 조회 함수들 ---
+export function getMonthlySchedules(
   date: Date,
   scheduleType?: ScheduleType,
   departmentId?: number
 ): Promise<Schedule[]> {
-  const queryParams = new URLSearchParams();
-  queryParams.append("targetDate", date.toISOString().split("T")[0]);
-
-  if (scheduleType) {
-    queryParams.append("type", scheduleType);
-  }
-
-  if (departmentId) {
-    queryParams.append("departmentId", departmentId.toString());
-  }
-
-  const url = `/api/v1/schedule/weekly?${queryParams.toString()}`;
-  const response = await apiClient<ScheduleResponse[]>(url);
-
-  return response.map(mapResponseToSchedule);
+  return fetchSchedules("monthly", date, scheduleType, departmentId);
 }
 
-/**
- * 일간 일정 조회
- */
-export async function getDailyView(
+export function getWeeklyView(
   date: Date,
   scheduleType?: ScheduleType,
   departmentId?: number
 ): Promise<Schedule[]> {
-  const queryParams = new URLSearchParams();
-  queryParams.append("targetDate", date.toISOString().split("T")[0]);
+  return fetchSchedules("weekly", date, scheduleType, departmentId);
+}
 
-  if (scheduleType) {
-    queryParams.append("type", scheduleType);
-  }
-
-  if (departmentId) {
-    queryParams.append("departmentId", departmentId.toString());
-  }
-
-  const url = `/api/v1/schedule/daily?${queryParams.toString()}`;
-  const response = await apiClient<ScheduleResponse[]>(url);
-
-  return response.map(mapResponseToSchedule);
+export function getDailyView(
+  date: Date,
+  scheduleType?: ScheduleType,
+  departmentId?: number
+): Promise<Schedule[]> {
+  return fetchSchedules("daily", date, scheduleType, departmentId);
 }
 
 // 이전 방식과의 호환성을 위한 객체도 export

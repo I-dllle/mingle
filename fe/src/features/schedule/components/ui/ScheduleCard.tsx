@@ -28,6 +28,8 @@ export default function ScheduleCard({ event, onClick }: ScheduleCardProps) {
     COMPLETED: "#8BC34A",
     CANCELED: "#9E9E9E",
     VACATION: "#00BCD4",
+    NONE: "#9E9E9E", // 기본 색상
+    MEETING: "#FF9800", // 회의는 오렌지색
   };
 
   // 일정 상태에 따른 라벨 텍스트
@@ -37,6 +39,8 @@ export default function ScheduleCard({ event, onClick }: ScheduleCardProps) {
     COMPLETED: "완료",
     CANCELED: "취소",
     VACATION: "휴가",
+    NONE: "없음",
+    MEETING: "회의",
   };
 
   return (
