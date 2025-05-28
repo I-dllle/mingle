@@ -454,13 +454,16 @@ export default function ModernCalendarView() {
           nowIndicator={true}
           events={(info, successCallback) => {
             const calApi = calendarRef.current?.getApi();
-            // calApi.getDate()로 현재 포커스된 날짜를 가져온 후, 월의 1일로 설정
             const now = calApi?.getDate();
             // 해당 월의 1일을 정확히 설정 (2025-05-01 형식)
             const monthStart = now
               ? new Date(now.getFullYear(), now.getMonth(), 1)
               : null;
             const type = selectedType === "all" ? undefined : selectedType;
+            if (!monthStart) {
+              successCallback([]);
+              return;
+            }
             if (monthStart) {
               scheduleService
                 .getMonthlySchedules(monthStart, type as ScheduleType)
@@ -477,6 +480,7 @@ export default function ModernCalendarView() {
                         memo: event.memo,
                         scheduleStatus: event.scheduleStatus,
                       },
+                      allDay: true,
                     }))
                   )
                 );

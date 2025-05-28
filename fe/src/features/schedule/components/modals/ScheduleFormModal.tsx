@@ -1,9 +1,13 @@
-import React, { useState } from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { fetchCurrentUser } from "@/features/auth/services/authService";
+import { userService } from "@/features/auth/services/userService";
+import type { CurrentUser } from "@/features/auth/types/user";
 import { Schedule, ScheduleFormData } from "../../types/Schedule";
 import { ScheduleType, ScheduleStatus } from "../../types/Enums";
 import { scheduleService } from "../../services/scheduleService";
 import { formatDate } from "@/features/schedule/utils/calendarUtils";
-import { useAuth } from "@/features/auth/hooks/useAuth";
 import Modal from "@/features/schedule/components/ui/Modal";
 import { scheduleStatusLabels } from "../../constants/scheduleLabels";
 
@@ -22,9 +26,26 @@ export function ScheduleFormModal({
   mode,
   initialStartDate,
 }: ScheduleFormModalProps) {
-  const { user } = useAuth();
-  const isAdmin =
-    user?.role === "ROLE_ADMIN" || user?.role === "ROLE_SUPER_ADMIN";
+  // ① 로그인 유저 정보
+  const [user, setUser] = useState<CurrentUser | null>(null);
+  const [loadingUser, setLoadingUser] = useState<boolean>(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        // fetchCurrentUser 라우트가 잘 안 맞으면 지워버리고
+        const me = await userService.getMyProfile();
+        setUser(me);
+      } catch (e) {
+        console.error("프로필 가져오기 실패:", e);
+        setUser(null);
+      } finally {
+        setLoadingUser(false);
+      }
+    })();
+  }, []);
+
+  const isAdmin = user?.role === "ROLE_ADMIN";
   const initialISO = initialStartDate || "";
   const hasTime = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(initialISO);
 
@@ -176,6 +197,7 @@ export function ScheduleFormModal({
                 name="scheduleType"
                 value={formData.scheduleType}
                 onChange={handleInputChange}
+                disabled={loadingUser}
                 className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 required
               >

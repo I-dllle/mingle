@@ -1,5 +1,5 @@
-import apiClient from "@/lib/apiClient";
-import { User } from "../types/user";
+import { apiClient } from "@/lib/api/apiClient";
+import { User } from "@/features/auth/types/user";
 
 export const userService = {
   // 현재 로그인한 사용자 정보 조회

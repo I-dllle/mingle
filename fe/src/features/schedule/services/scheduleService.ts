@@ -200,7 +200,9 @@ export async function getAllSchedules(
  * 특정 일정 조회
  */
 export async function getScheduleById(id: number): Promise<Schedule> {
-  const response = await apiClient<ScheduleResponse>(`${BASE}/${id}`);
+  const response = await apiClient<ScheduleResponse>(`${BASE}/${id}`, {
+    method: "GET",
+  });
   return mapResponseToSchedule(response);
 }
 
