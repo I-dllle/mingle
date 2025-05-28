@@ -240,7 +240,7 @@ defaults
 ## api.blog.sik2.site => 프로젝트 API 서버 도메인
 frontend http_front
     bind *:80
-    acl host_app1 hdr_beg(host) -i api.blog.sik2.site
+    acl host_app1 hdr_beg(host) -i api.mingleservice.site
 
     use_backend http_back_1 if host_app1
 
@@ -302,7 +302,7 @@ GRANT ALL PRIVILEGES ON *.* TO 'll_local'@'127.0.0.1';
 GRANT ALL PRIVILEGES ON *.* TO 'll_local'@'172.18.%.%';
 GRANT ALL PRIVILEGES ON *.* TO 'll'@'%';
 
-CREATE DATABASE blog_prod;
+CREATE DATABASE mingle_prod;
 
 FLUSH PRIVILEGES;
 "
