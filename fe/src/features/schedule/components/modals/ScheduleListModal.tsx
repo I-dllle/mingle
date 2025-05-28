@@ -10,6 +10,7 @@ import { ScheduleType } from "../../types/Enums";
 import ScheduleCard from "@/features/schedule/components/ui/ScheduleCard";
 import { CalendarIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { ScheduleFormModal } from "./ScheduleFormModal";
+import ScheduleDetailModal from "./ScheduleDetailModal";
 
 interface ScheduleListModalProps {
   date: string;
@@ -24,6 +25,10 @@ export default function ScheduleListModal({
   const [events, setEvents] = useState<EventInput[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<ScheduleType | "ALL">("ALL");
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [selectedScheduleId, setSelectedScheduleId] = useState<number | null>(
+    null
+  );
 
   const formattedDate = new Date(date).toLocaleDateString("ko-KR", {
     year: "numeric",
@@ -84,12 +89,10 @@ export default function ScheduleListModal({
     setIsFormModalOpen(false);
     fetchEvents();
   };
-
   const handleScheduleClick = (event: EventInput) => {
-    if (event.id) {
-      router.push(`/schedule/${event.id}`);
-      onClose();
-    }
+    if (!event.id) return;
+    setSelectedScheduleId(Number(event.id));
+    setIsDetailModalOpen(true);
   };
   return (
     <>
@@ -175,14 +178,20 @@ export default function ScheduleListModal({
             )}
           </div>
         </div>
-      </Modal>
-
+      </Modal>{" "}
       {isFormModalOpen && (
         <ScheduleFormModal
           onClose={handleFormClose}
           onSubmit={handleFormSubmit}
           mode="create"
           initialStartDate={date}
+        />
+      )}
+      {/* 상세 모달 */}
+      {isDetailModalOpen && selectedScheduleId && (
+        <ScheduleDetailModal
+          scheduleId={selectedScheduleId}
+          onClose={() => setIsDetailModalOpen(false)}
         />
       )}
     </>

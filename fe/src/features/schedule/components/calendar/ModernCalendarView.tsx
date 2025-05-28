@@ -9,8 +9,10 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { scheduleService } from "@/features/schedule/services/scheduleService";
 import { ScheduleType } from "@/features/schedule/types/Enums";
 import { ScheduleFormModal } from "../modals/ScheduleFormModal";
+import ScheduleListModal from "../modals/ScheduleListModal";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import type { DateSelectArg, EventClickArg } from "@fullcalendar/core";
+import type { DateClickArg } from "@fullcalendar/interaction";
 import { getEventClassNames } from "@/features/schedule/utils/calendarTheme";
 import styles from "@/features/schedule/styles/ModernCalendarView.module.css";
 
@@ -84,6 +86,8 @@ export default function ModernCalendarView() {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [currentMonth, setCurrentMonth] = useState<string>("");
+  const [isListModalOpen, setIsListModalOpen] = useState(false);
+  const [clickedDate, setClickedDate] = useState<string | null>(null);
 
   const [summaryDate, setSummaryDate] = useState<Date>(new Date());
 
@@ -220,10 +224,27 @@ export default function ModernCalendarView() {
       setCurrentMonth(formattedDate);
     }
   };
-
   const handleDateSelect = (selectInfo: DateSelectArg) => {
     setSelectedDate(selectInfo.startStr);
     setIsFormModalOpen(true);
+  };
+
+  // 단일 날짜 클릭 핸들러
+  const handleDateClick = async (info: DateClickArg) => {
+    const dateStr = info.dateStr; // "2025-05-28"
+    const dateObj = new Date(dateStr);
+    // 현재 filter(개인/부서/회사)도 적용하고 싶으면 두번째 인자에 selectedType 넘기기
+    const events = await scheduleService.getDailyView(
+      dateObj,
+      selectedType === "all" ? undefined : selectedType
+    );
+    if (events.length) {
+      setClickedDate(dateStr);
+      setIsListModalOpen(true);
+    } else {
+      setSelectedDate(dateStr);
+      setIsFormModalOpen(true);
+    }
   };
 
   const handleEventClick = (clickInfo: EventClickArg) => {
@@ -235,15 +256,29 @@ export default function ModernCalendarView() {
     <div className={styles.calendarContainer}>
       {/* 캘린더 헤더 */}
       <div className={styles.calendarHeader}>
-        {/* 검색 버튼 */}
-        <button
-          className={styles.searchButton}
-          onClick={() => setShowSearchModal(true)}
-          aria-label="일정 검색"
-        >
-          🔍
-        </button>
-        <div className={styles.calendarTitle}>{currentMonth}</div>
+        <div className="flex items-center gap-4">
+          <button
+            className={styles.searchButton}
+            onClick={() => setShowSearchModal(true)}
+            aria-label="일정 검색"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+          <div className={styles.calendarTitle}>{currentMonth}</div>
+        </div>
         <div className={styles.dateControls}>
           <button
             className={styles.dateButton}
@@ -267,29 +302,46 @@ export default function ModernCalendarView() {
           </button>
         </div>
       </div>
-
       {/* 검색 모달 */}
       {showSearchModal && (
         <Modal title="일정 검색" onClose={() => setShowSearchModal(false)}>
-          <div className="p-4 space-y-4">
-            <div className="flex gap-2">
-              <input
-                className="flex-1 border rounded px-3 py-2"
-                placeholder="검색어를 입력하세요"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleSearch();
-                }}
-              />
+          <div className="p-6 space-y-5">
+            <div className="flex gap-3">
+              <div className="relative flex-1">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                </div>
+                <input
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-200 focus:border-purple-500 transition-all"
+                  placeholder="일정명, 메모 등으로 검색"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSearch();
+                  }}
+                />
+              </div>
               <button
-                className="px-4 py-2 bg-purple-600 text-white rounded"
+                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all"
                 onClick={handleSearch}
               >
                 검색
               </button>
             </div>
-            <div className="space-y-2 max-h-[50vh] overflow-auto">
+            <div className="space-y-3 max-h-[60vh] overflow-auto rounded-lg bg-gray-50 p-3">
               {searchResults.length > 0 ? (
                 searchResults.map((evt) => (
                   <ScheduleCard
@@ -302,15 +354,17 @@ export default function ModernCalendarView() {
                   />
                 ))
               ) : (
-                <p className="text-gray-500 text-center">
-                  검색 결과가 없습니다.
-                </p>
+                <div className="bg-white p-6 rounded-lg text-center border border-gray-100 shadow-sm">
+                  <p className="text-gray-500 mb-2">검색 결과가 없습니다.</p>
+                  <p className="text-sm text-gray-400">
+                    다른 키워드로 검색해보세요.
+                  </p>
+                </div>
               )}
             </div>
           </div>
         </Modal>
       )}
-
       {/* 필터 섹션 */}
       <div className={styles.filterSection}>
         <div className={styles.viewSelector}>
@@ -396,6 +450,7 @@ export default function ModernCalendarView() {
           initialDate={new Date()}
           selectable={true}
           select={handleDateSelect}
+          dateClick={handleDateClick}
           eventClick={handleEventClick}
           datesSet={handleDatesSet}
           headerToolbar={false} // 커스텀 헤더를 사용하므로 기본 헤더는 비활성화
@@ -403,10 +458,10 @@ export default function ModernCalendarView() {
           eventClassNames={getEventClassNames}
           height="100%" // 높이를 100%로 설정
           contentHeight="auto" // 컨텐츠 높이를 자동으로 조정
-          aspectRatio={1.35} // 원하는 종횡비로 조절
+          aspectRatio={1.8} // 종횡비를 높여서 세로로 더 크게 설정
           locale="ko"
-          slotMinTime="07:00:00"
-          slotMaxTime="21:00:00"
+          slotMinTime="00:00:00" // 오전 0시부터
+          slotMaxTime="24:00:00" // 자정까지 (24시간 전체)
           allDaySlot={true}
           events={(info, successCallback) => {
             const start = info.start;
@@ -431,10 +486,9 @@ export default function ModernCalendarView() {
               );
           }}
         />
-      </div>
-
+      </div>{" "}
       {/* ──── 하단 활동기록 ──── */}
-      <div className={styles.footerWrapper}>
+      <div className="p-6 bg-white border-t border-gray-100">
         <ActivitySummary
           view={
             currentView === "dayGridMonth"
@@ -444,10 +498,9 @@ export default function ModernCalendarView() {
               : "daily"
           }
           scheduleType={selectedType}
-          date={summaryDate} // 아래에서 추가할 prop
+          date={summaryDate}
         />
       </div>
-
       <button
         className={styles.newScheduleButton}
         onClick={() => {
@@ -458,7 +511,7 @@ export default function ModernCalendarView() {
         aria-label="새 일정 추가"
       >
         <PlusIcon />
-      </button>
+      </button>{" "}
       {/* 모달 */}
       {isFormModalOpen && selectedDate && (
         <ScheduleFormModal
@@ -475,6 +528,13 @@ export default function ModernCalendarView() {
           }}
           mode="create"
           initialStartDate={selectedDate}
+        />
+      )}
+      {/* 일정 리스트 모달 */}
+      {isListModalOpen && clickedDate && (
+        <ScheduleListModal
+          date={clickedDate}
+          onClose={() => setIsListModalOpen(false)}
         />
       )}
     </div>

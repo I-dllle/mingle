@@ -17,8 +17,8 @@ export default function ScheduleLayout({
 }: ScheduleLayoutProps) {
   return (
     <div className="flex flex-col h-screen overflow-hidden">
-      <header className="px-4 py-4 border-b">
-        <h1 className="text-2xl font-bold">일정 관리</h1>
+      <header className="px-5 py-5 border-b border-gray-100 bg-white">
+        <h1 className="text-2xl font-bold">일정 목록</h1>
       </header>
 
       {/* ★ 이 부분에 inline style 로 margin/padding 을 0 으로 덮어쓰기 ★ */}

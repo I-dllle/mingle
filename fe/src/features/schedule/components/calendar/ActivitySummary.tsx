@@ -54,8 +54,6 @@ export default function ActivitySummary({
     }
     load();
   }, [view, scheduleType, date]);
-
-  const statuses = Object.values(ScheduleStatus);
   const title = `활동 기록 (${view})`;
 
   if (error) {
@@ -68,15 +66,29 @@ export default function ActivitySummary({
     );
   }
 
+  // 원하는 4가지 상태만 표시 (회의, 중요회의, 휴가, 출장)
+  const selectedStatuses = [
+    ScheduleStatus.MEETING,
+    ScheduleStatus.IMPORTANT_MEETING,
+    ScheduleStatus.VACATION,
+    ScheduleStatus.BUSINESS_TRIP,
+  ];
+
   return (
-    <div className="grid grid-cols-3 gap-4">
-      {statuses.map((status) => (
-        <FooterCard
-          key={status}
-          title={scheduleStatusLabels[status]}
-          count={counts[status] ?? 0}
-        />
-      ))}
+    <div className="bg-white rounded-xl">
+      <h3 className="text-lg font-semibold text-gray-800 mb-3 px-1">
+        일정 요약
+      </h3>
+      <div className="grid grid-cols-4 gap-3">
+        {selectedStatuses.map((status) => (
+          <FooterCard
+            key={status}
+            title={scheduleStatusLabels[status]}
+            count={counts[status] ?? 0}
+            status={status}
+          />
+        ))}
+      </div>
     </div>
   );
 }
