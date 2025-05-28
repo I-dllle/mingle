@@ -2,8 +2,7 @@ terraform {
   // aws 라이브러리 불러옴
   required_providers {
     aws = {
-      source  = "hashicorp/aws"
-      version = "~> 4.0"
+      source = "hashicorp/aws"
     }
   }
 }
@@ -18,9 +17,7 @@ provider "aws" {
 resource "aws_vpc" "vpc_1" {
   cidr_block = "10.0.0.0/16"
 
-  # 무조건 켜세요.
-  enable_dns_support = true
-  # 무조건 켜세요.
+  enable_dns_support   = true
   enable_dns_hostnames = true
 
   tags = {
@@ -61,6 +58,17 @@ resource "aws_subnet" "subnet_3" {
   }
 }
 
+resource "aws_subnet" "subnet_4" {
+  vpc_id                  = aws_vpc.vpc_1.id
+  cidr_block              = "10.0.4.0/24"
+  availability_zone       = "${var.region}d"
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "${var.prefix}-subnet-4"
+  }
+}
+
 resource "aws_internet_gateway" "igw_1" {
   vpc_id = aws_vpc.vpc_1.id
 
@@ -97,20 +105,25 @@ resource "aws_route_table_association" "association_3" {
   route_table_id = aws_route_table.rt_1.id
 }
 
+resource "aws_route_table_association" "association_4" {
+  subnet_id      = aws_subnet.subnet_4.id
+  route_table_id = aws_route_table.rt_1.id
+}
+
 resource "aws_security_group" "sg_1" {
   name = "${var.prefix}-sg-1"
 
   ingress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "all"
+    from_port = 0
+    to_port   = 0
+    protocol  = "all"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "all"
+    from_port = 0
+    to_port   = 0
+    protocol  = "all"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -227,7 +240,7 @@ defaults
 ## api.blog.sik2.site => 프로젝트 API 서버 도메인
 frontend http_front
     bind *:80
-    acl host_app1 hdr_beg(host) -i api.mingleserver.site
+    acl host_app1 hdr_beg(host) -i api.blog.sik2.site
 
     use_backend http_back_1 if host_app1
 
@@ -262,10 +275,10 @@ docker run -d \
 
 # mysql 설치
 docker run -d \
-  --name mysql-mingle \
+  --name mysql_1 \
   --restart unless-stopped \
-  -v /dockerProjects/mysql-mingle/volumes/var/lib/mysql:/var/lib/mysql \
-  -v /dockerProjects/mysql-mingle/volumes/etc/mysql/conf.d:/etc/mysql/conf.d \
+  -v /dockerProjects/mysql_1/volumes/var/lib/mysql:/var/lib/mysql \
+  -v /dockerProjects/mysql_1/volumes/etc/mysql/conf.d:/etc/mysql/conf.d \
   --network common \
   -p 3306:3306 \
   -e MYSQL_ROOT_PASSWORD=${var.password_1} \
@@ -274,23 +287,22 @@ docker run -d \
 
 # MySQL 컨테이너가 준비될 때까지 대기
 echo "MySQL이 기동될 때까지 대기 중..."
-until docker exec mysql-mingle mysql -uroot -p${var.password_1} -e "SELECT 1" &> /dev/null; do
+until docker exec mysql_1 mysql -uroot -p${var.password_1} -e "SELECT 1" &> /dev/null; do
   echo "MySQL이 아직 준비되지 않음. 5초 후 재시도..."
   sleep 5
 done
 echo "MySQL이 준비됨. 초기화 스크립트 실행 중..."
 
-docker exec mysql-mingle mysql -uroot -p${var.password_1} -e "
+docker exec mysql_1 mysql -uroot -p${var.password_1} -e "
 CREATE USER 'll_local'@'127.0.0.1' IDENTIFIED WITH caching_sha2_password BY '1234';
 CREATE USER 'll_local'@'172.18.%.%' IDENTIFIED WITH caching_sha2_password BY '1234';
-CREATE USER 'lll'@'%' IDENTIFIED WITH caching_sha2_password BY '${var.password_1}';
-
+CREATE USER 'll'@'%' IDENTIFIED WITH caching_sha2_password BY '${var.password_1}';
 
 GRANT ALL PRIVILEGES ON *.* TO 'll_local'@'127.0.0.1';
 GRANT ALL PRIVILEGES ON *.* TO 'll_local'@'172.18.%.%';
-GRANT ALL PRIVILEGES ON *.* TO 'lll'@'%';
+GRANT ALL PRIVILEGES ON *.* TO 'll'@'%';
 
-CREATE DATABASE mingle_dev;
+CREATE DATABASE blog_prod;
 
 FLUSH PRIVILEGES;
 "
@@ -331,9 +343,9 @@ resource "aws_instance" "ec2_1" {
   # 사용할 AMI ID
   ami = data.aws_ami.latest_amazon_linux.id
   # EC2 인스턴스 유형
-  instance_type = "t2.micro"
+  instance_type = "t3.micro"
   # 사용할 서브넷 ID
-  subnet_id = aws_subnet.subnet_1.id
+  subnet_id = aws_subnet.subnet_4.id
   # 적용할 보안 그룹 ID
   vpc_security_group_ids = [aws_security_group.sg_1.id]
   # 퍼블릭 IP 연결 설정
@@ -350,10 +362,9 @@ resource "aws_instance" "ec2_1" {
   # 루트 볼륨 설정
   root_block_device {
     volume_type = "gp3"
-    volume_size = 30  # 볼륨 크기를 30GB로 설정
+    volume_size = 12 # 볼륨 크기를 12GB로 설정
   }
 
-  # User data script for ec2_1
   user_data = <<-EOF
 ${local.ec2_user_data_base}
 EOF
