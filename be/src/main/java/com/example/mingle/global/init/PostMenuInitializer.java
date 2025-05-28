@@ -101,9 +101,9 @@ public class PostMenuInitializer implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         try {
             log.info("[PostMenuInitializer] 게시판 초기화를 시작합니다.");
-
+            
             User creator = defaultCreator();
-
+            
             //공통
             initializeCommonMenu("CALENDAR", "캘린더", "스케쥴 관리 캘린더 게시판");
             initializeCommonMenu("BUSINESS_DOCUMENTS", "업무자료", "부서별 업무 자료 게시판");
@@ -133,7 +133,8 @@ public class PostMenuInitializer implements ApplicationRunner {
             //정산/법무팀
             initializeMenu("REVENUE_SETTLEMENT", "수익 정산 내역", "수익 정산 내역 등록 게시판", "Finance & Legal", creator);
             initializeMenu("CONTRACT_MANAGEMENT", "계약서관리", "계약서 업로드", "Finance & Legal", creator);
-            initializeMenu("CONTRACT_RENEWALS", "갱신 관리", "계약서갱신 관리", "Finance & Legal", creator);
+            initializeMenu("INTERNAL_POLICY", "내부 규정", "사내 정책 및 지침 관리", "Finance & Legal", creator);
+            initializeMenu("LEGAL_DISPUTES", "법률 분쟁 내역", "법적 분쟁 사례 및 진행 현황 관리", "Finance & Legal", creator);
 
             //운영진
             initializeMenu("DASHBOARD", "대시보드", "대시보드 시각화 요약", "System Operations", creator);
