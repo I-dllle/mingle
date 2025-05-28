@@ -119,7 +119,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         }
         Long userId = auth.getUserId();
 
-        // ✅ 1. Presence 메시지 먼저 필터링
+        // 1. Presence 메시지 먼저 필터링
         if ("ping".equals(presencePayload)) {
             presenceService.handlePing(userId);
             return;
@@ -181,7 +181,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         if (auth != null) {
             presenceService.setStatus(auth.getUserId(), PresenceStatus.OFFLINE);
             presenceService.cancelAwayTimer(auth.getUserId());
-            log.info("🔴 OFFLINE 처리: userId={}", auth.getUserId());
+            log.info("OFFLINE 처리: userId={}", auth.getUserId());
         }
 
         log.info("WebSocket 연결 종료: sessionId = {}", session.getId());

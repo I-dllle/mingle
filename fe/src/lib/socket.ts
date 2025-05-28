@@ -1,6 +1,7 @@
 import type { ChatMessagePayload } from '@/features/chat/common/types/ChatMessagePayload';
 
 let socket: WebSocket | null = null;
+const messageHandlers: Array<(msg: ChatMessagePayload) => void> = [];
 
 export function connectWebSocket(token: string) {
   if (socket) socket.close();
@@ -14,7 +15,7 @@ export function connectWebSocket(token: string) {
 
   socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
-    console.log('[받은 메시지]', data);
+    messageHandlers.forEach((handler) => handler(data));
   };
 
   socket.onerror = (err) => {
@@ -32,4 +33,8 @@ export function sendMessage(payload: ChatMessagePayload) {
   } else {
     console.warn('WebSocket이 아직 열리지 않았습니다.');
   }
+}
+
+export function onMessage(handler: (msg: ChatMessagePayload) => void) {
+  messageHandlers.push(handler);
 }
