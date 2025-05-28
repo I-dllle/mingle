@@ -1,4 +1,5 @@
 import './globals.css';
+import { AuthProvider } from '@/features/auth/AuthProvider';
 
 export const metadata = {
   title: 'Mingle',
@@ -12,7 +13,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body>{children}</body>
+      <body>
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }
