@@ -26,7 +26,7 @@ export const createContract = async (
     teamId: request.teamId,
     teamIdType: typeof request.teamId,
     isNull: request.teamId === null,
-    isUndefined: request.teamId === undefined
+    isUndefined: request.teamId === undefined,
   });
 
   // teamId가 null이거나 undefined인 경우 요청에서 제외
@@ -354,13 +354,20 @@ export const getFilteredContracts = async (
 
 // 사용자 이름으로 검색
 export const searchUsers = async (name: string): Promise<UserSearchDto[]> => {
-  const params = new URLSearchParams({
-    name: name,
-  });
-
-  return await apiClient<UserSearchDto[]>(`/admin/users/search?${params}`, {
-    method: "GET",
-  });
+  try {
+    const params = new URLSearchParams({
+      name: name,
+    });
+    return await apiClient<UserSearchDto[]>(
+      `${API_BASE_URL}/search?${params}`,
+      {
+        method: "GET",
+      }
+    );
+  } catch (error) {
+    console.error("사용자 검색 API 호출 실패:", error);
+    throw error;
+  }
 };
 
 // 계약서 서비스 객체

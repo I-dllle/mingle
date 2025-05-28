@@ -2,6 +2,7 @@ package com.example.mingle.domain.post.legalpost.controller;
 
 import com.example.mingle.domain.admin.panel.dto.ContractResponse;
 import com.example.mingle.domain.admin.panel.dto.ContractSearchCondition;
+import com.example.mingle.domain.admin.panel.dto.UserSearchDto;
 import com.example.mingle.domain.post.legalpost.dto.contract.*;
 import com.example.mingle.domain.post.legalpost.entity.Contract;
 import com.example.mingle.domain.post.legalpost.entity.InternalContract;
@@ -252,5 +253,11 @@ public class ApiV1LegalController {
     ) {
         Page<ContractResponse> contracts = contractService.getContractsByFilter(condition, pageable);
         return ResponseEntity.ok(contracts);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<UserSearchDto>> searchUsers(@RequestParam String name) {
+        List<UserSearchDto> result = contractService.searchByName(name);
+        return ResponseEntity.ok(result);
     }
 }

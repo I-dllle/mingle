@@ -297,6 +297,9 @@ export interface ContractResponse {
   status: ContractStatus; // 계약 상태
   contractCategory: ContractCategory; // 계약 카테고리
   contractType: ContractType; // 계약 타입
+  // ContractSimpleDto와 호환성을 위한 추가 필드들
+  nickname: string; // 사용자 닉네임 (ContractSimpleDto 호환)
+  category: ContractCategory; // 계약 카테고리 (ContractSimpleDto 호환)
 }
 
 // Java의 정적 메서드를 TypeScript 유틸리티 함수로 구현
@@ -314,6 +317,9 @@ export const ContractResponseUtils = {
       status: contract.status,
       contractCategory: contract.contractCategory,
       contractType: contract.contractType,
+      // ContractSimpleDto와 호환성을 위한 추가 필드들
+      nickname: contract.user?.nickname || contract.signerName || "외부 사용자",
+      category: contract.contractCategory,
     };
   },
   // InternalContract 엔티티로부터 ContractResponse 생성
@@ -329,6 +335,9 @@ export const ContractResponseUtils = {
       status: contract.status,
       contractCategory: ContractCategory.INTERNAL,
       contractType: ContractType.ELECTRONIC,
+      // ContractSimpleDto와 호환성을 위한 추가 필드들
+      nickname: contract.user?.nickname || "내부 사용자",
+      category: ContractCategory.INTERNAL,
     };
   },
 };

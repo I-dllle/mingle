@@ -72,7 +72,6 @@ export default function ContractsPage() {
   // 참여자 이름으로 검색
   const handleParticipantSearch = async () => {
     if (participantName.trim().length < 2) {
-      // 이제 경고 메시지 표시하지 않고 그냥 반환
       setParticipantResults([]);
       return;
     }
@@ -80,11 +79,17 @@ export default function ContractsPage() {
     setSearchingParticipant(true);
     try {
       const results = await searchUsers(participantName.trim());
-      setParticipantResults(results);
-      // 경고 메시지도 제거 (자동 검색이므로 사용자 경험 향상)
+      if (results.length === 0) {
+        setParticipantResults([]);
+      } else {
+        setParticipantResults(results);
+      }
     } catch (error) {
       console.error("사용자 검색 실패:", error);
-      // 경고 메시지도 제거 (자동 검색이므로 사용자 경험 향상)
+      setParticipantResults([]);
+      setError(
+        error instanceof Error ? error.message : "사용자 검색에 실패했습니다."
+      );
     } finally {
       setSearchingParticipant(false);
     }
@@ -96,22 +101,31 @@ export default function ContractsPage() {
   // 참여자 선택
   const handleSelectParticipant = (user: UserSearchDto) => {
     setSelectedParticipant(user);
-    setTempCondition({
+    const newCondition = {
       ...tempCondition,
       participantUserId: user.id,
-    });
+    };
+    setTempCondition(newCondition);
+    // 변경된 조건으로 즉시 검색 실행
+    setSearchCondition(newCondition);
+    fetchContracts(0, newCondition);
     // 검색 결과 닫기
     setParticipantResults([]);
+    setParticipantName(user.name); // 선택된 사용자 이름을 입력창에 표시
   };
 
   // 참여자 선택 해제
   const handleClearParticipant = () => {
     setSelectedParticipant(null);
     setParticipantName("");
-    setTempCondition({
+    const newCondition = {
       ...tempCondition,
       participantUserId: undefined,
-    });
+    };
+    setTempCondition(newCondition);
+    // 변경된 조건으로 즉시 검색 실행
+    setSearchCondition(newCondition);
+    fetchContracts(0, newCondition);
   }; // 계약서 목록 조회
   const fetchContracts = async (
     page: number = 0,
@@ -122,17 +136,40 @@ export default function ContractsPage() {
     setError(null);
 
     try {
-      // 모든 경우에 getAllContracts 사용 (ContractSimpleDto 반환)
-      const response = await getAllContracts(
-        condition.contractCategory || category,
-        page,
-        size
-      );
+      // 필터링 조건이 있는 경우 getFilteredContracts 사용
+      const hasFilterConditions =
+        condition.teamId ||
+        condition.status ||
+        condition.contractType ||
+        condition.startDateFrom ||
+        condition.startDateTo ||
+        condition.participantUserId;
 
-      setContracts(response.content);
-      setCurrentPage(response.number);
-      setTotalPages(response.totalPages);
-      setTotalElements(response.totalElements);
+      if (hasFilterConditions) {
+        console.log("필터링 조건으로 검색:", condition);
+        const response = await getFilteredContracts(
+          condition,
+          page,
+          size,
+          sortField,
+          sortDirection
+        );
+        setContracts(response.content);
+        setCurrentPage(response.number);
+        setTotalPages(response.totalPages);
+        setTotalElements(response.totalElements);
+      } else {
+        console.log("기본 목록 조회:", condition);
+        const response = await getAllContracts(
+          condition.contractCategory || category,
+          page,
+          size
+        );
+        setContracts(response.content);
+        setCurrentPage(response.number);
+        setTotalPages(response.totalPages);
+        setTotalElements(response.totalElements);
+      }
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "계약서 목록 조회에 실패했습니다."
@@ -146,9 +183,9 @@ export default function ContractsPage() {
   useEffect(() => {
     fetchContracts();
   }, [sortField, sortDirection]);
-
   // 검색 실행
   const handleSearch = () => {
+    console.log("검색 조건:", tempCondition);
     setSearchCondition(tempCondition);
     setCurrentPage(0);
     fetchContracts(0, tempCondition);
@@ -426,9 +463,9 @@ export default function ContractsPage() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
                     placeholder="참여자 이름 입력 (2글자 이상)"
                     disabled={!!selectedParticipant}
-                  />
+                  />{" "}
                   {participantResults.length > 0 && !selectedParticipant && (
-                    <div className="absolute z-10 w-full mt-1 bg-white shadow-lg rounded-md border border-gray-200 max-h-48 overflow-y-auto">
+                    <div className="absolute z-50 w-full mt-1 bg-white shadow-lg rounded-md border border-gray-200 max-h-48 overflow-y-auto">
                       {participantResults.map((user) => (
                         <div
                           key={user.id}

@@ -3,6 +3,7 @@ package com.example.mingle.domain.post.legalpost.service;
 import com.example.mingle.domain.admin.panel.dto.ContractConditionResponse;
 import com.example.mingle.domain.admin.panel.dto.ContractResponse;
 import com.example.mingle.domain.admin.panel.dto.ContractSearchCondition;
+import com.example.mingle.domain.admin.panel.dto.UserSearchDto;
 import com.example.mingle.domain.admin.panel.service.ContractSpecification;
 import com.example.mingle.domain.post.legalpost.dto.contract.CreateContractRequest;
 import com.example.mingle.domain.post.legalpost.dto.contract.CreateInternalContractRequest;
@@ -489,5 +490,12 @@ public class ContractService {
                 internalcontract.setStatus(ContractStatus.TERMINATED);
             }
         }
+    }
+
+    public List<UserSearchDto> searchByName(String name) {
+        List<User> users = userRepository.findByNameContainingIgnoreCase(name);
+        return users.stream()
+                .map(UserSearchDto::from)
+                .toList();
     }
 }
