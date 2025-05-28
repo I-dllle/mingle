@@ -1,4 +1,4 @@
-import { apiClient } from '@/lib/api/apiClient';
+import { apiClient } from "@/lib/api/apiClient";
 import {
   ContractCategory,
   ContractStatus,
@@ -12,28 +12,62 @@ import {
   ContractResponse,
   ContractSearchCondition,
   UserSearchDto,
-} from '../types/Contract';
+} from "../types/Contract";
 
-const API_BASE_URL = '/legal';
+const API_BASE_URL = "/legal";
 
 // 계약서 생성 (외부 계약)
 export const createContract = async (
   request: CreateContractRequest,
   file: File
 ): Promise<number> => {
+  console.log("createContract - 요청 데이터:", request);
+  console.log("createContract - teamId 상세:", {
+    teamId: request.teamId,
+    teamIdType: typeof request.teamId,
+    isNull: request.teamId === null,
+    isUndefined: request.teamId === undefined
+  });
+
+  // teamId가 null이거나 undefined인 경우 요청에서 제외
+  const cleanedRequest: Partial<CreateContractRequest> = { ...request };
+  if (cleanedRequest.teamId === null || cleanedRequest.teamId === undefined) {
+    delete cleanedRequest.teamId;
+    console.log("teamId가 null 또는 undefined이므로 요청에서 제외합니다.");
+  }
+
+  console.log("정리된 요청 데이터:", cleanedRequest);
+
   const formData = new FormData();
   formData.append(
-    'request',
-    new Blob([JSON.stringify(request)], { type: 'application/json' })
+    "request",
+    new Blob([JSON.stringify(cleanedRequest)], { type: "application/json" })
   );
-  formData.append('file', file);
+  formData.append("file", file);
 
-  // FormData를 사용하는 경우 Content-Type 헤더를 설정하지 않음 (브라우저가 자동으로 설정)
-  return await apiClient<number>(`${API_BASE_URL}/contracts`, {
-    method: 'POST',
+  // FormData에 추가된 request 내용 확인
+  const requestBlob = formData.get("request") as Blob;
+  const requestText = await requestBlob.text();
+  console.log("FormData에 추가된 request JSON:", requestText);
+
+  // multipart/form-data를 위해 직접 fetch 사용
+  const fullUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}${API_BASE_URL}/contracts`;
+
+  const res = await fetch(fullUrl, {
+    method: "POST",
     body: formData,
-    headers: {}, // Content-Type을 설정하지 않아야 함
+    credentials: "include",
+    cache: "no-store",
+    // Content-Type 헤더를 설정하지 않음 (브라우저가 자동으로 multipart/form-data 설정)
   });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error(`[API Error] ${res.status}: ${errorText}`);
+    throw new Error(`API 요청 실패: ${res.statusText}`);
+  }
+
+  return res.json();
 };
 
 // 내부 계약 생성
@@ -41,18 +75,34 @@ export const createInternalContract = async (
   request: CreateInternalContractRequest,
   file: File
 ): Promise<number> => {
+  console.log("Creating internal contract:", request);
+  console.log("API URL:", `${API_BASE_URL}/internal/contracts`);
+
   const formData = new FormData();
   formData.append(
-    'request',
-    new Blob([JSON.stringify(request)], { type: 'application/json' })
+    "request",
+    new Blob([JSON.stringify(request)], { type: "application/json" })
   );
-  formData.append('file', file);
+  formData.append("file", file);
 
-  return await apiClient<number>(`${API_BASE_URL}/internal-contracts`, {
-    method: 'POST',
+  // multipart/form-data를 위해 직접 fetch 사용
+  const fullUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}${API_BASE_URL}/internal/contracts`;
+
+  const res = await fetch(fullUrl, {
+    method: "POST",
     body: formData,
-    headers: {}, // Content-Type을 설정하지 않아야 함
+    credentials: "include",
+    cache: "no-store",
+    // Content-Type 헤더를 설정하지 않음 (브라우저가 자동으로 multipart/form-data 설정)
   });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error(`[API Error] ${res.status}: ${errorText}`);
+    throw new Error(`API 요청 실패: ${res.statusText}`);
+  }
+
+  return res.json();
 };
 
 // 계약서 상태 변경
@@ -62,7 +112,7 @@ export const changeContractStatus = async (
   category: ContractCategory
 ): Promise<void> => {
   await apiClient(`${API_BASE_URL}/${id}/status?category=${category}`, {
-    method: 'PUT',
+    method: "PUT",
     body: JSON.stringify(request),
   });
 };
@@ -73,7 +123,7 @@ export const signOfflineAsAdmin = async (
   request: OfflineSignRequest
 ): Promise<void> => {
   await apiClient(`${API_BASE_URL}/${id}/sign-offline`, {
-    method: 'POST',
+    method: "POST",
     body: JSON.stringify(request),
   });
 };
@@ -83,9 +133,12 @@ export const signOnBehalf = async (
   id: number,
   userId: number
 ): Promise<string> => {
-  return await apiClient<string>(`${API_BASE_URL}/${id}/sign?userId=${userId}`, {
-    method: 'POST',
-  });
+  return await apiClient<string>(
+    `${API_BASE_URL}/${id}/sign?userId=${userId}`,
+    {
+      method: "POST",
+    }
+  );
 };
 
 // 특정 유저 계약서 리스트 조회
@@ -102,9 +155,12 @@ export const getContractsByUser = async (
     size: size.toString(),
   });
 
-  return await apiClient<ContractSimpleDto[]>(`${API_BASE_URL}/by-user?${params}`, {
-    method: 'GET',
-  });
+  return await apiClient<ContractSimpleDto[]>(
+    `${API_BASE_URL}/by-user?${params}`,
+    {
+      method: "GET",
+    }
+  );
 };
 
 // 계약 상세 조회
@@ -117,7 +173,7 @@ export const getContractDetail = async (
   });
 
   return await apiClient<ContractDetailDto>(`${API_BASE_URL}/${id}?${params}`, {
-    method: 'GET',
+    method: "GET",
   });
 };
 
@@ -148,8 +204,9 @@ export const getAllContracts = async (
     size: number;
     number: number;
     first: boolean;
-    last: boolean;  }>(`${API_BASE_URL}?${params}`, {
-    method: 'GET',
+    last: boolean;
+  }>(`${API_BASE_URL}?${params}`, {
+    method: "GET",
   });
 };
 
@@ -163,7 +220,7 @@ export const confirmContract = async (
   });
 
   await apiClient(`${API_BASE_URL}/${id}/confirm?${params}`, {
-    method: 'POST',
+    method: "POST",
   });
 };
 
@@ -177,7 +234,7 @@ export const getContractFileUrl = async (
   });
 
   return await apiClient<string>(`${API_BASE_URL}/${id}/file-url?${params}`, {
-    method: 'GET',
+    method: "GET",
   });
 };
 
@@ -189,9 +246,12 @@ export const getExpiringContracts = async (
     category: category,
   });
 
-  return await apiClient<ContractResponse[]>(`${API_BASE_URL}/expiring?${params}`, {
-    method: 'GET',
-  });
+  return await apiClient<ContractResponse[]>(
+    `${API_BASE_URL}/expiring?${params}`,
+    {
+      method: "GET",
+    }
+  );
 };
 
 // 계약서 수정
@@ -202,19 +262,32 @@ export const updateContract = async (
 ): Promise<number> => {
   const formData = new FormData();
   formData.append(
-    'request',
-    new Blob([JSON.stringify(request)], { type: 'application/json' })
+    "request",
+    new Blob([JSON.stringify(request)], { type: "application/json" })
   );
 
   if (file) {
-    formData.append('file', file);
+    formData.append("file", file);
   }
 
-  return await apiClient<number>(`${API_BASE_URL}/${contractId}`, {
-    method: 'PUT',
+  // multipart/form-data를 위해 직접 fetch 사용
+  const fullUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}${API_BASE_URL}/${contractId}`;
+
+  const res = await fetch(fullUrl, {
+    method: "PUT",
     body: formData,
-    headers: {}, // Content-Type을 설정하지 않아야 함
+    credentials: "include",
+    cache: "no-store",
+    // Content-Type 헤더를 설정하지 않음 (브라우저가 자동으로 multipart/form-data 설정)
   });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error(`[API Error] ${res.status}: ${errorText}`);
+    throw new Error(`API 요청 실패: ${res.statusText}`);
+  }
+
+  return res.json();
 };
 
 // 계약서 삭제
@@ -227,7 +300,7 @@ export const deleteContract = async (
   });
 
   await apiClient(`${API_BASE_URL}/${contractId}?${params}`, {
-    method: 'DELETE',
+    method: "DELETE",
   });
 };
 
@@ -236,8 +309,8 @@ export const getFilteredContracts = async (
   condition: ContractSearchCondition,
   page: number = 0,
   size: number = 10,
-  sort: string = 'createdAt',
-  direction: string = 'desc'
+  sort: string = "createdAt",
+  direction: string = "desc"
 ): Promise<{
   content: ContractResponse[];
   totalElements: number;
@@ -252,18 +325,19 @@ export const getFilteredContracts = async (
     size: size.toString(),
     sort: `${sort},${direction}`,
   });
-
   // 검색 조건이 있는 경우만 파라미터에 추가
-  if (condition.teamId) params.append('teamId', condition.teamId.toString());
-  if (condition.status) params.append('status', condition.status);
+  if (condition.teamId) params.append("teamId", condition.teamId.toString());
+  if (condition.status) params.append("status", condition.status);
   if (condition.contractType)
-    params.append('contractType', condition.contractType);
+    params.append("contractType", condition.contractType);
   if (condition.contractCategory)
-    params.append('contractCategory', condition.contractCategory);
+    params.append("contractCategory", condition.contractCategory);
   if (condition.startDateFrom)
-    params.append('startDateFrom', condition.startDateFrom);
+    params.append("startDateFrom", condition.startDateFrom);
   if (condition.startDateTo)
-    params.append('startDateTo', condition.startDateTo);
+    params.append("startDateTo", condition.startDateTo);
+  if (condition.participantUserId)
+    params.append("participantUserId", condition.participantUserId.toString());
 
   return await apiClient<{
     content: ContractResponse[];
@@ -274,7 +348,7 @@ export const getFilteredContracts = async (
     first: boolean;
     last: boolean;
   }>(`${API_BASE_URL}/filtered?${params}`, {
-    method: 'GET',
+    method: "GET",
   });
 };
 
@@ -284,12 +358,9 @@ export const searchUsers = async (name: string): Promise<UserSearchDto[]> => {
     name: name,
   });
 
-  return await apiClient<UserSearchDto[]>(
-    `/api/v1/admin/users/search?${params}`, 
-    {
-      method: 'GET',
-    }
-  );
+  return await apiClient<UserSearchDto[]>(`/admin/users/search?${params}`, {
+    method: "GET",
+  });
 };
 
 // 계약서 서비스 객체

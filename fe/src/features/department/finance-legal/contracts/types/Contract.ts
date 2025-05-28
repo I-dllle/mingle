@@ -151,7 +151,7 @@ export interface SettlementRatioDto {
 // 계약 생성 요청 DTO - Java의 CreateContractRequest 레코드와 동일한 구조
 export interface CreateContractRequest {
   userId: number; // 사용자 ID
-  teamId: number | null; // 팀 ID (null 허용)
+  teamId?: number | null; // 팀 ID (선택적, null 허용)
   summary: string; // 요약
   title: string; // 제목
   contractCategory: ContractCategory; // 계약 카테고리
@@ -331,6 +331,7 @@ export interface ContractSearchCondition {
   contractCategory?: ContractCategory; // 계약 카테고리 (선택적)
   startDateFrom?: string; // 시작일 범위 시작 (ISO 형식의 날짜 문자열) (선택적)
   startDateTo?: string; // 시작일 범위 종료 (ISO 형식의 날짜 문자열) (선택적)
+  participantUserId?: number; // 참여자 사용자 ID (선택적)
 }
 
 // 페이징된 응답을 위한 제네릭 인터페이스

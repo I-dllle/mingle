@@ -7,37 +7,11 @@ import {
   ContractCategory,
   ContractType,
   RatioType,
+  CreateContractRequest,
+  CreateInternalContractRequest,
+  SettlementRatioDto,
 } from "@/features/department/finance-legal/contracts/types/Contract";
-
-// 필요한 타입들 정의 - 실제 구현 시에는 적절한 타입 파일에서 import해야 함
-interface CreateContractRequest {
-  userId: number;
-  teamId: number | null;
-  summary: string;
-  title: string;
-  contractCategory: ContractCategory;
-  startDate: string;
-  endDate: string;
-  contractType: ContractType;
-  contractAmount: number;
-  useManualRatios: boolean;
-  ratios: SettlementRatioDto[];
-  targetUserIds: number[];
-}
-
-interface CreateInternalContractRequest {
-  userId: number;
-  ratioType: RatioType;
-  defaultRatio: number;
-  startDate: string;
-  endDate: string;
-}
-
-interface SettlementRatioDto {
-  ratioType: RatioType;
-  userId: number;
-  percentage: number;
-}
+import { contractService } from "@/features/department/finance-legal/contracts/services/contractService";
 
 interface CreateFormData {
   userId: number;
@@ -57,22 +31,6 @@ interface CreateFormData {
   file: File | null;
 }
 
-// 서비스 객체의 목업 - 실제 구현 필요
-const contractService = {
-  createContract: async (
-    request: CreateContractRequest,
-    file: File
-  ): Promise<void> => {
-    // API 호출 로직 필요
-  },
-  createInternalContract: async (
-    request: CreateInternalContractRequest,
-    file: File
-  ): Promise<void> => {
-    // API 호출 로직 필요
-  },
-};
-
 export default function CreateContractPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -82,10 +40,9 @@ export default function CreateContractPage() {
 
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-
   const [createFormData, setCreateFormData] = useState<CreateFormData>({
     userId: 1,
-    teamId: 1,
+    teamId: null, // 외부 계약에서는 팀 ID가 선택사항이므로 null로 초기화
     summary: "",
     title: "",
     contractCategory: categoryParam,
@@ -110,7 +67,6 @@ export default function CreateContractPage() {
       });
     }
   };
-
   // 계약서 생성
   const handleCreateContract = async (e: FormEvent) => {
     e.preventDefault();
@@ -122,7 +78,8 @@ export default function CreateContractPage() {
     setLoading(true);
     setError(null);
     try {
-      if (createFormData.contractCategory === ContractCategory.EXTERNAL) {
+      let contractId: number;
+        if (createFormData.contractCategory === ContractCategory.EXTERNAL) {
         const request: CreateContractRequest = {
           userId: createFormData.userId,
           teamId: createFormData.teamId,
@@ -137,7 +94,16 @@ export default function CreateContractPage() {
           ratios: createFormData.ratios,
           targetUserIds: createFormData.targetUserIds,
         };
-        await contractService.createContract(request, createFormData.file);
+        
+        // 디버깅용 로그
+        console.log("외부 계약 생성 요청:", {
+          ...request,
+          teamIdValue: createFormData.teamId,
+          teamIdType: typeof createFormData.teamId,
+          isTeamIdNull: createFormData.teamId === null
+        });
+        
+        contractId = await contractService.createContract(request, createFormData.file);
       } else {
         const request: CreateInternalContractRequest = {
           userId: createFormData.userId,
@@ -146,11 +112,14 @@ export default function CreateContractPage() {
           startDate: createFormData.startDate,
           endDate: createFormData.endDate,
         };
-        await contractService.createInternalContract(
+        contractId = await contractService.createInternalContract(
           request,
           createFormData.file
-        );      }
+        );
+      }
 
+      console.log(`계약서 생성 완료 (ID: ${contractId})`);
+      
       // 성공 후 메인 페이지로 이동
       router.push(`..?category=${createFormData.contractCategory}`);
     } catch (err) {

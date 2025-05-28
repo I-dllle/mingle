@@ -33,8 +33,7 @@ export default function AdminContractsPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
-  const pageSize = 10;
-  // 필터링
+  const pageSize = 10; // 필터링
   const [tempCondition, setTempCondition] = useState<ContractSearchCondition>(
     {}
   );
@@ -50,6 +49,16 @@ export default function AdminContractsPage() {
   );
   const [selectedUser, setSelectedUser] = useState<UserSearchDto | null>(null);
   const [userContracts, setUserContracts] = useState<any[]>([]);
+  // 참여자 검색 관련 상태
+  const [participantName, setParticipantName] = useState<string>("");
+  const [searchingParticipant, setSearchingParticipant] =
+    useState<boolean>(false);
+  const [participantResults, setParticipantResults] = useState<UserSearchDto[]>(
+    []
+  );
+  const [selectedParticipant, setSelectedParticipant] =
+    useState<UserSearchDto | null>(null);
+  const [searchTimer, setSearchTimer] = useState<NodeJS.Timeout | null>(null);
   // 모든 계약서 조회 (간단 정보)
   const fetchAllContracts = async (page: number = 0) => {
     setLoading(true);
@@ -101,12 +110,55 @@ export default function AdminContractsPage() {
     setCurrentPage(0);
     fetchFilteredContracts(0, tempCondition);
   };
-
   // 검색 초기화
   const handleReset = () => {
     setTempCondition({});
     setCurrentPage(0);
+    // 참여자 검색 관련 상태 초기화
+    setParticipantName("");
+    setParticipantResults([]);
+    setSelectedParticipant(null);
     fetchAllContracts(0);
+  };
+  // 참여자 이름으로 검색
+  const handleParticipantSearch = async () => {
+    if (participantName.trim().length < 2) {
+      setParticipantResults([]);
+      return;
+    }
+
+    setSearchingParticipant(true);
+    try {
+      const results = await contractService.searchUsers(participantName.trim());
+      setParticipantResults(results);
+      // 경고 메시지 제거 (자동 검색이므로 사용자 경험 향상)
+    } catch (error) {
+      console.error("사용자 검색 실패:", error);
+      // 경고 메시지 제거 (자동 검색이므로 사용자 경험 향상)
+    } finally {
+      setSearchingParticipant(false);
+    }
+  };
+
+  // 참여자 선택
+  const handleSelectParticipant = (user: UserSearchDto) => {
+    setSelectedParticipant(user);
+    setTempCondition({
+      ...tempCondition,
+      participantUserId: user.id,
+    });
+    // 검색 결과 닫기
+    setParticipantResults([]);
+  };
+
+  // 참여자 선택 해제
+  const handleClearParticipant = () => {
+    setSelectedParticipant(null);
+    setParticipantName("");
+    setTempCondition({
+      ...tempCondition,
+      participantUserId: undefined,
+    });
   };
   // 정렬 변경
   const handleSort = (field: string) => {
@@ -468,6 +520,7 @@ export default function AdminContractsPage() {
         <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
           <h2 className="text-lg font-semibold mb-4">검색 조건</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {" "}
             {/* 팀 ID */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -486,7 +539,68 @@ export default function AdminContractsPage() {
                 placeholder="팀 ID 입력"
               />
             </div>
+            {/* 참여자 검색 */}{" "}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                참여자 검색
+              </label>
+              <div className="flex items-center gap-2">
+                <div className="relative flex-grow">
+                  <input
+                    type="text"
+                    value={participantName}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setParticipantName(value);
 
+                      // 기존 타이머가 있으면 취소
+                      if (searchTimer) {
+                        clearTimeout(searchTimer);
+                      }
+
+                      if (value.trim().length >= 2) {
+                        // 300ms 디바운스로 검색 지연 (불필요한 API 호출 방지)
+                        const timer = setTimeout(() => {
+                          handleParticipantSearch();
+                        }, 300);
+                        setSearchTimer(timer);
+                      } else if (value.trim().length === 0) {
+                        // 입력값이 없을 때는 결과 초기화
+                        setParticipantResults([]);
+                      }
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="참여자 이름 입력 (2글자 이상)"
+                    disabled={!!selectedParticipant}
+                  />
+                  {participantResults.length > 0 && !selectedParticipant && (
+                    <div className="absolute z-10 w-full mt-1 bg-white shadow-lg rounded-md border border-gray-200 max-h-48 overflow-y-auto">
+                      {participantResults.map((user) => (
+                        <div
+                          key={user.id}
+                          onClick={() => handleSelectParticipant(user)}
+                          className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                        >
+                          <div className="font-medium">{user.name}</div>
+                          <div className="text-xs text-gray-500">
+                            {user.email}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}{" "}
+                </div>
+                {selectedParticipant && (
+                  <button
+                    type="button"
+                    onClick={handleClearParticipant}
+                    className="px-3 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200 text-sm whitespace-nowrap"
+                  >
+                    {selectedParticipant.name} 해제
+                  </button>
+                )}
+              </div>
+            </div>
             {/* 계약 상태 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -512,7 +626,6 @@ export default function AdminContractsPage() {
                 ))}
               </select>
             </div>
-
             {/* 계약 타입 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -535,7 +648,6 @@ export default function AdminContractsPage() {
                 <option value={ContractType.ELECTRONIC}>전자 계약</option>
               </select>
             </div>
-
             {/* 계약 카테고리 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -558,7 +670,6 @@ export default function AdminContractsPage() {
                 <option value={ContractCategory.EXTERNAL}>외부 계약</option>
               </select>
             </div>
-
             {/* 시작일 범위 - 시작 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -575,8 +686,7 @@ export default function AdminContractsPage() {
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-            </div>
-
+            </div>{" "}
             {/* 시작일 범위 - 끝 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -592,6 +702,26 @@ export default function AdminContractsPage() {
                   })
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            {/* 참여자 사용자 ID */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                참여자 ID
+              </label>
+              <input
+                type="number"
+                value={tempCondition.participantUserId || ""}
+                onChange={(e) =>
+                  setTempCondition({
+                    ...tempCondition,
+                    participantUserId: e.target.value
+                      ? Number(e.target.value)
+                      : undefined,
+                  })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="참여자 사용자 ID 입력"
               />
             </div>
           </div>

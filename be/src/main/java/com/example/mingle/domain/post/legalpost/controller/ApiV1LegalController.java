@@ -55,7 +55,7 @@ public class ApiV1LegalController {
         return ResponseEntity.ok(contractId);
     }
 
-    @PostMapping(value = "/internal-contracts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/internal/contracts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "내부 계약 생성 (파일 포함)")
     public ResponseEntity<Long> createInternalContract(
             @RequestPart("request") CreateInternalContractRequest request,

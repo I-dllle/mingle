@@ -17,4 +17,5 @@ public class ContractSearchCondition {
     private ContractCategory contractCategory;
     private LocalDate startDateFrom;
     private LocalDate startDateTo;
+    private Long participantUserId;
 }
