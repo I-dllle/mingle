@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useState, useCallback, useEffect } from "react";
 import { EventInput } from "@fullcalendar/core";
 import Modal from "@/features/schedule/components/ui/Modal";
-import { formatDate } from "@/features/schedule/utils/calendarUtils";
 import { scheduleService } from "@/features/schedule/services/scheduleService";
 import { ScheduleType } from "../../types/Enums";
 import ScheduleCard from "@/features/schedule/components/ui/ScheduleCard";
@@ -21,7 +20,6 @@ export default function ScheduleListModal({
   date,
   onClose,
 }: ScheduleListModalProps) {
-  const router = useRouter();
   const [events, setEvents] = useState<EventInput[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<ScheduleType | "ALL">("ALL");
@@ -29,35 +27,31 @@ export default function ScheduleListModal({
   const [selectedScheduleId, setSelectedScheduleId] = useState<number | null>(
     null
   );
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
 
   const formattedDate = new Date(date).toLocaleDateString("ko-KR", {
     year: "numeric",
     month: "long",
     day: "numeric",
   });
-
   const fetchEvents = useCallback(async () => {
     setIsLoading(true);
     try {
       const dateObj = new Date(date);
-      const schedules = await scheduleService.getMonthlySchedules(dateObj);
+      // daily API를 사용하여 해당 날짜의 일정만 가져옴
+      const schedules = await scheduleService.getDailyView(dateObj);
       setEvents(
-        schedules
-          .filter((s) => {
-            const scheduleDate = new Date(s.startTime);
-            return scheduleDate.toDateString() === dateObj.toDateString();
-          })
-          .map((s) => ({
-            id: String(s.id),
-            title: s.title,
-            start: s.startTime,
-            end: s.endTime,
-            extendedProps: {
-              status: s.scheduleStatus,
-              type: s.scheduleType,
-              description: s.description,
-            },
-          }))
+        schedules.map((s) => ({
+          id: String(s.id),
+          title: s.title,
+          start: s.startTime,
+          end: s.endTime,
+          extendedProps: {
+            status: s.scheduleStatus,
+            type: s.scheduleType,
+            description: s.description,
+          },
+        }))
       );
     } catch (error) {
       console.error("일정을 불러오는데 실패했습니다", error);
@@ -75,7 +69,6 @@ export default function ScheduleListModal({
     filter === "ALL"
       ? events
       : events.filter((event) => event.extendedProps?.type === filter);
-  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
 
   const handleAddSchedule = () => {
     setIsFormModalOpen(true);
@@ -90,7 +83,6 @@ export default function ScheduleListModal({
     fetchEvents();
   };
   const handleScheduleClick = (event: EventInput) => {
-    if (!event.id) return;
     setSelectedScheduleId(Number(event.id));
     setIsDetailModalOpen(true);
   };
@@ -179,16 +171,20 @@ export default function ScheduleListModal({
           </div>
         </div>
       </Modal>{" "}
+      {/* + 새 일정 폼 모달 */}
       {isFormModalOpen && (
         <ScheduleFormModal
-          onClose={handleFormClose}
-          onSubmit={handleFormSubmit}
           mode="create"
           initialStartDate={date}
+          onClose={() => setIsFormModalOpen(false)}
+          onSubmit={() => {
+            setIsFormModalOpen(false);
+            fetchEvents(); // 리스트 새로고침
+          }}
         />
       )}
-      {/* 상세 모달 */}
-      {isDetailModalOpen && selectedScheduleId && (
+      {/* 상세 보기 모달 */}
+      {isDetailModalOpen && selectedScheduleId !== null && (
         <ScheduleDetailModal
           scheduleId={selectedScheduleId}
           onClose={() => setIsDetailModalOpen(false)}

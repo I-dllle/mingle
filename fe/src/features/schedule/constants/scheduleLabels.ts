@@ -30,8 +30,8 @@ export const scheduleStatusColors = {
   [ScheduleStatus.NONE]: "#BDBDBD", // 연한 회색
   [ScheduleStatus.IMPORTANT_MEETING]: "#E91E63", // 핑크색
   [ScheduleStatus.MEETING]: "#FF9800", // 오렌지색
-  [ScheduleStatus.BUSINESS_TRIP]: "#9C27B0", // 보라색
-  [ScheduleStatus.COMPLETED]: "#8BC34A", // 연두색
+  [ScheduleStatus.BUSINESS_TRIP]: "#3B82F6", // 진한 블루
+  [ScheduleStatus.COMPLETED]: "#10B981", // 초록색
   [ScheduleStatus.CANCELED]: "#9E9E9E", // 회색
   [ScheduleStatus.VACATION]: "#00BCD4", // 하늘색
 };

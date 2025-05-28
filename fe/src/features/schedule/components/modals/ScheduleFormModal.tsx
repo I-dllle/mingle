@@ -25,27 +25,39 @@ export function ScheduleFormModal({
   const { user } = useAuth();
   const isAdmin =
     user?.role === "ROLE_ADMIN" || user?.role === "ROLE_SUPER_ADMIN";
+  const initialISO = initialStartDate || "";
+  const hasTime = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(initialISO);
+
+  // 오늘 09:00 / 10:00 기본 Date 객체 미리 준비
+  const today = new Date();
+  const todayStart = new Date(today);
+  todayStart.setHours(9, 0, 0, 0);
+  const todayEnd = new Date(today);
+  todayEnd.setHours(10, 0, 0, 0);
+
+  const defaultStart = initialISO
+    ? hasTime
+      ? new Date(initialISO)
+      : new Date(`${initialISO}T09:00`)
+    : todayStart;
+
+  const defaultEnd = initialISO
+    ? hasTime
+      ? (() => {
+          const d = new Date(initialISO);
+          d.setHours(d.getHours() + 1, 0, 0, 0);
+          return d;
+        })()
+      : new Date(`${initialISO}T10:00`)
+    : todayEnd;
+
   const [formData, setFormData] = useState<ScheduleFormData>({
     title: schedule?.title || "",
     description: schedule?.description || "",
+    // schedule이 있으면 수정모드 데이터, 없으면 defaultStart/defaultEnd 사용
     startTime:
-      schedule?.startTime ||
-      (initialStartDate
-        ? `${initialStartDate}T09:00:00`
-        : (() => {
-            const date = new Date();
-            date.setHours(9, 0, 0);
-            return formatDate(date, "yyyy-MM-dd'T'HH:mm");
-          })()),
-    endTime:
-      schedule?.endTime ||
-      (initialStartDate
-        ? `${initialStartDate}T10:00:00`
-        : (() => {
-            const date = new Date();
-            date.setHours(10, 0, 0);
-            return formatDate(date, "yyyy-MM-dd'T'HH:mm");
-          })()),
+      schedule?.startTime || formatDate(defaultStart, "yyyy-MM-dd'T'HH:mm"),
+    endTime: schedule?.endTime || formatDate(defaultEnd, "yyyy-MM-dd'T'HH:mm"),
     memo: schedule?.memo || "",
     scheduleType: schedule?.scheduleType || ScheduleType.PERSONAL,
     scheduleStatus: schedule?.scheduleStatus || ScheduleStatus.NONE,
@@ -237,9 +249,12 @@ export function ScheduleFormModal({
                 ? "생성하기"
                 : "수정하기"}
             </button>
-          </div>
+          </div>{" "}
         </form>
       </div>
     </Modal>
   );
 }
+
+// 기본 내보내기 추가
+export default ScheduleFormModal;

@@ -8,7 +8,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { scheduleService } from "@/features/schedule/services/scheduleService";
 import { ScheduleType } from "@/features/schedule/types/Enums";
-import { ScheduleFormModal } from "../modals/ScheduleFormModal";
+import ScheduleFormModal from "@/features/schedule/components/modals/ScheduleFormModal";
 import ScheduleListModal from "../modals/ScheduleListModal";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import type { DateSelectArg, EventClickArg } from "@fullcalendar/core";
@@ -83,11 +83,9 @@ export default function ModernCalendarView() {
   const [currentView, setCurrentView] = useState<
     "dayGridMonth" | "timeGridWeek" | "timeGridDay"
   >("dayGridMonth");
-  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [currentMonth, setCurrentMonth] = useState<string>("");
   const [isListModalOpen, setIsListModalOpen] = useState(false);
   const [clickedDate, setClickedDate] = useState<string | null>(null);
+  const [currentMonth, setCurrentMonth] = useState<string>("");
 
   const [summaryDate, setSummaryDate] = useState<Date>(new Date());
 
@@ -225,31 +223,21 @@ export default function ModernCalendarView() {
     }
   };
   const handleDateSelect = (selectInfo: DateSelectArg) => {
-    setSelectedDate(selectInfo.startStr);
-    setIsFormModalOpen(true);
+    setClickedDate(selectInfo.startStr);
+    setIsListModalOpen(true);
   };
 
   // 단일 날짜 클릭 핸들러
-  const handleDateClick = async (info: DateClickArg) => {
-    const dateStr = info.dateStr; // "2025-05-28"
-    const dateObj = new Date(dateStr);
-    // 현재 filter(개인/부서/회사)도 적용하고 싶으면 두번째 인자에 selectedType 넘기기
-    const events = await scheduleService.getDailyView(
-      dateObj,
-      selectedType === "all" ? undefined : selectedType
-    );
-    if (events.length) {
-      setClickedDate(dateStr);
-      setIsListModalOpen(true);
-    } else {
-      setSelectedDate(dateStr);
-      setIsFormModalOpen(true);
-    }
+  const handleDateClick = (info: DateClickArg) => {
+    // 무조건 리스트 모달을 띄우도록
+    setClickedDate(info.dateStr);
+    setIsListModalOpen(true);
   };
 
   const handleEventClick = (clickInfo: EventClickArg) => {
-    const scheduleId = clickInfo.event.id;
-    router.push(`/schedule/detail/${scheduleId}`);
+    // 클릭된 이벤트의 날짜로 리스트 모달 열기
+    setClickedDate(clickInfo.event.startStr!);
+    setIsListModalOpen(true);
   };
 
   return (
@@ -453,9 +441,9 @@ export default function ModernCalendarView() {
           dateClick={handleDateClick}
           eventClick={handleEventClick}
           datesSet={handleDatesSet}
-          headerToolbar={false} // 커스텀 헤더를 사용하므로 기본 헤더는 비활성화
-          dayMaxEvents={true}
+          headerToolbar={false} // 커스텀 헤더를 사용하므로 기본 헤더는 비활성화          dayMaxEvents={true}
           eventClassNames={getEventClassNames}
+          slotEventOverlap={false} // 주간/일간 뷰에서 이벤트가 겹치지 않도록 설정
           height="100%" // 높이를 100%로 설정
           contentHeight="auto" // 컨텐츠 높이를 자동으로 조정
           aspectRatio={1.8} // 종횡비를 높여서 세로로 더 크게 설정
@@ -463,27 +451,38 @@ export default function ModernCalendarView() {
           slotMinTime="00:00:00" // 오전 0시부터
           slotMaxTime="24:00:00" // 자정까지 (24시간 전체)
           allDaySlot={true}
+          nowIndicator={true}
           events={(info, successCallback) => {
-            const start = info.start;
+            const calApi = calendarRef.current?.getApi();
+            // calApi.getDate()로 현재 포커스된 날짜를 가져온 후, 월의 1일로 설정
+            const now = calApi?.getDate();
+            // 해당 월의 1일을 정확히 설정 (2025-05-01 형식)
+            const monthStart = now
+              ? new Date(now.getFullYear(), now.getMonth(), 1)
+              : null;
             const type = selectedType === "all" ? undefined : selectedType;
-            scheduleService
-              .getMonthlySchedules(start, type as ScheduleType)
-              .then((events) =>
-                successCallback(
-                  events.map((event) => ({
-                    id: String(event.id),
-                    title: event.title,
-                    start: event.startTime,
-                    end: event.endTime,
-                    extendedProps: {
-                      type: event.scheduleType,
-                      description: event.description,
-                      memo: event.memo,
-                      scheduleStatus: event.scheduleStatus,
-                    },
-                  }))
-                )
-              );
+            if (monthStart) {
+              scheduleService
+                .getMonthlySchedules(monthStart, type as ScheduleType)
+                .then((events) =>
+                  successCallback(
+                    events.map((event) => ({
+                      id: String(event.id),
+                      title: event.title,
+                      start: event.startTime,
+                      end: event.endTime,
+                      extendedProps: {
+                        type: event.scheduleType,
+                        description: event.description,
+                        memo: event.memo,
+                        scheduleStatus: event.scheduleStatus,
+                      },
+                    }))
+                  )
+                );
+            } else {
+              successCallback([]); // 안전장치
+            }
           }}
         />
       </div>{" "}
@@ -501,36 +500,7 @@ export default function ModernCalendarView() {
           date={summaryDate}
         />
       </div>
-      <button
-        className={styles.newScheduleButton}
-        onClick={() => {
-          const today = new Date().toISOString().split("T")[0];
-          setSelectedDate(today);
-          setIsFormModalOpen(true);
-        }}
-        aria-label="새 일정 추가"
-      >
-        <PlusIcon />
-      </button>{" "}
-      {/* 모달 */}
-      {isFormModalOpen && selectedDate && (
-        <ScheduleFormModal
-          onClose={() => {
-            setIsFormModalOpen(false);
-            setSelectedDate(null);
-          }}
-          onSubmit={() => {
-            setIsFormModalOpen(false);
-            setSelectedDate(null);
-            if (calendarRef.current) {
-              calendarRef.current.getApi().refetchEvents();
-            }
-          }}
-          mode="create"
-          initialStartDate={selectedDate}
-        />
-      )}
-      {/* 일정 리스트 모달 */}
+      {/* ─── 리스트 모달 ─── */}
       {isListModalOpen && clickedDate && (
         <ScheduleListModal
           date={clickedDate}

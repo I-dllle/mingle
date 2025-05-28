@@ -8,6 +8,7 @@ import {
 } from "@/features/schedule/types/Schedule";
 import { ScheduleType } from "@/features/schedule/types/Enums";
 
+// API 기본 경로 (이미 apiClient에서 /api/v1 접두사가 추가됨)
 const BASE = "/schedule";
 
 /**
@@ -65,6 +66,8 @@ function prepareScheduleDataForApi(formData: ScheduleFormData) {
     endTime: formatDateTimeWithSeconds(formData.endTime),
     departmentId: formData.departmentId || null,
     postId: formData.postId || null,
+    scheduleStatus:
+      formData.scheduleStatus === "NONE" ? null : formData.scheduleStatus,
   };
 }
 
@@ -109,7 +112,7 @@ export async function createSchedule(
   data: ScheduleFormData
 ): Promise<Schedule> {
   const preparedData = prepareScheduleDataForApi(data);
-  const response = await apiClient<ScheduleResponse>("/api/v1/schedule", {
+  const response = await apiClient<ScheduleResponse>(`${BASE}`, {
     method: "POST",
     body: JSON.stringify(preparedData),
   });
@@ -124,7 +127,7 @@ export async function updateSchedule(
   data: ScheduleFormData
 ): Promise<Schedule> {
   const preparedData = prepareScheduleDataForApi(data);
-  const response = await apiClient<ScheduleResponse>(`/api/v1/schedule/${id}`, {
+  const response = await apiClient<ScheduleResponse>(`${BASE}/${id}`, {
     method: "PUT",
     body: JSON.stringify(preparedData),
   });
@@ -135,7 +138,7 @@ export async function updateSchedule(
  * 일정 삭제
  */
 export async function deleteSchedule(id: number): Promise<void> {
-  await apiClient(`/api/v1/schedule/${id}`, {
+  await apiClient(`${BASE}/${id}`, {
     method: "DELETE",
   });
 }
@@ -161,7 +164,7 @@ export async function getSchedules(
   if (params.size) queryParams.append("size", params.size.toString());
   if (params.scheduleType)
     queryParams.append("scheduleType", params.scheduleType);
-  const url = `/api/v1/schedule?${queryParams.toString()}`;
+  const url = `${BASE}?${queryParams.toString()}`;
   const response = await apiClient<PagedResponse<ScheduleResponse>>(url);
 
   return {
@@ -187,7 +190,7 @@ export async function getAllSchedules(
   if (params.endDate) queryParams.append("endDate", params.endDate);
   if (params.scheduleType)
     queryParams.append("scheduleType", params.scheduleType);
-  const url = `/api/v1/schedule/all?${queryParams.toString()}`;
+  const url = `${BASE}/all?${queryParams.toString()}`;
   const response = await apiClient<Schedule[]>(url);
 
   return response;
@@ -197,7 +200,7 @@ export async function getAllSchedules(
  * 특정 일정 조회
  */
 export async function getScheduleById(id: number): Promise<Schedule> {
-  const response = await apiClient<ScheduleResponse>(`/api/v1/schedule/${id}`);
+  const response = await apiClient<ScheduleResponse>(`${BASE}/${id}`);
   return mapResponseToSchedule(response);
 }
 
@@ -205,7 +208,7 @@ export async function getScheduleById(id: number): Promise<Schedule> {
  * 부서 목록 조회
  */
 export async function getDepartments(): Promise<DepartmentResponse[]> {
-  const response = await apiClient<DepartmentResponse[]>("/api/v1/departments");
+  const response = await apiClient<DepartmentResponse[]>("/departments");
   return response;
 }
 
@@ -220,7 +223,7 @@ export async function searchSchedules(
   queryParams.append("keyword", keyword);
   queryParams.append("includeMemo", String(includeMemo));
 
-  const url = `/api/v1/schedule/search?${queryParams.toString()}`;
+  const url = `${BASE}/search?${queryParams.toString()}`;
   const response = await apiClient<ScheduleResponse[]>(url);
 
   return response.map(mapResponseToSchedule);

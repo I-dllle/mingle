@@ -119,13 +119,22 @@ export const getEventClassNames = (arg: {
   // 일정 타입 클래스 추가
   const scheduleType = event.extendedProps?.type as ScheduleType;
   if (scheduleType) {
-    classNames.push(`event-${scheduleType.toLowerCase()}`);
+    classNames.push(`event-${scheduleType.toLowerCase()}`); // event-personal, event-department, event-company
+    classNames.push(scheduleType.toLowerCase()); // personal, department, company (기본 클래스도 추가)
   }
-
   // 일정 상태 클래스 추가
   const scheduleStatus = event.extendedProps?.scheduleStatus as ScheduleStatus;
-  if (scheduleStatus === "CANCELED") classNames.push("canceled-event");
-  else if (scheduleStatus === "COMPLETED") classNames.push("completed-event");
+  if (scheduleStatus) {
+    // 모든 상태에 대한 클래스 추가
+    // 예: IMPORTANT_MEETING → status-important-meeting
+    classNames.push(
+      `status-${scheduleStatus.toLowerCase().replace(/_/g, "-")}`
+    );
+
+    // 기존 호환성을 위한 클래스도 유지
+    if (scheduleStatus === "CANCELED") classNames.push("canceled-event");
+    else if (scheduleStatus === "COMPLETED") classNames.push("completed-event");
+  }
 
   return classNames;
 };

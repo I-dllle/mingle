@@ -10,7 +10,7 @@
 :root {
   --fc-border-color: #f3f4f6;
   --fc-daygrid-event-dot-width: 8px;
-  --fc-today-bg-color: #f3e8ff;
+  --fc-today-bg-color: rgba(147, 51, 234, 0.05);
   --fc-page-bg-color: #ffffff;
   --fc-neutral-bg-color: #f9fafb;
   --fc-list-event-hover-bg-color: #f3e8ff;
@@ -186,6 +186,19 @@
   padding-top: 2rem; /* 날짜 숫자 아래로 내용 표시될 공간 확보 */
 }
 
+/* 일간 뷰(timeGridDay) 슬롯 배경을 완전 흰색으로 덮어쓰기 */
+.fc .fc-timeGridDay-view .fc-timegrid-slot-lane {
+  background-color: white !important;
+}
+/* odd/even 교차 줄무늬도 흰색 유지 */
+.fc .fc-timeGridDay-view .fc-timegrid-slot-lane:nth-child(odd) {
+  background-color: white !important;
+}
+
+.fc .fc-dayGridMonth-view td.fc-day-today {
+  background-color: rgba(147, 51, 234, 0.07) !important;
+}
+
 /* ============================================
    6. 타임그리드 뷰 (주간, 일간) 스타일
    ============================================ */
@@ -203,12 +216,13 @@
 }
 
 .fc .fc-timegrid-now-indicator-line {
-  border-color: #8b5cf6;
+  border-color: #ef4444 !important;
 }
 
+/* 화살표(arrow)도 동일 톤으로 통일 */
 .fc .fc-timegrid-now-indicator-arrow {
-  border-color: #8b5cf6;
-  background-color: #8b5cf6;
+  border-color: #ef4444 !important;
+  background-color: #ef4444 !important;
 }
 
 /* ============================================
@@ -243,46 +257,118 @@
 /* ============================================
    8. 이벤트 타입별 스타일
    ============================================ */
-/* 개인 일정 */
+/* 개인 일정 - 클래스 이름이 일치하도록 수정 */
 .fc .fc-event.personal,
+.fc .fc-event.event-personal,
 .fc .event-personal {
-  background-color: #f3e8ff !important;
+  background-color: rgba(147, 51, 234, 0.15) !important;
   border-left: 3px solid #9333ea !important;
-  color: #6b21a8 !important;
+  color: #333333 !important; /* 보라색에서 검정색으로 변경 */
 }
 
-/* 부서 일정 */
+/* 부서 일정 - 클래스 이름이 일치하도록 수정 */
 .fc .fc-event.department,
+.fc .fc-event.event-department,
 .fc .event-department {
-  background-color: #e0e7ff !important;
+  background-color: rgba(79, 70, 229, 0.15) !important;
   border-left: 3px solid #4f46e5 !important;
-  color: #3730a3 !important;
+  color: #333333 !important; /* 파란색에서 검정색으로 변경 */
 }
 
-/* 회사 일정 */
+/* 회사 일정 - 클래스 이름이 일치하도록 수정 */
 .fc .fc-event.company,
+.fc .fc-event.event-company,
 .fc .event-company {
-  background-color: #fce7f3 !important;
+  background-color: rgba(219, 39, 119, 0.15) !important;
   border-left: 3px solid #db2777 !important;
   color: #9d174d !important;
+}
+
+/* 주간/일간 타임그리드 뷰에서 일정 스타일 - 투명함 문제 해결 */
+/* 타입별 스타일 */
+.fc .fc-timegrid-event .fc-event.personal,
+.fc .fc-timegrid-event .fc-event.event-personal {
+  background-color: rgba(147, 51, 234, 0.25) !important;
+  border-left: 3px solid #9333ea !important;
+}
+
+.fc .fc-timegrid-event .fc-event.department,
+.fc .fc-timegrid-event .fc-event.event-department {
+  background-color: rgba(79, 70, 229, 0.25) !important;
+  border-left: 3px solid #4f46e5 !important;
+}
+
+.fc .fc-timegrid-event .fc-event.company,
+.fc .fc-timegrid-event .fc-event.event-company {
+  background-color: rgba(219, 39, 119, 0.25) !important;
+  border-left: 3px solid #db2777 !important;
+}
+
+/* 타임그리드에서 상태별 스타일 */
+.fc .fc-timegrid-event .fc-event.status-important-meeting {
+  background-color: rgba(236, 72, 153, 0.25) !important;
+  border-left: 3px solid #e91e63 !important;
+}
+
+.fc .fc-timegrid-event .fc-event.status-business-trip {
+  background-color: rgba(147, 51, 234, 0.25) !important;
+  border-left: 3px solid #9c27b0 !important;
+}
+
+.fc .fc-timegrid-event .fc-event.status-meeting {
+  background-color: rgba(251, 146, 60, 0.25) !important;
+  border-left: 3px solid #ff9800 !important;
+}
+
+.fc .fc-timegrid-event .fc-event.status-vacation {
+  background-color: rgba(14, 165, 233, 0.25) !important;
+  border-left: 3px solid #00bcd4 !important;
+}
+
+.fc .fc-timegrid-event .fc-event.status-completed {
+  background-color: rgba(34, 197, 94, 0.25) !important;
+  border-left: 3px solid #8bc34a !important;
+}
+
+.fc .fc-timegrid-event .fc-event.status-canceled {
+  background-color: rgba(156, 163, 175, 0.25) !important;
+  border-left: 3px solid #9e9e9e !important;
+  text-decoration: line-through;
+}
+
+.fc .fc-timegrid-event .fc-event.status-none {
+  background-color: rgba(189, 189, 189, 0.2) !important;
+  border-left: 3px solid #bdbdbd !important;
 }
 
 /* ============================================
    9. 이벤트 상태별 스타일
    ============================================ */
+/* 취소된 일정 */
 .fc .fc-event.canceled-event,
-.fc .canceled-event {
+.fc .canceled-event,
+.fc .fc-event.status-canceled,
+.fc .status-canceled {
   text-decoration: line-through;
   opacity: 0.7;
+  background-color: rgba(156, 163, 175, 0.2) !important;
+  border-left: 3px solid #9e9e9e !important;
 }
 
+/* 완료된 일정 */
 .fc .fc-event.completed-event,
-.fc .completed-event {
+.fc .completed-event,
+.fc .fc-event.status-completed,
+.fc .status-completed {
   position: relative;
+  background-color: rgba(34, 197, 94, 0.2) !important;
+  border-left: 3px solid #8bc34a !important;
 }
 
 .fc .fc-event.completed-event::after,
-.fc .completed-event::after {
+.fc .completed-event::after,
+.fc .fc-event.status-completed::after,
+.fc .status-completed::after {
   content: "✓";
   position: absolute;
   top: 0.25rem;
@@ -290,6 +376,41 @@
   color: #10b981;
   font-weight: bold;
   font-size: 0.75rem;
+}
+
+/* 중요 회의 */
+.fc .fc-event.status-important-meeting,
+.fc .status-important-meeting {
+  background-color: rgba(236, 72, 153, 0.2) !important;
+  border-left: 3px solid #e91e63 !important;
+}
+
+/* 출장 */
+.fc .fc-event.status-business-trip,
+.fc .status-business-trip {
+  background-color: rgba(147, 51, 234, 0.2) !important;
+  border-left: 3px solid #9c27b0 !important;
+}
+
+/* 일반 회의 */
+.fc .fc-event.status-meeting,
+.fc .status-meeting {
+  background-color: rgba(251, 146, 60, 0.2) !important;
+  border-left: 3px solid #ff9800 !important;
+}
+
+/* 휴가 */
+.fc .fc-event.status-vacation,
+.fc .status-vacation {
+  background-color: rgba(14, 165, 233, 0.2) !important;
+  border-left: 3px solid #00bcd4 !important;
+}
+
+/* 기본 상태 (없음) */
+.fc .fc-event.status-none,
+.fc .status-none {
+  background-color: rgba(189, 189, 189, 0.15) !important;
+  border-left: 3px solid #bdbdbd !important;
 }
 
 /* ============================================
@@ -341,6 +462,21 @@
   min-height: 0 !important;
 }
 
+/* Day/Week 뷰 배경색을 흰색으로 설정 */
+.fc .fc-timegrid-body {
+  background-color: #ffffff !important;
+}
+
+/* 현재 시간 슬롯 강조 스타일 */
+.current-hour {
+  background-color: rgba(147, 51, 234, 0.1) !important;
+}
+
+/* 이벤트 텍스트 색상을 모두 검정색으로 통일 */
+.fc .fc-event {
+  color: #333333 !important;
+}
+
 /* ============================================
    12. 현대적인 레이아웃 개선
    ============================================ */
@@ -378,6 +514,24 @@
   margin-bottom: 3px;
   border-radius: 4px;
   padding: 4px 8px;
+}
+
+/* Indicator 라인을 더 두껍게, 보라색으로 */
+.fc .fc-now-indicator {
+  background-color: #9333ea !important;
+  height: 2px !important;
+  z-index: 5;
+}
+
+/* 맨 왼쪽에 붙는 작은 삼각형(arrow)도 색 맞추기 */
+.fc .fc-now-indicator-arrow {
+  /* border-top-color가 화살촉 색입니다 */
+  border-top-color: #9333ea !important;
+}
+
+.fc .fc-timegrid-event .fc-event-title,
+.fc .fc-timegrid-event .fc-event-time {
+  color: #111827 !important; /* 진한 검정(다크 그레이) */
 }
 
 /* ───────────────────────────────────────────────
