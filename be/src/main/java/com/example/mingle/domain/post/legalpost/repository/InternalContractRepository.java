@@ -8,6 +8,7 @@ import com.example.mingle.domain.user.user.entity.User;
 import org.hibernate.Internal;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -56,6 +57,7 @@ public interface InternalContractRepository extends JpaRepository<InternalContra
 
 
     // 내부 계약서 페이징 + TERMINATED 제외
+    @EntityGraph(attributePaths = {"user"})
     @Query("""
     SELECT c FROM InternalContract c
     WHERE c.status NOT IN :excludedStatuses

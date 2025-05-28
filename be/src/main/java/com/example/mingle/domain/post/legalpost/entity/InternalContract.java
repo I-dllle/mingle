@@ -22,6 +22,7 @@ public class InternalContract extends BaseEntity {
     private LocalDate startDate;
     private LocalDate endDate;
     private BigDecimal defaultRatio;
+    private String companyName;
 
     @Column(length = 200)
     private String title;

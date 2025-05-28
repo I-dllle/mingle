@@ -9,7 +9,7 @@ import {
   ContractDetailDto,
   ContractConditionResponse,
   ChangeStatusRequest,
-  OfflineSignRequest
+  OfflineSignRequest,
 } from "@/features/department/finance-legal/contracts/types/Contract";
 import { contractService } from "@/features/department/finance-legal/contracts/services/contractService";
 
@@ -125,7 +125,8 @@ export default function ContractDetailPage() {
       const request: OfflineSignRequest = {
         signerName: offlineSignData.signerName,
         memo: offlineSignData.memo,
-      };      await contractService.signOfflineAsAdmin(contract.id, request);
+      };
+      await contractService.signOfflineAsAdmin(contract.id, request);
 
       // 상태를 오프라인 서명됨으로 변경
       await handleStatusChange(contract.id, ContractStatus.SIGNED_OFFLINE);
@@ -224,7 +225,8 @@ export default function ContractDetailPage() {
 
   // 상태에 따라 사용 가능한 액션 반환
   const getAvailableActions = (status: ContractStatus) => {
-    switch (status) {      case ContractStatus.DRAFT:
+    switch (status) {
+      case ContractStatus.DRAFT:
         return {
           canReview: true,
           canSign: false,
@@ -265,7 +267,8 @@ export default function ContractDetailPage() {
           canConfirm: false,
           canDelete: false,
           canTerminate: true,
-        };      case ContractStatus.TERMINATED:
+        };
+      case ContractStatus.TERMINATED:
       case ContractStatus.EXPIRED:
         return {
           canReview: false,
@@ -288,8 +291,8 @@ export default function ContractDetailPage() {
   return (
     <div className="container mx-auto p-6">
       {/* 상단 헤더 */}
-      <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-        <div className="flex flex-wrap justify-between items-center">
+      <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-gray-800">
               계약서 상세 정보
@@ -298,7 +301,7 @@ export default function ContractDetailPage() {
               계약의 상세 정보 및 상태를 관리합니다.
             </p>
           </div>
-          <div className="flex flex-wrap gap-2 mt-4 md:mt-0">
+          <div className="flex gap-2">
             <Link
               href={`..?category=${category}`}
               className="inline-flex items-center bg-white border border-gray-300 text-gray-700 px-4 py-2.5 rounded-md hover:bg-gray-50 transition-colors shadow-sm font-medium"
@@ -342,7 +345,6 @@ export default function ContractDetailPage() {
           </div>
         </div>
       </div>
-
       {/* 에러 메시지 */}
       {error && (
         <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md mb-6">
@@ -362,22 +364,21 @@ export default function ContractDetailPage() {
               />
             </svg>
             <span>{error}</span>
-          </div>
+          </div>{" "}
         </div>
       )}
-
       {/* 로딩 화면 */}
       {loading ? (
-        <div className="bg-white rounded-lg shadow-sm border p-6 mb-6 flex flex-col items-center justify-center py-16">
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6 flex flex-col items-center justify-center py-16">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
           <p className="text-gray-500">계약 정보를 불러오는 중...</p>
         </div>
       ) : contract ? (
         <div>
           {/* 상태 표시 영역 */}
-          <div className="bg-white rounded-lg shadow-sm border mb-6 overflow-hidden">
+          <div className="bg-white rounded-lg shadow-sm mb-6 overflow-hidden">
             <div className="bg-gray-50 p-4 border-b">
-              <div className="flex flex-wrap items-center justify-between">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -397,7 +398,7 @@ export default function ContractDetailPage() {
                     #{contract.id} {contract.summary}
                   </h2>
                 </div>
-                <div className="mt-2 sm:mt-0">
+                <div>
                   <span
                     className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium ${
                       contract.status === ContractStatus.ACTIVE
@@ -461,13 +462,12 @@ export default function ContractDetailPage() {
                 </div>
               </div>
             </div>
-          </div>
-
+          </div>{" "}
           {/* 메인 콘텐츠 영역 */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-3 gap-6">
             {/* 왼쪽 컬럼: 기본 정보 */}
-            <div className="lg:col-span-2">
-              <div className="bg-white rounded-lg shadow-sm border mb-6">
+            <div className="col-span-2">
+              <div className="bg-white rounded-lg shadow-sm mb-6">
                 <div className="p-6">
                   <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                     <svg
@@ -485,11 +485,11 @@ export default function ContractDetailPage() {
                       />
                     </svg>
                     기본 정보
-                  </h2>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  </h2>{" "}
+                  <div className="grid grid-cols-2 gap-6">
                     <div>
-                      <div className="mb-4">                        <label className="block text-sm font-medium text-gray-500 mb-1">
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-500 mb-1">
                           계약서 제목
                         </label>
                         <p className="text-gray-900">{contract.summary}</p>
@@ -562,7 +562,8 @@ export default function ContractDetailPage() {
                       <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-500 mb-1">
                           관리 정보
-                        </label>                        <div className="space-y-1 text-sm">
+                        </label>{" "}
+                        <div className="space-y-1 text-sm">
                           <p className="text-gray-600">
                             <span className="inline-block w-20">생성일:</span>
                             <span className="text-gray-900">
@@ -582,10 +583,9 @@ export default function ContractDetailPage() {
                     </div>
                   </div>
                 </div>
-              </div>
-
+              </div>{" "}
               {/* 서명 정보 영역 */}
-              <div className="bg-white rounded-lg shadow-sm border mb-6">
+              <div className="bg-white rounded-lg shadow-sm mb-6">
                 <div className="p-6">
                   <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                     <svg
@@ -601,11 +601,11 @@ export default function ContractDetailPage() {
                         strokeWidth={2}
                         d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
                       />
-                    </svg>
+                    </svg>{" "}
                     서명 정보
                   </h2>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-2 gap-6">
                     <div>
                       <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-500 mb-1">
@@ -664,11 +664,10 @@ export default function ContractDetailPage() {
                   </div>
                 </div>
               </div>
-            </div>
-
+            </div>{" "}
             {/* 오른쪽 컬럼: 작업 및 액션 */}
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg shadow-sm border mb-6">
+            <div className="col-span-1">
+              <div className="bg-white rounded-lg shadow-sm mb-6">
                 <div className="p-6">
                   <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                     <svg
@@ -843,11 +842,10 @@ export default function ContractDetailPage() {
                       )}
                   </div>
                 </div>
-              </div>
-
+              </div>{" "}
               {/* 서명 폼 */}
               {showOfflineSignForm && (
-                <div className="bg-white rounded-lg shadow-sm border mb-6">
+                <div className="bg-white rounded-lg shadow-sm mb-6">
                   <div className="p-6">
                     <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                       <svg
@@ -926,11 +924,10 @@ export default function ContractDetailPage() {
                     </form>
                   </div>
                 </div>
-              )}
-
+              )}{" "}
               {/* 전자 서명 요청 폼 */}
               {showElectronicSignForm && (
-                <div className="bg-white rounded-lg shadow-sm border mb-6">
+                <div className="bg-white rounded-lg shadow-sm mb-6">
                   <div className="p-6">
                     <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                       <svg
@@ -995,7 +992,7 @@ export default function ContractDetailPage() {
           </div>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm border p-6 mb-6 text-center py-10">
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6 text-center py-10">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-12 w-12 mx-auto text-gray-400 mb-4"

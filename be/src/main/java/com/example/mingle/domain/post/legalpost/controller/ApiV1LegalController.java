@@ -155,12 +155,12 @@ public class ApiV1LegalController {
 
         switch (category) {
             case EXTERNAL -> {
-                List<ContractStatus> excluded = List.of(ContractStatus.TERMINATED, ContractStatus.CONFIRMED);
+                List<ContractStatus> excluded = List.of(ContractStatus.TERMINATED);
                 Page<Contract> contracts = contractRepository.findAllByStatusNotIn(excluded, pageable);
                 result = contracts.map(ContractSimpleDto::from);
             }
             case INTERNAL -> {
-                List<ContractStatus> excluded = List.of(ContractStatus.TERMINATED, ContractStatus.CONFIRMED);
+                List<ContractStatus> excluded = List.of(ContractStatus.TERMINATED);
                 Page<InternalContract> internals = internalContractRepository.findAllByStatusNotIn(excluded, pageable);
                 result = internals.map(ContractSimpleDto::fromInternal);
             }

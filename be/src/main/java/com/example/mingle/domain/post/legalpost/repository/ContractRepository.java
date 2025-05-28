@@ -6,6 +6,7 @@ import com.example.mingle.domain.post.legalpost.enums.ContractCategory;
 import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -60,6 +61,7 @@ public interface ContractRepository extends JpaRepository<Contract, Long>, JpaSp
     List<Contract> findAllByStatusAndUpdatedAtBefore(ContractStatus status, LocalDateTime time);
 
     // 외부 계약서 페이징 + TERMINATED 제외
+    @EntityGraph(attributePaths = {"user"})
     @Query("""
     SELECT c FROM Contract c
     WHERE c.status NOT IN :excludedStatuses

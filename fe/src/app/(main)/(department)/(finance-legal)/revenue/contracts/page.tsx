@@ -284,7 +284,7 @@ export default function ContractsPage() {
               <h3 className="text-lg font-semibold text-gray-700 mb-4">
                 수익 정보
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-3 gap-6">
                 <div className="bg-blue-50 p-6 rounded-lg">
                   <h4 className="text-lg font-semibold text-blue-700 mb-2">
                     총 수익
@@ -319,7 +319,7 @@ export default function ContractsPage() {
                   <h4 className="text-lg font-semibold text-gray-700 mb-4">
                     비율별 분배 현황
                   </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-4 gap-4">
                     {Object.entries(
                       settlementDetails.reduce((acc, detail) => {
                         const type = getRatioTypeLabel(detail.ratioType);

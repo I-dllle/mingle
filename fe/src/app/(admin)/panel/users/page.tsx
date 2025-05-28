@@ -386,10 +386,11 @@ export default function AdminUsersPage() {
                   페이지 {users.number + 1} / {users.totalPages}
                 </div>
                 <div className="flex space-x-2">
+                  {" "}
                   <button
                     onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
                     disabled={users.first}
-                    className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:bg-gray-100"
+                    className="px-3 py-2 border border-gray-200 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:bg-gray-100"
                   >
                     이전
                   </button>
@@ -400,7 +401,7 @@ export default function AdminUsersPage() {
                       )
                     }
                     disabled={users.last}
-                    className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:bg-gray-100"
+                    className="px-3 py-2 border border-gray-200 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:bg-gray-100"
                   >
                     다음
                   </button>

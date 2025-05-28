@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   ContractSearchCondition,
   ContractResponse,
+  ContractSimpleDto,
   ContractStatus,
   ContractType,
   ContractCategory,
@@ -12,11 +13,12 @@ import {
 } from "@/features/department/finance-legal/contracts/types/Contract";
 import {
   getFilteredContracts,
+  getAllContracts,
   searchUsers,
 } from "@/features/department/finance-legal/contracts/services/contractService";
 
 interface PagedResponse {
-  content: ContractResponse[];
+  content: ContractSimpleDto[];
   totalElements: number;
   totalPages: number;
   size: number;
@@ -30,7 +32,7 @@ export default function ContractsPage() {
     ContractCategory.EXTERNAL
   );
   const [showFilters, setShowFilters] = useState(false);
-  const [contracts, setContracts] = useState<ContractResponse[]>([]);
+  const [contracts, setContracts] = useState<ContractSimpleDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // 페이징 상태
@@ -110,8 +112,7 @@ export default function ContractsPage() {
       ...tempCondition,
       participantUserId: undefined,
     });
-  };
-  // 계약서 목록 조회
+  }; // 계약서 목록 조회
   const fetchContracts = async (
     page: number = 0,
     condition: ContractSearchCondition = { contractCategory: category },
@@ -121,12 +122,11 @@ export default function ContractsPage() {
     setError(null);
 
     try {
-      const response: PagedResponse = await getFilteredContracts(
-        condition,
+      // 모든 경우에 getAllContracts 사용 (ContractSimpleDto 반환)
+      const response = await getAllContracts(
+        condition.contractCategory || category,
         page,
-        size,
-        sortField,
-        sortDirection
+        size
       );
 
       setContracts(response.content);
@@ -213,13 +213,11 @@ export default function ContractsPage() {
     };
     return classMap[status] || "bg-gray-100 text-gray-800";
   };
-
   return (
     <div className="container mx-auto p-6">
-      {" "}
       {/* 헤더 영역 */}
-      <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-        <div className="flex flex-wrap justify-between items-center">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-gray-800">
               계약 관리 대시보드
@@ -228,7 +226,7 @@ export default function ContractsPage() {
               계약서 관리 및 진행 상황을 확인할 수 있습니다.
             </p>
           </div>
-          <div className="flex flex-wrap gap-2 mt-4 md:mt-0">
+          <div className="flex gap-2">
             <Link
               href={`contracts/create`}
               className="inline-flex items-center bg-blue-600 text-white px-4 py-2.5 rounded-md hover:bg-blue-700 transition-colors shadow-sm font-medium"
@@ -272,7 +270,7 @@ export default function ContractsPage() {
 
         {/* 카테고리 선택 및 요약 정보 */}
         <div className="mt-6 border-t pt-6">
-          <div className="flex flex-wrap items-center justify-between">
+          <div className="flex items-center justify-between">
             <div className="inline-flex rounded-md shadow-sm" role="group">
               <button
                 onClick={() => handleCategoryChange(ContractCategory.EXTERNAL)}
@@ -296,7 +294,7 @@ export default function ContractsPage() {
               </button>
             </div>
 
-            <div className="flex flex-wrap gap-4 mt-4 lg:mt-0">
+            <div className="flex gap-4">
               <div className="bg-blue-50 rounded-lg p-3 text-center min-w-[120px]">
                 <span className="text-lg font-semibold text-blue-700">
                   {totalElements}
@@ -340,12 +338,12 @@ export default function ContractsPage() {
       {/* 에러 메시지 */}
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
+          {error}{" "}
         </div>
-      )}{" "}
+      )}
       {/* 필터링 영역 */}
       {showFilters && (
-        <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-800 flex items-center">
               <svg
@@ -361,11 +359,11 @@ export default function ContractsPage() {
                   strokeWidth={2}
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                 />
-              </svg>
+              </svg>{" "}
               상세 검색
             </h2>{" "}
             <div className="text-sm text-gray-500">
-              선택한 필터:{" "}
+              선택한 필터:
               {
                 Object.keys(searchCondition).filter(
                   (key) =>
@@ -374,11 +372,9 @@ export default function ContractsPage() {
                 ).length
               }
               개
-            </div>
+            </div>{" "}
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {" "}
+          <div className="grid grid-cols-4 gap-4">
             {/* 팀 ID */}
             <div className="space-y-1">
               <label className="block text-sm font-medium text-gray-700">
@@ -401,10 +397,9 @@ export default function ContractsPage() {
             <div className="space-y-1">
               <label className="block text-sm font-medium text-gray-700">
                 참여자 검색
-              </label>
+              </label>{" "}
               <div className="flex items-center gap-2">
                 <div className="relative flex-grow">
-                  {" "}
                   <input
                     type="text"
                     value={participantName}
@@ -448,7 +443,7 @@ export default function ContractsPage() {
                       ))}
                     </div>
                   )}
-                </div>{" "}
+                </div>
                 {selectedParticipant && (
                   <button
                     type="button"
@@ -533,16 +528,17 @@ export default function ContractsPage() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm bg-white"
               >
                 <option value="">모든 타입</option>
-                <option value={ContractType.PAPER}>종이 계약</option>
+                <option value={ContractType.PAPER}>종이 계약</option>{" "}
                 <option value={ContractType.ELECTRONIC}>전자 계약</option>
               </select>
-            </div>{" "}
-            {/* 참여자 사용자 ID */} {/* 날짜 범위 (시작 ~ 종료) */}
-            <div className="space-y-1 col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-4">
+            </div>
+            {/* 참여자 사용자 ID */}
+            {/* 날짜 범위 (시작 ~ 종료) */}
+            <div className="space-y-1 col-span-4">
               <label className="block text-sm font-medium text-gray-700">
                 계약 기간
               </label>
-              <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+              <div className="flex items-center gap-2">
                 <input
                   type="date"
                   value={tempCondition.startDateFrom || ""}
@@ -569,15 +565,14 @@ export default function ContractsPage() {
               </div>
             </div>
           </div>
-
           {/* 검색 버튼 */}
-          <div className="flex flex-wrap items-center justify-between mt-6 pt-4 border-t border-gray-100">
+          <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
             <div className="text-sm text-gray-500">
               {totalElements > 0
                 ? `총 ${totalElements}개의 계약서`
                 : "검색 결과가 없습니다."}
             </div>
-            <div className="flex space-x-3 mt-2 sm:mt-0">
+            <div className="flex space-x-3">
               <button
                 onClick={handleReset}
                 className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-sm font-medium flex items-center"
@@ -619,12 +614,12 @@ export default function ContractsPage() {
                 검색
               </button>
             </div>
-          </div>
+          </div>{" "}
         </div>
-      )}{" "}
+      )}
       {/* 계약서 목록 테이블 */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
-        <div className="flex items-center justify-between px-6 py-4 border-b">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
           <div className="text-lg font-medium text-gray-700 flex items-center">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -667,8 +662,8 @@ export default function ContractsPage() {
             </div>
           </div>
         </div>
-        {/* 데스크탑용 테이블 (md 이상) */}
-        <div className="hidden md:block overflow-x-auto">
+        {/* 테이블 */}
+        <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -799,27 +794,25 @@ export default function ContractsPage() {
                       <div className="flex flex-col">
                         <div className="font-medium text-blue-600 hover:text-blue-800">
                           <Link
-                            href={`contracts/${contract.id}?category=${contract.contractCategory}`}
+                            href={`contracts/${contract.id}?category=${contract.category}`}
                           >
                             {contract.title}
                           </Link>
                         </div>
                         <div className="text-xs text-gray-500 mt-1">
-                          {contract.contractType === ContractType.PAPER
-                            ? "📄 종이계약"
-                            : "💻 전자계약"}
-                          {contract.contractCategory ===
-                          ContractCategory.INTERNAL
-                            ? " · 내부계약"
-                            : " · 외부계약"}
+                          {contract.category === ContractCategory.INTERNAL
+                            ? "📋 내부계약"
+                            : "📄 외부계약"}
                         </div>
                       </div>
                     </td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {contract.userName || "-"}
+                    <td className="px-3 py-4 text-sm text-gray-900">
+                      <div className="flex flex-col">
+                        <span className="font-medium">{contract.nickname}</span>
+                      </div>
                     </td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {contract.teamName || "-"}
+                      -
                     </td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
                       <div className="flex flex-col">
@@ -864,8 +857,7 @@ export default function ContractsPage() {
                       </span>
                     </td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {contract.contractCategory ===
-                      ContractCategory.INTERNAL ? (
+                      {contract.category === ContractCategory.INTERNAL ? (
                         <span className="inline-flex items-center px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs font-medium rounded">
                           내부
                         </span>
@@ -878,7 +870,7 @@ export default function ContractsPage() {
                     <td className="pr-6 pl-3 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end space-x-2">
                         <Link
-                          href={`contracts/${contract.id}?category=${contract.contractCategory}`}
+                          href={`contracts/${contract.id}?category=${contract.category}`}
                           className="text-blue-600 hover:text-blue-900 px-2 py-1 rounded-md hover:bg-blue-50"
                         >
                           상세보기
@@ -891,159 +883,9 @@ export default function ContractsPage() {
             </tbody>
           </table>
         </div>
-        {/* 모바일용 카드 레이아웃 (md 미만) */}
-        <div className="md:hidden">
-          {contracts.map((contract) => {
-            // 만료일까지 남은 일수 계산
-            const today = new Date();
-            const endDate = new Date(contract.endDate);
-            const daysLeft = Math.ceil(
-              (endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-            );
-            const isExpiringSoon = daysLeft > 0 && daysLeft <= 30;
-            const isExpired = daysLeft <= 0;
-
-            return (
-              <div
-                key={contract.id}
-                className="bg-white rounded-lg shadow-sm border mb-4 overflow-hidden"
-              >
-                <div className="px-4 py-3 border-b bg-gray-50 flex justify-between items-center">
-                  <div className="flex items-center">
-                    <span className="font-medium text-gray-700">
-                      #{contract.id}
-                    </span>
-                    <span className="mx-2 text-gray-400">|</span>
-                    {contract.contractCategory === ContractCategory.INTERNAL ? (
-                      <span className="inline-flex items-center px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs font-medium rounded">
-                        내부
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center px-2 py-0.5 bg-teal-50 text-teal-700 text-xs font-medium rounded">
-                        외부
-                      </span>
-                    )}
-                  </div>
-
-                  <span
-                    className={`inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full ${getStatusClass(
-                      contract.status
-                    )}`}
-                  >
-                    {getStatusText(contract.status)}
-                  </span>
-                </div>
-
-                <div className="p-4">
-                  <h3 className="font-semibold text-blue-600 mb-2">
-                    <Link
-                      href={`contracts/${contract.id}?category=${contract.contractCategory}`}
-                    >
-                      {contract.title}
-                    </Link>
-                  </h3>
-
-                  <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 mb-4">
-                    <div>
-                      <p className="text-xs text-gray-500">담당자</p>
-                      <p>{contract.userName || "-"}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">팀</p>
-                      <p>{contract.teamName || "-"}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">계약 상대방</p>
-                      <p>{contract.companyName || "-"}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">계약 타입</p>
-                      <p>
-                        {contract.contractType === ContractType.PAPER
-                          ? "📄 종이계약"
-                          : "💻 전자계약"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between items-center text-sm border-t pt-3">
-                    <div className="flex flex-col">
-                      <div className="flex items-center">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4 mr-1 text-gray-500"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                          />
-                        </svg>
-                        <span className="text-gray-600">
-                          {new Date(contract.startDate).toLocaleDateString()} ~
-                          <span
-                            className={
-                              isExpired
-                                ? "text-red-600"
-                                : isExpiringSoon
-                                ? "text-orange-600"
-                                : "text-gray-600"
-                            }
-                          >
-                            {new Date(contract.endDate).toLocaleDateString()}
-                          </span>
-                        </span>
-                      </div>
-
-                      {(isExpiringSoon || isExpired) && (
-                        <div className="mt-1">
-                          {isExpiringSoon && !isExpired && (
-                            <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded">
-                              D-{daysLeft}
-                            </span>
-                          )}
-                          {isExpired && (
-                            <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs rounded">
-                              만료됨
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    <Link
-                      href={`contracts/${contract.id}?category=${contract.contractCategory}`}
-                      className="inline-flex items-center px-3 py-1.5 bg-blue-50 border border-blue-300 rounded-md text-blue-700 hover:bg-blue-100 text-sm"
-                    >
-                      상세보기
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4 ml-1"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 5l7 7-7 7"
-                        />
-                      </svg>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>{" "}
         {/* 빈 결과 */}
         {!loading && contracts.length === 0 && (
-          <div className="text-center py-16 bg-white rounded-lg shadow-sm border">
+          <div className="text-center py-16 bg-white rounded-lg shadow-sm border border-gray-200">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-16 w-16 mx-auto text-gray-300 mb-4"
@@ -1057,10 +899,10 @@ export default function ContractsPage() {
                 strokeWidth={1.5}
                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
               />
-            </svg>{" "}
+            </svg>
             <h3 className="text-lg font-medium text-gray-700 mb-1">
               계약서가 없습니다
-            </h3>
+            </h3>{" "}
             <p className="text-gray-500">
               조건에 맞는 계약서를 찾을 수 없습니다.
             </p>
@@ -1068,7 +910,7 @@ export default function ContractsPage() {
         )}
         {/* 로딩 상태 */}
         {loading && (
-          <div className="text-center py-16 bg-white rounded-lg shadow-sm border">
+          <div className="text-center py-16 bg-white rounded-lg shadow-sm border border-gray-200">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-600 mb-4"></div>
             <p className="text-gray-700 font-medium">데이터를 불러오는 중...</p>
             <p className="text-sm text-gray-500 mt-1">잠시만 기다려주세요.</p>
@@ -1077,9 +919,9 @@ export default function ContractsPage() {
       </div>{" "}
       {/* 페이지네이션 */}
       {totalPages > 0 && (
-        <div className="bg-white rounded-lg shadow-sm border p-4 mb-6">
-          <div className="flex flex-wrap justify-between items-center">
-            <div className="flex items-center space-x-3 mb-2 sm:mb-0">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-3">
               <span className="text-sm text-gray-600">페이지당 항목 수:</span>
               <select
                 value={pageSize}
@@ -1097,22 +939,20 @@ export default function ContractsPage() {
                 <option value="50">50개</option>
               </select>
               <span className="text-sm text-gray-500">
-                총 <span className="font-medium">{totalElements}</span>개 중
+                총 <span className="font-medium">{totalElements}</span>개 중{" "}
                 <span className="font-medium">
-                  {" "}
                   {currentPage * pageSize + 1}-
                   {Math.min((currentPage + 1) * pageSize, totalElements)}
                 </span>
                 개 표시
               </span>
-            </div>
-
+            </div>{" "}
             <div className="flex items-center">
-              <div className="flex items-center space-x-1 lg:space-x-2">
+              <div className="flex items-center space-x-2">
                 <button
                   onClick={() => handlePageChange(0)}
                   disabled={currentPage === 0}
-                  className="p-1.5 lg:p-2 rounded-md disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100"
+                  className="p-2 rounded-md disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100"
                   title="첫 페이지"
                 >
                   <svg
@@ -1133,7 +973,7 @@ export default function ContractsPage() {
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 0}
-                  className="p-1.5 lg:p-2 rounded-md disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100"
+                  className="p-2 rounded-md disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100"
                   title="이전 페이지"
                 >
                   <svg
@@ -1151,9 +991,8 @@ export default function ContractsPage() {
                     />
                   </svg>
                 </button>
-
                 {/* 페이지 번호 */}
-                <div className="hidden sm:flex">
+                <div className="flex">
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                     const startPage = Math.max(
                       0,
@@ -1175,18 +1014,10 @@ export default function ContractsPage() {
                     );
                   })}
                 </div>
-
-                {/* 모바일용 현재 페이지 표시 */}
-                <div className="sm:hidden flex items-center justify-center min-w-[60px] px-2 py-1.5 border border-gray-300 rounded-md">
-                  <span className="text-sm font-medium">
-                    {currentPage + 1} / {totalPages}
-                  </span>
-                </div>
-
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages - 1}
-                  className="p-1.5 lg:p-2 rounded-md disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100"
+                  className="p-2 rounded-md disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100"
                   title="다음 페이지"
                 >
                   <svg
@@ -1207,7 +1038,7 @@ export default function ContractsPage() {
                 <button
                   onClick={() => handlePageChange(totalPages - 1)}
                   disabled={currentPage === totalPages - 1}
-                  className="p-1.5 lg:p-2 rounded-md disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100"
+                  className="p-2 rounded-md disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100"
                   title="마지막 페이지"
                 >
                   <svg

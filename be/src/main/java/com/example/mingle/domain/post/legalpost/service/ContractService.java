@@ -70,7 +70,7 @@ public class ContractService {
         contract.setFileUrl(fileUrl);
         contract.setSummary(req.summary());
         contract.setTitle(req.title());
-        contract.setCompanyName("Mingle");
+        contract.setCompanyName(req.counterpartyCompanyName());
         contract.setContractCategory(req.contractCategory());
         contract.setStartDate(req.startDate());
         contract.setEndDate(req.endDate());

@@ -112,8 +112,11 @@ export enum RatioType {
 export interface ContractSimpleDto {
   id: number;
   title: string;
+  companyName: string; // 회사명 (계약 당사자)
+  status: ContractStatus; // 계약 상태
   startDate: string; // ISO 형식의 날짜 문자열 (YYYY-MM-DD)
   endDate: string; // ISO 형식의 날짜 문자열 (YYYY-MM-DD)
+  nickname: string; // 사용자 닉네임 (외부 계약자 이름)
   category: ContractCategory;
 }
 
@@ -124,8 +127,11 @@ export const ContractSimpleDtoUtils = {
     return {
       id: contract.id,
       title: contract.title,
+      companyName: contract.companyName,
+      status: contract.status,
       startDate: contract.startDate as string, // LocalDate → string으로 변환 필요
       endDate: contract.endDate as string, // LocalDate → string으로 변환 필요
+      nickname: contract.user.nickname || "외부 사용자", // 우선순위: user.nickname > userName > signerName
       category: contract.contractCategory,
     };
   },
@@ -134,8 +140,11 @@ export const ContractSimpleDtoUtils = {
     return {
       id: internal.id,
       title: "(내부계약) 사용자 정산 계약",
+      companyName: "Mingle",
+      status: internal.status,
       startDate: internal.startDate as string, // LocalDate → string으로 변환 필요
       endDate: internal.endDate as string, // LocalDate → string으로 변환 필요
+      nickname: internal.user.nickname || "내부 사용자", // 내부 계약의 경우 고정값 사용
       category: ContractCategory.INTERNAL,
     };
   },
@@ -159,6 +168,7 @@ export interface CreateContractRequest {
   endDate: string; // 종료일 (ISO 형식의 날짜 문자열)
   contractType: ContractType; // 계약 타입
   contractAmount: number; // 계약 금액 (BigDecimal → number로 변환)
+  counterpartyCompanyName: string; // 상대 회사 이름
   useManualRatios: boolean; // true면 수동 입력, false면 내부계약 기준
   ratios: SettlementRatioDto[]; // 수동 입력용 정산 비율 목록
   targetUserIds: number[]; // 내부계약 기준 유저 ID 리스트

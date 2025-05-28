@@ -418,7 +418,7 @@ export default function AdminContractsPage() {
               <h4 className="font-medium mb-3">
                 사용자 계약 목록 ({userContracts.length}개)
               </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 {userContracts.map((contract, index) => (
                   <div
                     key={index}
@@ -474,7 +474,7 @@ export default function AdminContractsPage() {
       {activeTab === "detail" && selectedContract && (
         <div className="bg-white border rounded-lg p-6 mb-6">
           <h3 className="text-xl font-semibold mb-4">계약 상세 정보</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <strong>ID:</strong> {selectedContract.id}
             </div>
@@ -486,8 +486,8 @@ export default function AdminContractsPage() {
             </div>
             <div>
               <strong>종료일:</strong> {selectedContract.endDate}
-            </div>
-            <div className="md:col-span-2">
+            </div>{" "}
+            <div className="col-span-2">
               <strong>요약:</strong>
               <div className="mt-2 p-3 bg-gray-50 rounded">
                 {selectedContract.summary || "요약 정보가 없습니다."}
@@ -499,7 +499,7 @@ export default function AdminContractsPage() {
               </div>
             )}
             {selectedContract.signerMemo && (
-              <div className="md:col-span-2">
+              <div className="col-span-2">
                 <strong>서명 메모:</strong>
                 <div className="mt-2 p-3 bg-gray-50 rounded">
                   {selectedContract.signerMemo}
@@ -519,7 +519,7 @@ export default function AdminContractsPage() {
       {activeTab === "all" && (
         <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
           <h2 className="text-lg font-semibold mb-4">검색 조건</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             {" "}
             {/* 팀 ID */}
             <div>
@@ -921,10 +921,11 @@ export default function AdminContractsPage() {
               Math.ceil(allContracts.length / pageSize) > 1)) && (
             <div className="px-6 py-4 border-t bg-gray-50">
               <div className="flex justify-center space-x-2">
+                {" "}
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 0}
-                  className="px-3 py-1 rounded border disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-1 rounded border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
                 >
                   이전
                 </button>
@@ -949,9 +950,9 @@ export default function AdminContractsPage() {
                       <button
                         key={pageNumber}
                         onClick={() => handlePageChange(pageNumber)}
-                        className={`px-3 py-1 rounded border ${
+                        className={`px-3 py-1 rounded border border-gray-200 ${
                           currentPage === pageNumber
-                            ? "bg-blue-500 text-white"
+                            ? "bg-blue-500 text-white border-blue-500"
                             : "bg-white text-gray-700 hover:bg-gray-100"
                         }`}
                       >
@@ -959,7 +960,7 @@ export default function AdminContractsPage() {
                       </button>
                     );
                   }
-                )}
+                )}{" "}
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={
@@ -969,7 +970,7 @@ export default function AdminContractsPage() {
                       : Math.ceil(allContracts.length / pageSize)) -
                       1
                   }
-                  className="px-3 py-1 rounded border disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-1 rounded border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
                 >
                   다음
                 </button>
