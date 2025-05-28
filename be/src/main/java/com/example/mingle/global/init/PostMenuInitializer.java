@@ -101,9 +101,9 @@ public class PostMenuInitializer implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         try {
             log.info("[PostMenuInitializer] 게시판 초기화를 시작합니다.");
-            
+
             User creator = defaultCreator();
-            
+
             //공통
             initializeCommonMenu("CALENDAR", "캘린더", "스케쥴 관리 캘린더 게시판");
             initializeCommonMenu("BUSINESS_DOCUMENTS", "업무자료", "부서별 업무 자료 게시판");
@@ -127,13 +127,8 @@ public class PostMenuInitializer implements ApplicationRunner {
             initializeMenu("SNS_CONTENT", "SNS컨텐츠", "마케팅 - SNS 콘텐츠 게시판", "Marketing & PR", creator);
             initializeMenu("EVENTS", "이벤트", "마케팅 - 이벤트 게시판", "Marketing & PR", creator);
 
-            //경영진/법무팀
-            initializeMenu("NOTICEBOARD_MANAGEMENT", "공지사항 관리", "경영진 - 공지사항 관리", "Executive", creator);
-            initializeMenu("USER_MANAGEMENT", "사용자 관리", "경영진 - 사용자 계정 관리", "Executive", creator);
-            initializeMenu("ATTENDANCE_MANAGEMENT", "근태관리", "경영진 - 근태 관리", "Executive", creator);
-            initializeMenu("DASHBOARD", "대시보드", "경연진 - 대시보드 시각화 요약", "Executive", creator);
-            initializeMenu("SETTLEMENT_MANAGEMENT", "정산관리", "경영진 - 정산 내역 관리", "Executive", creator);
-            initializeMenu("CONTRACT_MANAGEMENT", "계약서관리", "경영진 - 계약 문서 관리", "Executive", creator);
+            //경영진(추후구현)
+
 
             //정산/법무팀
             initializeMenu("REVENUE_SETTLEMENT", "수익 정산 내역", "수익 정산 내역 등록 게시판", "Finance & Legal", creator);
@@ -141,8 +136,14 @@ public class PostMenuInitializer implements ApplicationRunner {
             initializeMenu("INTERNAL_POLICY", "내부 규정", "사내 정책 및 지침 관리", "Finance & Legal", creator);
             initializeMenu("LEGAL_DISPUTES", "법률 분쟁 내역", "법적 분쟁 사례 및 진행 현황 관리", "Finance & Legal", creator);
 
-
-
+            //운영진
+            initializeMenu("DASHBOARD", "대시보드", "대시보드 시각화 요약", "System Operations", creator);
+            initializeMenu("NOTICEBOARD_MANAGEMENT", "공지사항 관리", "운영팀 - 공지사항 관리", "System Operations", creator);
+            initializeMenu("USER_MANAGEMENT", "사용자 관리", "운영팀 - 사용자 계정 관리", "System Operations", creator);
+            initializeMenu("ATTENDANCE_MANAGEMENT", "근태관리", "운영팀 - 근태 관리", "System Operations", creator);
+            initializeMenu("REVENUE_ANALYSIS", "수익분석", "운영팀 - 수익분석 기능", "System Operations", creator);
+            initializeMenu("SETTLEMENT_MANAGEMENT", "정산관리", "운영팀 - 정산 내역 관리", "System Operations", creator);
+            initializeMenu("CONTRACT_MANAGEMENT", "계약서관리", "운영팀 - 계약 문서 관리", "System Operations", creator);
 
             //아티스트/매니저
             initializeMenu("ARTIST_REPORT", "활동보고서", "매니저/아티스트 - 활동보고서 게시판", "Artist & Manager", creator);
