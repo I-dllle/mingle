@@ -17,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 @SuperBuilder
 @Table(
-        uniqueConstraints = @UniqueConstraint(columnNames = {"department_id", "menu_type"})
+        uniqueConstraints = @UniqueConstraint(columnNames = {"department_id", "menu_id"})
 )
 public class PostType extends BaseEntity {
     @ManyToOne(cascade = CascadeType.PERSIST) 
