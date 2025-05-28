@@ -12,7 +12,7 @@ spring:
     redis:
       host: redis
       port: 6379
-      password: ${custom.prod.db.password}
+      password: mingleservice
   jpa:
     hibernate:
       ddl-auto: update
