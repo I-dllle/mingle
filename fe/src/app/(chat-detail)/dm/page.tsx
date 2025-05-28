@@ -18,6 +18,8 @@ export default function ChatTestPage() {
           chatType: ChatRoomType.DM,
           content: 'WebSocket 테스트',
           format: MessageFormat.TEXT,
+          senderId: 1,
+          createdAt: new Date().toISOString(),
         });
       }, 1000);
     }
