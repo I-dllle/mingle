@@ -3,6 +3,7 @@ import {
   AdminRequestUser,
   AdminUpdateUser,
   AdminRoleUpdate,
+  AdminStatusUpdate,
   UserRole,
   PositionCode,
 } from "../types/AdminUser";
@@ -75,6 +76,39 @@ const updateRole = async (
   });
 };
 
+// 유저 상태 변경
+const updateStatus = async (
+  id: number,
+  statusData: AdminStatusUpdate
+): Promise<void> => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}${API_BASE_URL}/${id}/status`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(statusData),
+      credentials: "include",
+      cache: "no-store",
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(`API 요청 실패: ${res.statusText}`);
+  }
+
+  // 응답이 비어있는 경우를 처리
+  const text = await res.text();
+  if (text) {
+    try {
+      JSON.parse(text);
+    } catch (e) {
+      // JSON이 아닌 경우 무시
+    }
+  }
+};
+
 // 이름으로 유저 검색
 const searchByName = async (name: string): Promise<UserSearchDto[]> => {
   const params = new URLSearchParams({ name });
@@ -88,5 +122,6 @@ export const adminUserService = {
   getUser,
   updateUser,
   updateRole,
+  updateStatus,
   searchByName,
 };

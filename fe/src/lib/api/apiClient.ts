@@ -4,13 +4,14 @@ export async function apiClient<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}${url}`, {
+    method: options.method || "GET", // 기본값은 GET
     ...options,
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...(options.headers || {}),
     },
-    credentials: 'include', // 중요! 쿠키 자동 포함
-    cache: 'no-store', // 매번 fresh 하게
+    credentials: "include", // 중요! 쿠키 자동 포함
+    cache: "no-store", // 매번 fresh 하게
   });
 
   if (!res.ok) {

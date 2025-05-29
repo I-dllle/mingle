@@ -97,6 +97,8 @@ export default function ContractsPage() {
 
   // 디바운스를 위한 타이머 변수
   const [searchTimer, setSearchTimer] = useState<NodeJS.Timeout | null>(null);
+  // IME 조합 상태 추가
+  const [isComposing, setIsComposing] = useState(false);
 
   // 참여자 선택
   const handleSelectParticipant = (user: UserSearchDto) => {
@@ -111,7 +113,7 @@ export default function ContractsPage() {
     fetchContracts(0, newCondition);
     // 검색 결과 닫기
     setParticipantResults([]);
-    setParticipantName(user.name); // 선택된 사용자 이름을 입력창에 표시
+    setParticipantName(user.nickname); // 선택된 사용자 이름을 입력창에 표시
   };
 
   // 참여자 선택 해제
@@ -303,31 +305,86 @@ export default function ContractsPage() {
               {showFilters ? "필터 숨기기" : "필터 보기"}
             </button>
           </div>
-        </div>
-
+        </div>{" "}
         {/* 카테고리 선택 및 요약 정보 */}
         <div className="mt-6 border-t pt-6">
           <div className="flex items-center justify-between">
-            <div className="inline-flex rounded-md shadow-sm" role="group">
+            <div
+              className="relative bg-gray-100 rounded-lg p-1 shadow-inner"
+              role="group"
+            >
+              {/* 배경 슬라이더 */}
+              <div
+                className={`absolute top-1 bottom-1 ${
+                  category === ContractCategory.EXTERNAL
+                    ? "left-1"
+                    : "left-[calc(50%)]"
+                } w-[calc(50%-2px)] bg-white rounded-md shadow-md transition-all duration-300 ease-in-out z-0`}
+              ></div>
+              {/* 외부 계약 버튼 */}
               <button
                 onClick={() => handleCategoryChange(ContractCategory.EXTERNAL)}
-                className={`px-6 py-2.5 text-sm font-medium rounded-l-md ${
-                  category === ContractCategory.EXTERNAL
-                    ? "bg-blue-600 text-white"
-                    : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-300"
-                }`}
+                className={`relative z-10 px-6 py-2.5 text-sm font-medium rounded-md w-[140px] transition-all duration-200 
+                  ${
+                    category === ContractCategory.EXTERNAL
+                      ? "text-blue-700 font-semibold"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
               >
-                외부 계약
+                <div className="flex items-center justify-center whitespace-nowrap">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`h-4 w-4 mr-1.5 flex-shrink-0 transition-all duration-200 ${
+                      category === ContractCategory.EXTERNAL
+                        ? "text-blue-600"
+                        : "text-gray-400"
+                    }`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    />
+                  </svg>
+                  <span>외부 계약</span>
+                </div>
               </button>
+
+              {/* 내부 계약 버튼 */}
               <button
                 onClick={() => handleCategoryChange(ContractCategory.INTERNAL)}
-                className={`px-6 py-2.5 text-sm font-medium rounded-r-md ${
-                  category === ContractCategory.INTERNAL
-                    ? "bg-blue-600 text-white"
-                    : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-300"
-                }`}
+                className={`relative z-10 px-6 py-2.5 text-sm font-medium rounded-md w-[140px] transition-all duration-200
+                  ${
+                    category === ContractCategory.INTERNAL
+                      ? "text-blue-700 font-semibold"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
               >
-                내부 계약
+                <div className="flex items-center justify-center whitespace-nowrap">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`h-4 w-4 mr-1.5 flex-shrink-0 transition-all duration-200 ${
+                      category === ContractCategory.INTERNAL
+                        ? "text-blue-600"
+                        : "text-gray-400"
+                    }`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                    />
+                  </svg>
+                  <span>내부 계약</span>
+                </div>
               </button>
             </div>
 
@@ -440,6 +497,20 @@ export default function ContractsPage() {
                   <input
                     type="text"
                     value={participantName}
+                    onCompositionStart={() => setIsComposing(true)}
+                    onCompositionEnd={(e) => {
+                      setIsComposing(false);
+                      // 조합이 끝난 후 검색 실행
+                      const value = e.currentTarget.value;
+                      if (value.trim().length >= 2) {
+                        // 기존 타이머가 있으면 취소
+                        if (searchTimer) {
+                          clearTimeout(searchTimer);
+                        }
+                        // 즉시 검색 실행 (디바운스 없이)
+                        handleParticipantSearch();
+                      }
+                    }}
                     onChange={(e) => {
                       const value = e.target.value;
                       setParticipantName(value);
@@ -447,6 +518,11 @@ export default function ContractsPage() {
                       // 기존 타이머가 있으면 취소
                       if (searchTimer) {
                         clearTimeout(searchTimer);
+                      }
+
+                      // IME 조합 중이면 검색하지 않음
+                      if (isComposing) {
+                        return;
                       }
 
                       if (value.trim().length >= 2) {
@@ -472,7 +548,7 @@ export default function ContractsPage() {
                           onClick={() => handleSelectParticipant(user)}
                           className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
                         >
-                          <div className="font-medium">{user.name}</div>
+                          <div className="font-medium">{user.nickname}</div>
                           <div className="text-xs text-gray-500">
                             {user.email}
                           </div>
@@ -487,7 +563,7 @@ export default function ContractsPage() {
                     onClick={handleClearParticipant}
                     className="px-3 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200 text-sm whitespace-nowrap"
                   >
-                    {selectedParticipant.name} 해제
+                    {selectedParticipant.nickname} 해제
                   </button>
                 )}
               </div>

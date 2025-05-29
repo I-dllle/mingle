@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { adminUserService } from "@/features/admin/services/adminUserService";
 import {
   AdminRequestUser,
-  AdminUpdateUser,
-  AdminRoleUpdate,
   UserRole,
   UserStatus,
   PositionCode,
@@ -23,6 +22,8 @@ interface PageResponse<T> {
 }
 
 export default function AdminUsersPage() {
+  const router = useRouter();
+
   const [users, setUsers] = useState<PageResponse<AdminRequestUser>>({
     content: [],
     totalElements: 0,
@@ -43,23 +44,6 @@ export default function AdminUsersPage() {
   // 검색 상태
   const [searchName, setSearchName] = useState("");
   const [searchResults, setSearchResults] = useState<UserSearchDto[]>([]);
-
-  // 선택된 유저 및 편집 모드
-  const [selectedUser, setSelectedUser] = useState<AdminRequestUser | null>(
-    null
-  );
-  const [editMode, setEditMode] = useState<"info" | "role" | null>(null);
-
-  // 편집 폼 데이터
-  const [editUserData, setEditUserData] = useState<AdminUpdateUser>({
-    name: "",
-    phoneNum: "",
-    departmentId: 0,
-    positionId: 0,
-  });
-  const [editRoleData, setEditRoleData] = useState<AdminRoleUpdate>({
-    role: UserRole.ARTIST,
-  });
 
   useEffect(() => {
     loadUsers();
@@ -98,59 +82,8 @@ export default function AdminUsersPage() {
       setLoading(false);
     }
   };
-
-  const handleUserSelect = async (userId: number) => {
-    try {
-      setLoading(true);
-      const user = await adminUserService.getUser(userId);
-      setSelectedUser(user);
-      setEditUserData({
-        name: user.name,
-        phoneNum: user.phoneNum,
-        departmentId: 0, // 부서 ID는 별도로 관리 필요
-        positionId: 0, // 포지션 ID는 별도로 관리 필요
-      });
-      setEditRoleData({ role: user.role });
-    } catch (err) {
-      setError("유저 정보를 불러오는 중 오류가 발생했습니다.");
-      console.error("Get user error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleUpdateUser = async () => {
-    if (!selectedUser) return;
-
-    try {
-      setLoading(true);
-      await adminUserService.updateUser(selectedUser.id, editUserData);
-      setEditMode(null);
-      loadUsers(); // 목록 새로고침
-      setSelectedUser(null);
-    } catch (err) {
-      setError("유저 정보 수정 중 오류가 발생했습니다.");
-      console.error("Update user error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleUpdateRole = async () => {
-    if (!selectedUser) return;
-
-    try {
-      setLoading(true);
-      await adminUserService.updateRole(selectedUser.id, editRoleData);
-      setEditMode(null);
-      loadUsers(); // 목록 새로고침
-      setSelectedUser(null);
-    } catch (err) {
-      setError("유저 권한 수정 중 오류가 발생했습니다.");
-      console.error("Update role error:", err);
-    } finally {
-      setLoading(false);
-    }
+  const handleUserSelect = (userId: number) => {
+    router.push(`/panel/users/${userId}`);
   };
 
   const getRoleColor = (role: UserRole) => {
@@ -174,8 +107,6 @@ export default function AdminUsersPage() {
         return "bg-green-100 text-green-800";
       case UserStatus.INACTIVE:
         return "bg-gray-100 text-gray-800";
-      case UserStatus.BANNED:
-        return "bg-yellow-100 text-yellow-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -278,7 +209,7 @@ export default function AdminUsersPage() {
                 >
                   <div>
                     <span className="font-medium text-gray-900">
-                      {user.name}
+                      {user.nickname}
                     </span>
                     <span className="text-gray-600 ml-2">({user.id})</span>
                   </div>
@@ -386,7 +317,6 @@ export default function AdminUsersPage() {
                   페이지 {users.number + 1} / {users.totalPages}
                 </div>
                 <div className="flex space-x-2">
-                  {" "}
                   <button
                     onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
                     disabled={users.first}
@@ -410,263 +340,6 @@ export default function AdminUsersPage() {
             </div>
           )}
         </div>
-
-        {/* User Detail Modal */}
-        {selectedUser && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-screen overflow-y-auto">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  유저 상세 정보
-                </h3>
-                <button
-                  onClick={() => {
-                    setSelectedUser(null);
-                    setEditMode(null);
-                  }}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              </div>
-
-              <div className="space-y-4 mb-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      이름
-                    </label>
-                    <p className="mt-1 text-sm text-gray-900">
-                      {selectedUser.name}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      닉네임
-                    </label>
-                    <p className="mt-1 text-sm text-gray-900">
-                      {selectedUser.nickname}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      이메일
-                    </label>
-                    <p className="mt-1 text-sm text-gray-900">
-                      {selectedUser.email}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      전화번호
-                    </label>
-                    <p className="mt-1 text-sm text-gray-900">
-                      {selectedUser.phoneNum}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      부서
-                    </label>
-                    <p className="mt-1 text-sm text-gray-900">
-                      {selectedUser.departmentName}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      포지션
-                    </label>
-                    <p className="mt-1 text-sm text-gray-900">
-                      {selectedUser.Name}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      권한
-                    </label>
-                    <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(
-                        selectedUser.role
-                      )}`}
-                    >
-                      {selectedUser.role}
-                    </span>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      상태
-                    </label>
-                    <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
-                        selectedUser.status
-                      )}`}
-                    >
-                      {selectedUser.status}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex space-x-4">
-                <button
-                  onClick={() => setEditMode("info")}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                >
-                  정보 수정
-                </button>
-                <button
-                  onClick={() => setEditMode("role")}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
-                >
-                  권한 수정
-                </button>
-              </div>
-
-              {/* Edit Forms */}
-              {editMode === "info" && (
-                <div className="mt-6 p-4 border border-gray-200 rounded-lg">
-                  <h4 className="text-md font-semibold text-gray-900 mb-4">
-                    정보 수정
-                  </h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        이름
-                      </label>
-                      <input
-                        type="text"
-                        value={editUserData.name}
-                        onChange={(e) =>
-                          setEditUserData({
-                            ...editUserData,
-                            name: e.target.value,
-                          })
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        전화번호
-                      </label>
-                      <input
-                        type="text"
-                        value={editUserData.phoneNum}
-                        onChange={(e) =>
-                          setEditUserData({
-                            ...editUserData,
-                            phoneNum: e.target.value,
-                          })
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        부서 ID
-                      </label>
-                      <input
-                        type="number"
-                        value={editUserData.departmentId}
-                        onChange={(e) =>
-                          setEditUserData({
-                            ...editUserData,
-                            departmentId: Number(e.target.value),
-                          })
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        포지션 ID
-                      </label>
-                      <input
-                        type="number"
-                        value={editUserData.positionId}
-                        onChange={(e) =>
-                          setEditUserData({
-                            ...editUserData,
-                            positionId: Number(e.target.value),
-                          })
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                  </div>
-                  <div className="mt-4 flex space-x-2">
-                    <button
-                      onClick={handleUpdateUser}
-                      disabled={loading}
-                      className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-300"
-                    >
-                      저장
-                    </button>
-                    <button
-                      onClick={() => setEditMode(null)}
-                      className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
-                    >
-                      취소
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {editMode === "role" && (
-                <div className="mt-6 p-4 border border-gray-200 rounded-lg">
-                  <h4 className="text-md font-semibold text-gray-900 mb-4">
-                    권한 수정
-                  </h4>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      권한
-                    </label>
-                    <select
-                      value={editRoleData.role}
-                      onChange={(e) =>
-                        setEditRoleData({ role: e.target.value as UserRole })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      {Object.values(UserRole).map((role) => (
-                        <option key={role} value={role}>
-                          {role}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="mt-4 flex space-x-2">
-                    <button
-                      onClick={handleUpdateRole}
-                      disabled={loading}
-                      className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-300"
-                    >
-                      저장
-                    </button>
-                    <button
-                      onClick={() => setEditMode(null)}
-                      className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
-                    >
-                      취소
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

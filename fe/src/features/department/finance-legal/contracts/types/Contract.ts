@@ -388,6 +388,6 @@ export const RecentContractDtoUtils = {
 // 사용자 검색 DTO
 export interface UserSearchDto {
   id: number;
-  name: string;
+  nickname: string;
   email: string;
 }
