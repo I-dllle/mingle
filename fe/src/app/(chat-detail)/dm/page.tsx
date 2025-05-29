@@ -1,29 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
-import { connectWebSocket, sendMessage } from '@/lib/socket';
-import { ChatRoomType } from '@/features/chat/common/types/ChatRoomType';
-import { MessageFormat } from '@/features/chat/common/types/MessageFormat';
+import DmChatRoomList from '@/features/chat/dm/components/DmChatRoomList';
 
-export default function ChatTestPage() {
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      connectWebSocket(token);
-
-      // 테스트 메시지
-      setTimeout(() => {
-        sendMessage({
-          roomId: 1,
-          chatType: ChatRoomType.DIRECT,
-          content: 'WebSocket 테스트',
-          format: MessageFormat.TEXT,
-          senderId: 1,
-          createdAt: new Date().toISOString(),
-        });
-      }, 1000);
-    }
-  }, []);
-
-  return <div>WebSocket 연결 테스트 중 (chat-detail)</div>;
+export default function DmChatListPage() {
+  return (
+    <main style={{ padding: '24px' }}>
+      <h1>내 DM 채팅방</h1>
+      <DmChatRoomList />
+    </main>
+  );
 }
