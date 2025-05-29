@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useGroupChatRoomList } from '@/features/chat/group/services/useGroupChatRoomList';
 import { GroupChatRoomSummary } from '@/features/chat/group/types/GroupChatRoomSummary';
 import { ChatScope } from '@/features/chat/common/types/ChatScope';
@@ -19,12 +20,45 @@ function formatTime(isoTime: string | null): string {
 // 그룹 채팅방 목록을 보여주는 UI 컴포넌트
 // - 서버에서 요약 목록 데이터를 받아와 리스트로 출력
 export default function GroupChatRoomList() {
-  // 그룹 채팅방 목록 상태 가져오기
-  const { rooms } = useGroupChatRoomList({ scope: ChatScope.DEPARTMENT });
+  // 현재 선택된 scope (부서/프로젝트)
+  const [scope, setScope] = useState<ChatScope>(ChatScope.DEPARTMENT);
+
+  // 선택된 scope에 따라 API 호출
+  const { rooms } = useGroupChatRoomList({ scope });
 
   return (
     <div style={{ padding: '16px' }}>
       <h2>그룹 채팅방 목록</h2>
+
+      {/* scope 전환 탭 버튼 */}
+      <div style={{ marginBottom: '16px', display: 'flex', gap: '8px' }}>
+        <button
+          onClick={() => setScope(ChatScope.DEPARTMENT)}
+          style={{
+            padding: '6px 12px',
+            background: scope === ChatScope.DEPARTMENT ? '#0070f3' : '#eee',
+            color: scope === ChatScope.DEPARTMENT ? 'white' : '#333',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+          }}
+        >
+          부서 채팅방
+        </button>
+        <button
+          onClick={() => setScope(ChatScope.PROJECT)}
+          style={{
+            padding: '6px 12px',
+            background: scope === ChatScope.PROJECT ? '#0070f3' : '#eee',
+            color: scope === ChatScope.PROJECT ? 'white' : '#333',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+          }}
+        >
+          프로젝트 채팅방
+        </button>
+      </div>
 
       {/* 채팅방이 없을 경우 메시지 표시 */}
       {rooms.length === 0 ? (
@@ -41,7 +75,7 @@ export default function GroupChatRoomList() {
               }}
             >
               {/* 채팅방 링크 클릭 시 상세 페이지로 이동 */}
-              <Link href={`/chat-detail/group/${room.roomId}`}>
+              <Link href={`/group/${room.roomId}`}>
                 <div style={{ fontWeight: 'bold' }}>{room.name}</div>
 
                 {/* 메시지 형식이 ARCHIVE면 [자료] 라벨 붙이기 */}
