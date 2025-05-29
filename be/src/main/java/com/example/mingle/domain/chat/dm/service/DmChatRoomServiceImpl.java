@@ -7,6 +7,8 @@ import com.example.mingle.domain.chat.dm.repository.DmChatMessageRepository;
 import com.example.mingle.domain.chat.dm.repository.DmChatRoomRepository;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.domain.user.user.repository.UserRepository;
+import com.example.mingle.global.exception.ApiException;
+import com.example.mingle.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -75,5 +77,25 @@ public class DmChatRoomServiceImpl implements DmChatRoomService {
                     .sentAt(latestMessage != null ? latestMessage.getCreatedAt() : null)
                     .build();
         }).toList();
+    }
+
+
+
+    /**
+     * 특정 채팅방에서 로그인 유저가 아닌 상대방 ID 반환
+     * - 프론트에서 receiverId 조회할 때 사용
+     */
+    @Override
+    public Long getReceiverId(Long roomId, Long requesterId) {
+        DmChatRoom room = dmChatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND_CHATROOM));
+
+        if (room.getUserAId().equals(requesterId)) {
+            return room.getUserBId();
+        } else if (room.getUserBId().equals(requesterId)) {
+            return room.getUserAId();
+        } else {
+            throw new ApiException(ErrorCode.FORBIDDEN);
+        }
     }
 }
