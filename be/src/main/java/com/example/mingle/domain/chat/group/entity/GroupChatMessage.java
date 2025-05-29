@@ -31,4 +31,8 @@ public class GroupChatMessage extends BaseEntity {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "is_read")
+    private boolean isRead;
+
 }
