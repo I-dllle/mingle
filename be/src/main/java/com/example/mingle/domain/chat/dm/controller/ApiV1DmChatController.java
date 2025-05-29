@@ -45,6 +45,20 @@ public class ApiV1DmChatController {
 
     /**
      * GET
+     * 특정 DM 채팅방의 상대방(receiverId) 조회
+     */
+    @GetMapping("/room/{roomId}/receiver")
+    public Long getReceiverId(
+            @PathVariable Long roomId,
+            @AuthenticationPrincipal SecurityUser loginUser
+    ) {
+        return dmChatRoomService.getReceiverId(roomId, loginUser.getId());
+    }
+
+
+
+    /**
+     * GET
      * 내가 속한 모든 DM 채팅방 요약 정보 반환
      * - 상대 닉네임
      * - 최근 메시지 (content, format, sentAt)
@@ -77,7 +91,7 @@ public class ApiV1DmChatController {
 
 
 
-    // 🟠 [DELETE] 메시지 삭제
+    // [DELETE] 메시지 삭제
     // @DeleteMapping("/messages/{messageId}")
     // public void deleteMessage(@PathVariable Long messageId) { ... } // TODO
 

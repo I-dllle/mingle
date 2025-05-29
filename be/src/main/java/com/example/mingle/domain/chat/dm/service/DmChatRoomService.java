@@ -12,4 +12,7 @@ public interface DmChatRoomService {
 
     // 채팅방 목록 요약 정보 조회 (최근 메시지 + 읽지 않은 수)
     List<ChatRoomSummaryResponse> getChatRoomSummaries(Long userId);
+
+    // 특정 채팅방에서 로그인 유저가 아닌 상대방 ID 반환
+    Long getReceiverId(Long roomId, Long requesterId);
 }

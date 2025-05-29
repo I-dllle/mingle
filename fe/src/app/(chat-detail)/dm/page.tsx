@@ -15,7 +15,7 @@ export default function ChatTestPage() {
       setTimeout(() => {
         sendMessage({
           roomId: 1,
-          chatType: ChatRoomType.DM,
+          chatType: ChatRoomType.DIRECT,
           content: 'WebSocket 테스트',
           format: MessageFormat.TEXT,
           senderId: 1,

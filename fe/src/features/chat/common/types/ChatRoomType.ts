@@ -1,4 +1,4 @@
 export enum ChatRoomType {
-  DM = 'dm',
+  DIRECT = 'dm',
   GROUP = 'group',
 }
