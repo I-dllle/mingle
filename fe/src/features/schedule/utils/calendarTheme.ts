@@ -16,37 +16,23 @@ export const calendarThemeOptions = {
     week: "주",
     day: "일",
   },
-
-  // 비즈니스 시간 설정
-  businessHours: {
-    daysOfWeek: [1, 2, 3, 4, 5], // 월-금
-    startTime: "09:00",
-    endTime: "18:00",
-  },
-
-  // 시간 포맷
+  // 시간 포맷  
   eventTimeFormat: {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
+    meridiem: false, // 오전/오후 표시 제거
+    omitZeroMinute: false, // 0분일 때도 표시 (XX:00)
   },
 
   // 날짜/시간 관련 설정
-  locale: "ko",
+  locale: "en",
   firstDay: 0, // 주의 시작을 일요일로
   weekNumbers: false,
   navLinks: true, // 날짜/주 클릭으로 뷰 전환 가능
   editable: false,
   dayMaxEvents: true,
   selectMirror: true,
-
-  // 스타일 관련
-  height: "auto",
-  expandRows: true,
-  slotMinTime: "07:00:00",
-  slotMaxTime: "21:00:00",
-  allDaySlot: true,
-  slotEventOverlap: true,
 
   // 일정 표시 관련
   eventDisplay: "block",
@@ -118,16 +104,38 @@ export const customEventRenderer = (eventInfo: any) => {
   let statusClass = "";
   if (scheduleStatus === "CANCELED") statusClass = "status-canceled";
   else if (scheduleStatus === "COMPLETED") statusClass = "status-completed";
+  // 시간 형식 지정 (HH:MM 형식) - 24시간제 강제 적용
+  const formatTime = (date: string | Date) => {
+    const d = new Date(date);
+    // 24시간제로 표시, 오전/오후 없이, 항상 두 자리 숫자로
+    const hours = d.getHours().toString().padStart(2, '0');
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
 
+  // 시작 시간 포맷팅
+  const startTime = formatTime(event.start);  // 각 달력 뷰에 맞게 최적화된 이벤트 내용 생성
+  // 현재 보고 있는 달력 뷰 유형 확인
+  const viewType = eventInfo.view.type; // dayGridMonth, timeGridWeek, timeGridDay
+  
+  // 뷰 타입별 클래스 추가 (CSS에서 뷰별 스타일링을 위함)
+  const viewClass = `view-${viewType.replace('Grid', '-')}`;
+  
   return {
     html: `
-      <div class="modern-event ${typeClass} ${statusClass}">
-        <div class="event-title">${event.title}</div>
-        ${
-          event.extendedProps?.description
-            ? `<div class="event-description">${event.extendedProps.description}</div>`
-            : ""
-        }
+      <div class="modern-event ${typeClass} ${statusClass} ${viewClass}">
+        <div class="event-main-frame">
+          <span class="event-time">${startTime}</span>
+          <div class="event-content">
+            <div class="event-title">${event.title}</div>
+            ${
+              event.extendedProps?.description && 
+              (viewType === 'timeGridDay' || viewType === 'timeGridWeek')
+                ? `<div class="event-description">${event.extendedProps.description}</div>`
+                : ""
+            }
+          </div>
+        </div>
       </div>
     `,
   };

@@ -53,10 +53,15 @@ public class ScheduleMapper {
                 ? schedule.getDepartment().getId()
                 : null;
 
+        String departmentName = schedule.getDepartment() != null
+                ? schedule.getDepartment().getDepartmentName()
+                : null;
+
         return ScheduleResponse.builder()
                 .id(schedule.getId())
                 .userId(schedule.getUser().getId())
                 .postId(postId)
+                .departmentName(departmentName)
                 .departmentId(departmentId)
                 .title(schedule.getTitle())
                 .description(schedule.getDescription())
