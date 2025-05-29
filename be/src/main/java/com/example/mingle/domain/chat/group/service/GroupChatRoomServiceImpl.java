@@ -1,11 +1,13 @@
 package com.example.mingle.domain.chat.group.service;
 
 import com.example.mingle.domain.chat.common.enums.ChatScope;
+import com.example.mingle.domain.chat.common.enums.MessageFormat;
 import com.example.mingle.domain.chat.group.dto.GroupChatRoomCreateRequest;
 import com.example.mingle.domain.chat.group.dto.GroupChatRoomResponse;
 import com.example.mingle.domain.chat.group.dto.GroupChatRoomSummaryResponse;
 import com.example.mingle.domain.chat.group.entity.GroupChatRoom;
 import com.example.mingle.domain.chat.group.repository.GroupChatRoomRepository;
+import com.example.mingle.domain.chat.group.repository.GroupChatMessageRepository;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.domain.user.user.repository.UserRepository;
 import com.example.mingle.domain.projectleaderauthority.entity.ProjectLeaderAuth;
@@ -23,6 +25,7 @@ import java.util.List;
 public class GroupChatRoomServiceImpl implements GroupChatRoomService {
 
     private final GroupChatRoomRepository roomRepository;
+    private final GroupChatMessageRepository messageRepository;
     private final UserRepository userRepository;
     private final ProjectLeaderAuthRepository projectLeaderAuthRepository;
     private final ProjectLeaderAuthService projectLeaderAuthService;
@@ -77,12 +80,34 @@ public class GroupChatRoomServiceImpl implements GroupChatRoomService {
 
     /**
      * 채팅방 요약 목록 (프론트용) 반환
+     * - 각 채팅방에 대해: 최근 메시지 / 안 읽은 메시지 수 / 보낸 시각을 포함한 요약 응답 생성
      */
     @Override
     public List<GroupChatRoomSummaryResponse> getGroupChatRoomSummaries(Long userId, ChatScope scope) {
-        return findRoomsByScope(userId, scope).stream()
-                .map(GroupChatRoomSummaryResponse::from)
-                .toList();
+
+        List<GroupChatRoom> rooms = findRoomsByScope(userId, scope);
+
+        return rooms.stream().map(room -> {
+            // 가장 최근 메시지 1개 조회
+            var latestMessage = messageRepository
+                    .findTopByChatRoomIdOrderByCreatedAtDesc(room.getId())
+                    .orElse(null);
+
+            // 해당 채팅방에서 내가 읽지 않은 메시지 수 조회
+            int unreadCount = messageRepository
+                    .countByChatRoomIdAndSenderIdNotAndIsReadFalse(room.getId(), userId);
+
+            // builder 직접 사용하여 원하는 필드 세팅
+            return GroupChatRoomSummaryResponse.builder()
+                    .roomId(room.getId())
+                    .name(room.getName())
+                    .roomType(room.getRoomType())
+                    .previewMessage(latestMessage != null ? latestMessage.getContent() : "")
+                    .format(latestMessage != null ? latestMessage.getFormat() : MessageFormat.TEXT)
+                    .unreadCount(unreadCount)
+                    .sentAt(latestMessage != null ? latestMessage.getCreatedAt() : null)
+                    .build();
+        }).toList();
     }
 
     /**

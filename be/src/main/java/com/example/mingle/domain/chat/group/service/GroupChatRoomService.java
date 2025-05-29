@@ -26,7 +26,7 @@ public interface GroupChatRoomService {
 
     /**
      * 채팅방 요약 목록 조회 (프론트 전용)
-     * - 기본 채팅 목록 화면에 보여줄 요약 정보 (이름, 미리보기 메시지, 안 읽은 메시지 수 등)
+     * - 기본 채팅 목록 화면에 보여줄 요약 정보 (이름, 최근 메시지, 미리보기 메시지, 안 읽은 메시지 수,등)
      * - scope(DEPARTMENT 또는 PROJECT)에 따라 부서 또는 프로젝트 채팅방을 구분해서 조회
      */
     List<GroupChatRoomSummaryResponse> getGroupChatRoomSummaries(Long userId, ChatScope scope);
