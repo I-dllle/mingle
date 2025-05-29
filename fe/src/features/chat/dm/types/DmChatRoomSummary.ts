@@ -1,6 +1,6 @@
 import { MessageFormat } from '@/features/chat/common/types/MessageFormat';
 
-export interface ChatRoomSummary {
+export interface DmChatRoomSummary {
   roomId: number; // 채팅방 ID
   opponentNickname: string; // 상대방 닉네임
   previewMessage: string; // 최근 메시지 내용

@@ -3,6 +3,7 @@ package com.example.mingle.domain.chat.group.service;
 import com.example.mingle.domain.chat.common.enums.ChatScope;
 import com.example.mingle.domain.chat.group.dto.GroupChatRoomCreateRequest;
 import com.example.mingle.domain.chat.group.dto.GroupChatRoomResponse;
+import com.example.mingle.domain.chat.group.dto.GroupChatRoomSummaryResponse;
 import com.example.mingle.domain.chat.group.entity.GroupChatRoom;
 import com.example.mingle.domain.chat.group.repository.GroupChatRoomRepository;
 import com.example.mingle.domain.user.user.entity.User;
@@ -63,38 +64,51 @@ public class GroupChatRoomServiceImpl implements GroupChatRoomService {
 
 
     /**
-     * TEAM CHAT 탭 or 기본 PROJECT CHAT 탭 (scope 기준으로 조회)
-     * - 부서인 경우: departmentId 기반
-     * - 프로젝트인 경우: 내가 속한 모든 프로젝트
+     * 기존 API 호환용: 채팅방 전체 목록 조회
+     * - 프론트에서 요약 아닌 전체 정보가 필요한 경우
      */
     @Override
     public List<GroupChatRoomResponse> findMyRooms(Long userId, ChatScope scope) {
+        List<GroupChatRoom> rooms = findRoomsByScope(userId, scope);
+        return rooms.stream().map(GroupChatRoomResponse::from).toList();
+    }
 
-        List<GroupChatRoom> rooms;
 
+
+    /**
+     * 채팅방 요약 목록 (프론트용) 반환
+     */
+    @Override
+    public List<GroupChatRoomSummaryResponse> getGroupChatRoomSummaries(Long userId, ChatScope scope) {
+        return findRoomsByScope(userId, scope).stream()
+                .map(GroupChatRoomSummaryResponse::from)
+                .toList();
+    }
+
+    /**
+     * 중복 제거를 위한 내부 메서드
+     * - scope 기준으로 팀/프로젝트 채팅방 조회
+     * - 부서인 경우: departmentId 기반
+     * - 프로젝트인 경우: 내가 속한 모든 프로젝트
+     */
+    private List<GroupChatRoom> findRoomsByScope(Long userId, ChatScope scope) {
         // 부서 기준으로 조회
         if (scope == ChatScope.DEPARTMENT) {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
             Long departmentId = user.getDepartment().getId();
-            rooms = roomRepository.findAllByTeamIdAndScope(departmentId, ChatScope.DEPARTMENT);
+            return roomRepository.findAllByTeamIdAndScope(departmentId, ChatScope.DEPARTMENT);
         }
         // 프로젝트 기준으로 조회
         else if (scope == ChatScope.PROJECT) {
             // 1. 유저가 리더인 모든 프로젝트 ID 리스트 조회
-            List<Long> projectIds = projectLeaderAuthRepository
-                    .findAllByUserId(userId)
-                    .stream()
-                    .map(ProjectLeaderAuth::getProjectId)
-                    .toList();
-
+            List<Long> projectIds = projectLeaderAuthRepository.findAllByUserId(userId)
+                    .stream().map(ProjectLeaderAuth::getProjectId).toList();
             // 2. 여러 프로젝트 ID를 한 번에 조건으로 조회 (scope: PROJECT 고정)
-            rooms = roomRepository.findAllByTeamIdInAndScope(projectIds, ChatScope.PROJECT);
+            return roomRepository.findAllByTeamIdInAndScope(projectIds, ChatScope.PROJECT);
         } else {
             throw new IllegalArgumentException("지원하지 않는 scope입니다.");
         }
-
-        return rooms.stream().map(GroupChatRoomResponse::from).toList();
     }
 
 

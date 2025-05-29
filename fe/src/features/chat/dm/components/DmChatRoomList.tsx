@@ -1,7 +1,7 @@
 'use client';
 
 import { useDmChatRoomList } from '@/features/chat/dm/services/useDmChatRoomList';
-import { ChatRoomSummary } from '@/features/chat/dm/types/ChatRoomSummary';
+import { DmChatRoomSummary } from '@/features/chat/dm/types/DmChatRoomSummary';
 import { useRouter } from 'next/navigation';
 
 export default function DmChatRoomList() {
@@ -15,7 +15,7 @@ export default function DmChatRoomList() {
         <div>채팅방이 없습니다.</div>
       ) : (
         <ul style={{ listStyle: 'none', padding: 0 }}>
-          {rooms.map((room: ChatRoomSummary, idx: number) => (
+          {rooms.map((room: DmChatRoomSummary, idx: number) => (
             <li
               key={idx}
               onClick={() => router.push(`/chat-detail/dm/${room.roomId}`)} // router.push 사용으로 이동

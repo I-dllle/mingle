@@ -1,6 +1,6 @@
 package com.example.mingle.domain.chat.dm.service;
 
-import com.example.mingle.domain.chat.dm.dto.ChatRoomSummaryResponse;
+import com.example.mingle.domain.chat.dm.dto.DmChatRoomSummaryResponse;
 import com.example.mingle.domain.chat.dm.entity.DmChatMessage;
 import com.example.mingle.domain.chat.dm.entity.DmChatRoom;
 import com.example.mingle.domain.chat.dm.repository.DmChatMessageRepository;
@@ -52,7 +52,7 @@ public class DmChatRoomServiceImpl implements DmChatRoomService {
      * - 최근 메시지, 읽지 않은 수, 상대방 닉네임 포함
      */
     @Override
-    public List<ChatRoomSummaryResponse> getChatRoomSummaries(Long userId) {
+    public List<DmChatRoomSummaryResponse> getChatRoomSummaries(Long userId) {
         List<DmChatRoom> myRooms = dmChatRoomRepository.findByUserAIdOrUserBId(userId, userId); // 내가 속한 채팅방 전체 조회
 
         return myRooms.stream().map(room -> {
@@ -68,7 +68,7 @@ public class DmChatRoomServiceImpl implements DmChatRoomService {
             int unreadCount = dmChatMessageRepository
                     .countByDmRoomIdAndReceiverIdAndIsReadFalse(room.getId(), userId);
 
-            return ChatRoomSummaryResponse.builder()
+            return DmChatRoomSummaryResponse.builder()
                     .roomId(room.getId())
                     .opponentNickname(opponent != null ? opponent.getNickname() : "알 수 없음")
                     .previewMessage(latestMessage != null ? latestMessage.getContent() : "(메시지 없음)")

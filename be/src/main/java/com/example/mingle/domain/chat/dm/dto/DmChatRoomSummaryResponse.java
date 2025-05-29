@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
  * - 채팅방 목록에 표시될 정보 (최근 메시지, 미확인 수 등)
  */
 @Builder
-public record ChatRoomSummaryResponse(
+public record DmChatRoomSummaryResponse(
         Long roomId,               // 채팅방 ID
         String opponentNickname,   // 상대방 닉네임
         String previewMessage,     // 가장 최근 메시지 본문
