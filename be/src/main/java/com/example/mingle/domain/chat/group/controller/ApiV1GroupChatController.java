@@ -2,6 +2,7 @@ package com.example.mingle.domain.chat.group.controller;
 
 import com.example.mingle.domain.chat.group.dto.GroupChatRoomCreateRequest;
 import com.example.mingle.domain.chat.group.dto.GroupChatRoomResponse;
+import com.example.mingle.domain.chat.group.dto.GroupChatRoomSummaryResponse;
 import com.example.mingle.domain.chat.group.dto.GroupChatMessageResponse;
 import com.example.mingle.domain.chat.common.enums.ChatScope;
 import com.example.mingle.domain.chat.group.service.GroupChatRoomService;
@@ -50,6 +51,22 @@ public class ApiV1GroupChatController {
             @AuthenticationPrincipal SecurityUser loginUser
     ) {
         return groupChatRoomService.findMyRooms(loginUser.getId(), scope);
+    }
+
+
+
+    /**
+     * GET
+     * 채팅방 요약 목록 조회 (자료방/채팅방 구분된 요약 UI용)
+     * - 프론트: 사이드바에서 채팅방 리스트 간략히 띄우는 용도
+     * - 반환 형태: GroupChatRoomSummaryResponse (roomId, name, previewMessage 등)
+     */
+    @GetMapping("/summaries")
+    public List<GroupChatRoomSummaryResponse> getGroupChatRoomSummaries(
+            @RequestParam ChatScope scope,
+            @AuthenticationPrincipal SecurityUser loginUser
+    ) {
+        return groupChatRoomService.getGroupChatRoomSummaries(loginUser.getId(), scope);
     }
 
 

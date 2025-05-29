@@ -1,11 +1,9 @@
 package com.example.mingle.domain.chat.dm.controller;
 
-import com.example.mingle.domain.chat.common.enums.MessageFormat;
-import com.example.mingle.domain.chat.dm.dto.ChatRoomSummaryResponse;
+import com.example.mingle.domain.chat.dm.dto.DmChatRoomSummaryResponse;
 import com.example.mingle.domain.chat.dm.dto.DmChatMessageResponse;
 import com.example.mingle.domain.chat.dm.dto.DmChatRoomCreateRequest;
 import com.example.mingle.domain.chat.dm.dto.DmChatRoomResponse;
-import com.example.mingle.domain.chat.dm.entity.DmChatMessage;
 import com.example.mingle.domain.chat.dm.entity.DmChatRoom;
 import com.example.mingle.domain.chat.dm.repository.DmChatMessageRepository;
 import com.example.mingle.domain.chat.dm.service.DmChatMessageService;
@@ -65,7 +63,7 @@ public class ApiV1DmChatController {
      * - 읽지 않은 메시지 수
      */
     @GetMapping("/summary")
-    public List<ChatRoomSummaryResponse> getChatRoomSummaries(
+    public List<DmChatRoomSummaryResponse> getChatRoomSummaries(
             @AuthenticationPrincipal SecurityUser loginUser
     ) {
         return dmChatRoomService.getChatRoomSummaries(loginUser.getId());
