@@ -1,6 +1,6 @@
 import React from "react";
 import { ScheduleStatus } from "../../types/Enums";
-import { scheduleStatusLabels } from "../../constants/scheduleLabels";
+import { scheduleStatusLabels } from "../../types/scheduleLabels";
 
 // 명시적으로 타입 매핑 정의
 type StatusColorMap = {

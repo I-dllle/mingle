@@ -50,47 +50,7 @@ export const calendarThemeOptions = {
 
   // 일정 표시 관련
   eventDisplay: "block",
-  // 일정 타입별 색상 - 파스텔 연보라색 컨셉에 맞게 변경
-  eventTypeColors: {
-    PERSONAL: {
-      backgroundColor: "rgba(147, 51, 234, 0.15)",
-      borderColor: "#9333ea",
-      textColor: "#6b21a8",
-    },
-    DEPARTMENT: {
-      backgroundColor: "rgba(79, 70, 229, 0.15)",
-      borderColor: "#4f46e5",
-      textColor: "#3730a3",
-    },
-    COMPANY: {
-      backgroundColor: "rgba(219, 39, 119, 0.15)",
-      borderColor: "#db2777",
-      textColor: "#9d174d",
-    },
-  },
-  // 일정 상태별 색상 - 파스텔 톤으로 조정
-  eventStatusColors: {
-    IMPORTANT_MEETING: {
-      backgroundColor: "rgba(236, 72, 153, 0.2)",
-      borderColor: "#ec4899",
-    },
-    BUSINESS_TRIP: {
-      backgroundColor: "rgba(147, 51, 234, 0.2)",
-      borderColor: "#9333ea",
-    },
-    COMPLETED: {
-      backgroundColor: "rgba(34, 197, 94, 0.2)",
-      borderColor: "#22c55e",
-    },
-    CANCELED: {
-      backgroundColor: "rgba(156, 163, 175, 0.2)",
-      borderColor: "#9ca3af",
-    },
-    VACATION: {
-      backgroundColor: "rgba(14, 165, 233, 0.2)",
-      borderColor: "#0ea5e9",
-    },
-  },
+
   // Calendar 기본 스타일 변수 - 파스텔 연보라색 컨셉에 맞게 변경
   styleVariables: {
     "--fc-border-color": "#f3f4f6",

@@ -178,7 +178,7 @@
 }
 
 .indicatorAll {
-  background: linear-gradient(135deg, #9333ea 33%, #6366f1 66%, #ec4899 100%);
+  background: linear-gradient(135deg, #9333ea 33%, #ffd8b1 66%, #ec4899 100%);
 }
 
 .indicatorCompany {
@@ -186,7 +186,7 @@
 }
 
 .indicatorDepartment {
-  background-color: #6366f1;
+  background-color: #ffd8b1;
 }
 
 .indicatorPersonal {

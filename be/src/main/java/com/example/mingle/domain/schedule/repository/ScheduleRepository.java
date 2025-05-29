@@ -57,10 +57,10 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
      )
        and (
          lower(s.title) like lower(concat('%', :keyword, '%'))
-         or (s.memo is not null and lower(s.memo) like lower(concat('%', :keyword, '%')))
+         or (s.description is not null and lower(s.description) like lower(concat('%', :keyword, '%')))
        )
     """)
-    List<Schedule> searchTitleOrMemoAllVisible(
+    List<Schedule> searchTitleOrDescriptionAllVisible(
             @Param("userId") Long userId,
             @Param("departmentId") Long departmentId,
             @Param("keyword") String keyword

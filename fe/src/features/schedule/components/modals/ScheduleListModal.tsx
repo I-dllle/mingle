@@ -89,60 +89,124 @@ export default function ScheduleListModal({
   return (
     <>
       <Modal onClose={onClose} title={formattedDate}>
-        <div>
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           {/* 제목 및 새 일정 버튼 */}
-          <div className="flex justify-end px-5 mb-6">
+          <div className="flex justify-end px-5 py-4">
             <button
               onClick={handleAddSchedule}
-              className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-lg text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
+              className="inline-flex items-center px-4 py-2 border border-purple-200 text-sm font-medium rounded-full text-white bg-gradient-to-r from-purple-400 to-purple-600 hover:from-purple-500 hover:to-purple-700 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-purple-500 transition-all duration-200"
             >
-              <PlusIcon className="h-4 w-4 mr-1" />새 일정
+              <PlusIcon className="h-4 w-4 mr-1.5" />새 일정 추가
             </button>
           </div>
 
           {/* 필터 버튼 */}
-          <div className="flex gap-2 mb-4 px-5 overflow-x-auto scrollbar-hide">
+          <div className="flex gap-2 mb-5 px-5 overflow-x-auto pb-3 scrollbar-hide">
             <button
-              className={`shrink-0 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                 filter === "ALL"
-                  ? "bg-purple-100 text-purple-700"
-                  : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                  ? "bg-purple-500 text-white shadow-md shadow-purple-200"
+                  : "bg-gray-50 text-gray-600 hover:bg-purple-100 hover:text-purple-600"
               }`}
               onClick={() => setFilter("ALL")}
             >
               전체
             </button>
             {[
-              { type: ScheduleType.PERSONAL, label: "개인" },
-              { type: ScheduleType.DEPARTMENT, label: "부서" },
-              { type: ScheduleType.COMPANY, label: "회사" },
-            ].map(({ type, label }) => (
+              {
+                type: ScheduleType.PERSONAL,
+                label: "개인",
+                icon: (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 mr-1.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                  </svg>
+                ),
+              },
+              {
+                type: ScheduleType.DEPARTMENT,
+                label: "부서",
+                icon: (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 mr-1.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                    />
+                  </svg>
+                ),
+              },
+              {
+                type: ScheduleType.COMPANY,
+                label: "회사",
+                icon: (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 mr-1.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                    />
+                  </svg>
+                ),
+              },
+            ].map(({ type, label, icon }) => (
               <button
                 key={type}
-                className={`shrink-0 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center ${
                   filter === type
-                    ? "bg-purple-100 text-purple-700"
-                    : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                    ? "bg-purple-500 text-white shadow-md shadow-purple-200"
+                    : "bg-gray-50 text-gray-600 hover:bg-purple-100 hover:text-purple-600"
                 }`}
                 onClick={() => setFilter(type)}
               >
+                {icon}
                 {label}
               </button>
             ))}
           </div>
 
           {/* 일정 목록 */}
-          <div className="border-t border-gray-200">
+          <div className="border-t border-purple-100 bg-white">
             {isLoading ? (
-              <div className="flex justify-center items-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-600" />
+              <div className="flex flex-col justify-center items-center py-10">
+                <div className="relative w-16 h-16">
+                  <div className="absolute top-0 left-0 w-full h-full rounded-full border-4 border-purple-100"></div>
+                  <div className="absolute top-0 left-0 w-full h-full rounded-full border-t-4 border-purple-500 animate-spin"></div>
+                </div>
+                <p className="mt-4 text-purple-500 font-medium animate-pulse">
+                  일정 불러오는 중...
+                </p>
               </div>
             ) : filteredEvents.length > 0 ? (
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-purple-50 max-h-[65vh] overflow-y-auto">
                 {filteredEvents.map((event) => (
                   <div
                     key={event.id}
-                    className="px-5 py-3 hover:bg-gray-50 transition-colors"
+                    className="px-5 py-4 hover:bg-purple-50/50 transition-all duration-200 cursor-pointer group"
                   >
                     <ScheduleCard
                       event={event}
@@ -152,25 +216,28 @@ export default function ScheduleListModal({
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-12 space-y-4">
-                <CalendarIcon className="w-12 h-12 text-gray-300" />
+              <div className="flex flex-col items-center justify-center py-14 space-y-6">
+                <div className="w-20 h-20 rounded-full bg-purple-50 flex items-center justify-center animate-pulse">
+                  <CalendarIcon className="w-10 h-10 text-purple-300" />
+                </div>
                 <div className="text-center">
-                  <p className="text-gray-500 mb-2">
+                  <p className="text-gray-500 text-lg mb-3">
                     이 날짜에는 일정이 없습니다
                   </p>
                   <button
                     onClick={handleAddSchedule}
-                    className="text-purple-600 hover:text-purple-700 font-medium inline-flex items-center"
+                    className="inline-flex items-center px-6 py-2.5 rounded-full text-white bg-gradient-to-r from-purple-400 to-purple-600 hover:from-purple-500 hover:to-purple-700 font-medium shadow-md shadow-purple-200 transition-all duration-200"
                   >
+                    <PlusIcon className="w-5 h-5 mr-2" />
                     새로운 일정 추가하기
-                    <PlusIcon className="w-4 h-4 ml-1" />
                   </button>
                 </div>
               </div>
             )}
           </div>
         </div>
-      </Modal>{" "}
+      </Modal>
+
       {/* + 새 일정 폼 모달 */}
       {isFormModalOpen && (
         <ScheduleFormModal
@@ -183,11 +250,17 @@ export default function ScheduleListModal({
           }}
         />
       )}
+
       {/* 상세 보기 모달 */}
       {isDetailModalOpen && selectedScheduleId !== null && (
         <ScheduleDetailModal
           scheduleId={selectedScheduleId}
           onClose={() => setIsDetailModalOpen(false)}
+          onDeleteSuccess={() => {
+            // 모달 닫고, 리스트를 다시 불러옵니다
+            setIsDetailModalOpen(false);
+            fetchEvents();
+          }}
         />
       )}
     </>

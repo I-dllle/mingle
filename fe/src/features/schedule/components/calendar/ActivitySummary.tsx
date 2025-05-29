@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from "react";
 import { scheduleService } from "@/features/schedule/services/scheduleService";
 import { ScheduleType, ScheduleStatus } from "@/features/schedule/types/Enums";
-import { scheduleStatusLabels } from "@/features/schedule/constants/scheduleLabels";
+import { scheduleStatusLabels } from "@/features/schedule/types/scheduleLabels";
 import { FooterCard } from "@/features/schedule/components/ui/FooterCard";
 
 type Counts = Record<ScheduleStatus, number>;
@@ -12,13 +12,15 @@ type Counts = Record<ScheduleStatus, number>;
 interface Props {
   view?: "monthly" | "weekly" | "daily";
   scheduleType?: ScheduleType | "all";
-  date?: Date; // 추가!
+  refreshKey?: any;
+  date?: Date;
 }
 
 export default function ActivitySummary({
   view = "monthly",
   scheduleType = "all",
-  date, // 받아온 date
+  date,
+  refreshKey,
 }: Props) {
   const [counts, setCounts] = useState<Counts>({} as Counts);
   const [error, setError] = useState<string | null>(null);
@@ -31,14 +33,27 @@ export default function ActivitySummary({
           view === "monthly"
             ? new Date(base.getFullYear(), base.getMonth(), 1)
             : base;
-        const typeArg = scheduleType === "all" ? undefined : scheduleType;
 
-        const events =
-          view === "monthly"
-            ? await scheduleService.getMonthlySchedules(queryDate, typeArg)
-            : view === "weekly"
-            ? await scheduleService.getWeeklyView(queryDate, typeArg)
-            : await scheduleService.getDailyView(queryDate, typeArg);
+        let events;
+        switch (view) {
+          case "monthly":
+            events = await scheduleService.getMonthlySchedules(
+              queryDate,
+              scheduleType === "all" ? undefined : scheduleType
+            );
+            break;
+          case "weekly":
+            events = await scheduleService.getWeeklyView(
+              queryDate,
+              scheduleType === "all" ? undefined : scheduleType
+            );
+            break;
+          default:
+            events = await scheduleService.getDailyView(
+              queryDate,
+              scheduleType === "all" ? undefined : scheduleType
+            );
+        }
 
         const c: Counts = {} as Counts;
         Object.values(ScheduleStatus).forEach((s) => (c[s] = 0));
@@ -53,7 +68,7 @@ export default function ActivitySummary({
       }
     }
     load();
-  }, [view, scheduleType, date]);
+  }, [view, date, scheduleType, refreshKey]);
   const title = `활동 기록 (${view})`;
 
   if (error) {

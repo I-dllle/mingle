@@ -2,6 +2,7 @@
 
 import { EventInput } from "@fullcalendar/core";
 import { formatDate } from "@/features/schedule/utils/calendarUtils";
+import styles from "../../styles/ModernCalendarView.module.css";
 
 interface ScheduleCardProps {
   event: EventInput;
@@ -11,14 +12,13 @@ interface ScheduleCardProps {
 export default function ScheduleCard({ event, onClick }: ScheduleCardProps) {
   const scheduleType = event.extendedProps?.type;
   const scheduleStatus = event.extendedProps?.status;
-
-  // 일정 유형에 따라 다른 색상 적용
-  let borderLeftColor = "#4C1D95"; // 메인 테마 색상 - 진한 보라색
+  // 일정 유형에 따라 다른 색상 적용 - ModernCalendarView.module.css 색상과 일치시킴
+  let borderLeftColor = "#9333ea"; // 개인 일정 (indicatorPersonal) 색상
 
   if (scheduleType === "COMPANY") {
-    borderLeftColor = "#F44336";
+    borderLeftColor = "#ec4899"; // 회사 일정 (indicatorCompany) 색상
   } else if (scheduleType === "DEPARTMENT") {
-    borderLeftColor = "#2196F3";
+    borderLeftColor = "#ffd8b1"; // 부서 일정 (indicatorDepartment) 색상
   }
 
   // 일정 상태에 따른 상태 라벨 색상
@@ -45,28 +45,36 @@ export default function ScheduleCard({ event, onClick }: ScheduleCardProps) {
 
   return (
     <div
-      className={`group rounded-md cursor-pointer transition-colors`}
+      className="group rounded-md cursor-pointer transition-colors"
       onClick={onClick}
     >
       <div className="flex items-center gap-3">
-        <div
-          className="w-1 h-full self-stretch shrink-0 rounded-full bg-opacity-80"
-          style={{ backgroundColor: borderLeftColor }}
-        />
-        <div className="flex-1 py-1">
-          <div className="font-medium text-gray-900 group-hover:text-purple-700 transition-colors line-clamp-1">
-            {event.title}
-          </div>
-          {event.start && event.end && (
-            <div className="text-sm text-gray-500 mt-1">
-              {formatDate(event.start.toString(), "HH:mm")} -
-              {formatDate(event.end.toString(), "HH:mm")}
+        <div className="flex-1">
+          <div className="flex items-center mb-1.5">
+            {" "}
+            <div className="text-sm text-gray-700 font-medium mr-auto">
+              {event.start && event.end && (
+                <span>
+                  {new Date(event.start.toString()).toDateString() !==
+                  new Date(event.end.toString()).toDateString() ? (
+                    <>
+                      {formatDate(event.start.toString(), "MM.dd")}{" "}
+                      {formatDate(event.start.toString(), "HH:mm")} ~{" "}
+                      {formatDate(event.end.toString(), "MM.dd")}{" "}
+                      {formatDate(event.end.toString(), "HH:mm")}
+                    </>
+                  ) : (
+                    <>
+                      {formatDate(event.start.toString(), "HH:mm")} ~{" "}
+                      {formatDate(event.end.toString(), "HH:mm")}
+                    </>
+                  )}
+                </span>
+              )}
             </div>
-          )}
-          {scheduleStatus && (
-            <div className="mt-2">
+            {scheduleStatus && scheduleStatus !== "NONE" && (
               <span
-                className="text-[11px] px-1.5 py-0.5 rounded-full font-medium"
+                className="text-[11px] px-2 py-0.5 rounded-full font-medium"
                 style={{
                   backgroundColor: `${
                     statusColors[scheduleStatus as keyof typeof statusColors] ||
@@ -80,6 +88,49 @@ export default function ScheduleCard({ event, onClick }: ScheduleCardProps) {
                 {statusLabels[scheduleStatus as keyof typeof statusLabels] ||
                   scheduleStatus}
               </span>
+            )}
+          </div>
+          <div className="font-bold text-gray-800 group-hover:text-purple-700 transition-colors line-clamp-1 mb-1">
+            {event.title}
+          </div>
+          {event.extendedProps?.description && (
+            <div className="text-sm text-gray-500 line-clamp-1 mt-0.5">
+              {event.extendedProps.description as string}
+            </div>
+          )}{" "}
+          {scheduleType && (
+            <div className="flex mt-2 items-center gap-1">
+              {/* 일정 유형에 따른 참석자 아바타 렌더링 - ModernCalendarView.module.css 색상 적용 */}
+              {scheduleType === "COMPANY" && (
+                <div className="flex -space-x-1.5">
+                  <div
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white font-medium"
+                    style={{ backgroundColor: "#ec4899" }} // indicatorCompany 색상
+                  >
+                    회사
+                  </div>
+                </div>
+              )}
+              {scheduleType === "DEPARTMENT" && (
+                <div className="flex -space-x-1.5">
+                  <div
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white font-medium"
+                    style={{ backgroundColor: "#ffd8b1", color: "#6b5900" }} // indicatorDepartment 색상, 가독성을 위해 텍스트 색상 어둡게
+                  >
+                    부서
+                  </div>
+                </div>
+              )}
+              {scheduleType === "PERSONAL" && (
+                <div className="flex -space-x-1.5">
+                  <div
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white font-medium"
+                    style={{ backgroundColor: "#9333ea" }} // indicatorPersonal 색상
+                  >
+                    개인
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

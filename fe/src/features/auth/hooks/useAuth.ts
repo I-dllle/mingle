@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { fetchCurrentUser } from "../services/authService";
+import { userService } from "../services/userService";
 import { User } from "../types/User";
 
 export function useAuth() {
@@ -7,21 +9,23 @@ export function useAuth() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchUser = async () => {
+    (async () => {
       try {
-        // TODO: API 호출을 통해 실제 사용자 정보를 가져오는 로직 구현
-        const userData = sessionStorage.getItem("user");
-        if (userData) {
-          setUser(JSON.parse(userData));
+        const me = await fetchCurrentUser(); // ① API 호출
+        if (me) {
+          setUser(me);
+        } else {
+          // fallback: 프로필 API
+          const profile = await userService.getMyProfile();
+          setUser(profile);
         }
-      } catch (err) {
-        setError("사용자 정보를 불러오는데 실패했습니다.");
+      } catch (e) {
+        console.error("사용자 정보 로드 실패", e);
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
-    };
-
-    fetchUser();
+    })();
   }, []);
 
   return {

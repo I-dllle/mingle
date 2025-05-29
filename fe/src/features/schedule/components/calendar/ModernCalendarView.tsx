@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuth } from "@/features/auth/hooks/useAuth";
 import React, { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import FullCalendar from "@fullcalendar/react";
@@ -8,36 +9,17 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { scheduleService } from "@/features/schedule/services/scheduleService";
 import { ScheduleType } from "@/features/schedule/types/Enums";
-import ScheduleFormModal from "@/features/schedule/components/modals/ScheduleFormModal";
 import ScheduleListModal from "../modals/ScheduleListModal";
-import { useAuth } from "@/features/auth/hooks/useAuth";
 import type { DateSelectArg, EventClickArg } from "@fullcalendar/core";
 import type { DateClickArg } from "@fullcalendar/interaction";
 import { getEventClassNames } from "@/features/schedule/utils/calendarTheme";
 import styles from "@/features/schedule/styles/ModernCalendarView.module.css";
+import { ScheduleSearchModal } from "../modals/ScheduleSearchModal";
+import ScheduleDetailModal from "../modals/ScheduleDetailModal";
 
 import Modal from "@/features/schedule/components/ui/Modal";
 import ScheduleCard from "@/features/schedule/components/ui/ScheduleCard";
 import ActivitySummary from "@/features/schedule/components/calendar/ActivitySummary";
-
-// 아이콘 컴포넌트
-const PlusIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      d="M12 4v16m8-8H4"
-    />
-  </svg>
-);
 
 const ChevronLeftIcon = () => (
   <svg
@@ -72,13 +54,12 @@ const ChevronRightIcon = () => (
 );
 
 export default function ModernCalendarView() {
+  const { user } = useAuth();
   const router = useRouter();
   const calendarRef = useRef<FullCalendar>(null);
-
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
-
   const [selectedType, setSelectedType] = useState<ScheduleType | "all">("all");
   const [currentView, setCurrentView] = useState<
     "dayGridMonth" | "timeGridWeek" | "timeGridDay"
@@ -86,20 +67,13 @@ export default function ModernCalendarView() {
   const [isListModalOpen, setIsListModalOpen] = useState(false);
   const [clickedDate, setClickedDate] = useState<string | null>(null);
   const [currentMonth, setCurrentMonth] = useState<string>("");
-
   const [summaryDate, setSummaryDate] = useState<Date>(new Date());
-
-  // 캘린더의 view가 바뀔 때마다 타이틀도 바꾸고 summaryDate도 갱신
+  const [summaryRefreshKey, setSummaryRefreshKey] = useState(0);
   const handleDatesSet = (info: any) => {
-    // 상단의 현재 달/주/일 텍스트 갱신
     updateCurrentMonthTitle(info.view.currentStart, info.view.type);
-    // ActivitySummary 에 넘길 기준 날짜 저장
     setSummaryDate(info.view.currentStart);
   };
-
-  const { user } = useAuth();
-  const isAdmin =
-    user?.role === "ROLE_ADMIN" || user?.role === "ROLE_SUPER_ADMIN";
+  const isAdmin = user?.role === "ADMIN";
   // 현재 달 표시 업데이트
   useEffect(() => {
     if (calendarRef.current) {
@@ -117,6 +91,7 @@ export default function ModernCalendarView() {
       calendarRef.current.getApi().refetchEvents();
     }
   };
+
   // 뷰 변경 핸들러
   const handleViewChange = (
     view: "dayGridMonth" | "timeGridWeek" | "timeGridDay"
@@ -240,6 +215,21 @@ export default function ModernCalendarView() {
     setIsListModalOpen(true);
   };
 
+  const fetchEvents = () => {
+    calendarRef.current?.getApi().refetchEvents();
+  };
+
+  const handleListModalClose = () => {
+    setIsListModalOpen(false);
+    fetchEvents(); // 일정 리스트 새로 불러오기
+    setSummaryRefreshKey((k) => k + 1); // 요약 컴포넌트에 신호 보내기
+  };
+
+  // 검색 결과 클릭 시 상세 모달용
+  const [selectedScheduleId, setSelectedScheduleId] = useState<number | null>(
+    null
+  );
+
   return (
     <div className={styles.calendarContainer}>
       {/* 캘린더 헤더 */}
@@ -290,68 +280,15 @@ export default function ModernCalendarView() {
           </button>
         </div>
       </div>
-      {/* 검색 모달 */}
+      {/* 검색 모달 통합 */}
       {showSearchModal && (
-        <Modal title="일정 검색" onClose={() => setShowSearchModal(false)}>
-          <div className="p-6 space-y-5">
-            <div className="flex gap-3">
-              <div className="relative flex-1">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                  </svg>
-                </div>
-                <input
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-200 focus:border-purple-500 transition-all"
-                  placeholder="일정명, 메모 등으로 검색"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleSearch();
-                  }}
-                />
-              </div>
-              <button
-                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all"
-                onClick={handleSearch}
-              >
-                검색
-              </button>
-            </div>
-            <div className="space-y-3 max-h-[60vh] overflow-auto rounded-lg bg-gray-50 p-3">
-              {searchResults.length > 0 ? (
-                searchResults.map((evt) => (
-                  <ScheduleCard
-                    key={evt.id}
-                    event={evt}
-                    onClick={() => {
-                      router.push(`/schedule/detail/${evt.id}`);
-                      setShowSearchModal(false);
-                    }}
-                  />
-                ))
-              ) : (
-                <div className="bg-white p-6 rounded-lg text-center border border-gray-100 shadow-sm">
-                  <p className="text-gray-500 mb-2">검색 결과가 없습니다.</p>
-                  <p className="text-sm text-gray-400">
-                    다른 키워드로 검색해보세요.
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        </Modal>
+        <ScheduleSearchModal
+          onClose={() => setShowSearchModal(false)}
+          onSelectSchedule={(sched) => {
+            setSelectedScheduleId(sched.id);
+            setShowSearchModal(false);
+          }}
+        />
       )}
       {/* 필터 섹션 */}
       <div className={styles.filterSection}>
@@ -450,7 +387,7 @@ export default function ModernCalendarView() {
           locale="ko"
           slotMinTime="00:00:00" // 오전 0시부터
           slotMaxTime="24:00:00" // 자정까지 (24시간 전체)
-          allDaySlot={true}
+          allDaySlot={currentView === "dayGridMonth"}
           nowIndicator={true}
           events={(info, successCallback) => {
             const calApi = calendarRef.current?.getApi();
@@ -459,6 +396,7 @@ export default function ModernCalendarView() {
             const monthStart = now
               ? new Date(now.getFullYear(), now.getMonth(), 1)
               : null;
+            const deptId = user?.department?.departmentId;
             const type = selectedType === "all" ? undefined : selectedType;
             if (!monthStart) {
               successCallback([]);
@@ -466,7 +404,7 @@ export default function ModernCalendarView() {
             }
             if (monthStart) {
               scheduleService
-                .getMonthlySchedules(monthStart, type as ScheduleType)
+                .getMonthlySchedules(monthStart, type, deptId)
                 .then((events) =>
                   successCallback(
                     events.map((event) => ({
@@ -480,7 +418,7 @@ export default function ModernCalendarView() {
                         memo: event.memo,
                         scheduleStatus: event.scheduleStatus,
                       },
-                      allDay: true,
+                      allDay: false,
                     }))
                   )
                 );
@@ -500,15 +438,24 @@ export default function ModernCalendarView() {
               ? "weekly"
               : "daily"
           }
-          scheduleType={selectedType}
+          scheduleType="all"
           date={summaryDate}
+          refreshKey={summaryRefreshKey}
         />
       </div>
       {/* ─── 리스트 모달 ─── */}
       {isListModalOpen && clickedDate && (
-        <ScheduleListModal
-          date={clickedDate}
-          onClose={() => setIsListModalOpen(false)}
+        <ScheduleListModal date={clickedDate} onClose={handleListModalClose} />
+      )}
+      {/* ─── 상세 모달 ─── */}{" "}
+      {selectedScheduleId !== null && (
+        <ScheduleDetailModal
+          scheduleId={selectedScheduleId}
+          onClose={() => setSelectedScheduleId(null)}
+          onDeleteSuccess={() => {
+            setSelectedScheduleId(null);
+            calendarRef.current?.getApi().refetchEvents();
+          }}
         />
       )}
     </div>

@@ -17,6 +17,7 @@ import com.example.mingle.domain.user.user.repository.UserRepository;
 import com.example.mingle.global.exception.ApiException;
 import com.example.mingle.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class ScheduleService {
 
     private final ScheduleRepository scheduleRepository;
@@ -44,15 +46,29 @@ public class ScheduleService {
     // 단건 조회
     @Transactional(readOnly = true)
     public ScheduleResponse getScheduleById(Long userId, Long scheduleId) {
-        if (!userRepository.existsById(userId)) {
-            throw new ApiException(ErrorCode.USER_NOT_FOUND);
-        }
-        Schedule schedule = scheduleRepository.findByUser_IdAndId(userId, scheduleId)
+        Schedule schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new ApiException(ErrorCode.SCHEDULE_NOT_FOUND));
-        // 2) 변환해서 리턴
+
+        ScheduleType type = schedule.getScheduleType();
+        User me = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
+
+        if (type == ScheduleType.PERSONAL) {
+            // 개인 일정은 본인만 가능
+            if (!schedule.getUser().getId().equals(userId)) {
+                throw new ApiException(ErrorCode.ACCESS_DENIED);
+            }
+        } else if (type == ScheduleType.DEPARTMENT) {
+            // 부서 일정은 본인의 부서 소속이라면 OK
+            Long myDeptId = me.getDepartment().getId();
+            if (!schedule.getDepartment().getId().equals(myDeptId)) {
+                throw new ApiException(ErrorCode.ACCESS_DENIED);
+            }
+        }
         return scheduleMapper.toResponse(schedule);
     }
 
+    // 검색 메서드
     @Transactional(readOnly = true)
     public List<ScheduleResponse> searchVisibleSchedules(
             Long userId,
@@ -64,7 +80,7 @@ public class ScheduleService {
         String kw = keyword == null ? "" : keyword.trim();
 
         List<Schedule> list = includeMemo
-                ? scheduleRepository.searchTitleOrMemoAllVisible(userId, departmentId, kw)
+                ? scheduleRepository.searchTitleOrDescriptionAllVisible(userId, departmentId, kw)
                 : scheduleRepository.searchTitleAllVisible(userId, departmentId, kw);
 
         return list.stream()
@@ -88,6 +104,33 @@ public class ScheduleService {
 
         Schedule schedule = scheduleMapper.toEntity(request, user, post);
         schedule.setScheduleType(ScheduleType.PERSONAL);
+        Schedule saved = scheduleRepository.save(schedule);
+        return scheduleMapper.toResponse(saved);
+    }
+
+    // 사용자 부서 일정 생성
+    @Transactional
+    public ScheduleResponse createDepartmentSchedule(ScheduleRequest request, Long userId, Long postId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+
+        // 기본적으로 post를 null로 설정
+        Post post = null;
+        if (postId != null) {
+            post = postRepository.findById(postId)
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
+        }
+
+        // 사용자의 부서 ID로 강제 고정
+        Department department = user.getDepartment();
+        if (department == null) {
+            throw new ApiException(ErrorCode.DEPARTMENT_NOT_FOUND); // 예외 방어
+        }
+
+        // departmentId는 무시하고 실제 로그인 유저의 부서를 사용함
+        Schedule schedule = scheduleMapper.toEntity(request, user, post, department);
+        schedule.setScheduleType(ScheduleType.DEPARTMENT);
+
         Schedule saved = scheduleRepository.save(schedule);
         return scheduleMapper.toResponse(saved);
     }
@@ -351,15 +394,25 @@ public class ScheduleService {
     }
 
 
-    //일정 삭제
     @Transactional
     public void deleteSchedule(Long scheduleId, Long userId) {
-        Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(
-                () -> new IllegalArgumentException("존재하지 않는 일정입니다.")
-        );
-        if (!schedule.getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("삭제 권한이 없습니다.");
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 일정입니다."));
+
+        // 회사 일정은 관리자면 삭제 OK
+        if (schedule.getScheduleType() == ScheduleType.COMPANY) {
+            User admin = userRepository.findById(userId).orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
+            if (admin.getRole() != UserRole.ADMIN) {
+                throw new ApiException(ErrorCode.ACCESS_DENIED);
+            }
         }
+        else {
+            // 개인/부서 일정은 본인 소유만 삭제
+            if (!schedule.getUser().getId().equals(userId)) {
+                throw new ApiException(ErrorCode.ACCESS_DENIED);
+            }
+        }
+
         scheduleRepository.deleteById(scheduleId);
     }
 
@@ -385,45 +438,29 @@ public class ScheduleService {
         return scheduleMapper.toResponse(saved);
     }
 
-    // 관리자 부서 일정 생성
-    @Transactional
-    public ScheduleResponse createDepartmentSchedule(ScheduleRequest request, Long userId, Long postId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
-
-        //기본적으로 post를 null로 설정.
-        Post post = null;
-        if (postId != null) {
-            post = postRepository.findById(postId).orElseThrow(
-                    () -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
-        }
-
-        Long departmentId = request.getDepartmentId();
-        Department department = departmentRepository.findById(departmentId)
-                .orElseThrow((() -> new ApiException(ErrorCode.DEPARTMENT_NOT_FOUND)));
-
-        Schedule schedule = scheduleMapper.toEntity(request, user, post, department);
-        schedule.setScheduleType(ScheduleType.DEPARTMENT);
-
-        Schedule saved = scheduleRepository.save(schedule);
-        return scheduleMapper.toResponse(saved);
-    }
-
     // 관리자용 일정 수정 메서드
     @Transactional
     public ScheduleResponse updateAnySchedule(ScheduleRequest request, Long scheduleId, Long userId) {
         Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(
                 () -> new ApiException(ErrorCode.SCHEDULE_NOT_FOUND));
 
-        if (!userId.equals(schedule.getUser().getId())) {
+        User actor = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
+
+        if (schedule.getScheduleType() == ScheduleType.COMPANY) {
+            if (actor.getRole() != UserRole.ADMIN) {
+                throw new ApiException(ErrorCode.ACCESS_DENIED);
+            }
+        }
+        // PERSONAL / DEPARTMENT는 기존대로 본인 소유만
+        else if (!schedule.getUser().getId().equals(userId)) {
             throw new ApiException(ErrorCode.ACCESS_DENIED);
         }
 
         // 부서 쪽 타입으로 변경할 경우
         Department department = null;
         if (request.getScheduleType() == ScheduleType.DEPARTMENT) {
-            department = departmentRepository.findById(request.getDepartmentId())
-                    .orElseThrow(() -> new ApiException(ErrorCode.DEPARTMENT_NOT_FOUND));
+            department = schedule.getDepartment();
         }
         scheduleMapper.updateEntityFromRequest(schedule, request, department);
 

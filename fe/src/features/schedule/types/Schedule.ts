@@ -12,6 +12,7 @@ export interface Schedule {
   scheduleType: ScheduleType;
   scheduleStatus: ScheduleStatus;
   departmentId?: number | null;
+  departmentName?: string;
 }
 
 export interface ScheduleFormData {
@@ -55,6 +56,6 @@ export interface PagedResponse<T> {
 
 // 부서 정보 인터페이스
 export interface DepartmentResponse {
-  id: number;
+  departmentId: number;
   departmentName: string;
 }

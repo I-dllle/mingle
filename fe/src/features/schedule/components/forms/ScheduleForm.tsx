@@ -2,12 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { scheduleService } from "@/features/schedule/services/scheduleService";
+import {
+  scheduleService,
+  formatScheduleTime,
+} from "@/features/schedule/services/scheduleService";
 import { ScheduleType, ScheduleStatus } from "@/features/schedule/types/Enums";
 import {
   scheduleStatusLabels,
   scheduleTypeLabels,
-} from "@/features/schedule/constants/scheduleLabels";
+} from "@/features/schedule/types/scheduleLabels";
 import { Schedule, ScheduleFormData } from "@/features/schedule/types/Schedule";
 
 interface ScheduleFormProps {
@@ -54,8 +57,8 @@ export default function ScheduleForm({
           title: "",
           description: "",
           memo: "",
-          startTime: scheduleService.formatScheduleTime(startDate), // 서비스 함수 사용
-          endTime: scheduleService.formatScheduleTime(endDate), // 서비스 함수 사용
+          startTime: formatScheduleTime(startDate),
+          endTime: formatScheduleTime(endDate),
           scheduleType: ScheduleType.PERSONAL, // 기본값은 개인 일정
           scheduleStatus: ScheduleStatus.NONE, // 기본값을 없음으로 설정
           departmentId: undefined,
@@ -64,20 +67,6 @@ export default function ScheduleForm({
   });
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-
-  // 부서 목록 로드
-  useEffect(() => {
-    const fetchDepartments = async () => {
-      try {
-        const data = await scheduleService.getDepartments();
-        setDepartments(data);
-      } catch (error) {
-        console.error("부서 목록을 불러오는데 실패했습니다", error);
-      }
-    };
-
-    fetchDepartments();
-  }, []);
 
   // 폼 입력값 변경 처리
   const handleChange = (
@@ -182,22 +171,70 @@ export default function ScheduleForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-lg p-6">
+    <form
+      onSubmit={handleSubmit}
+      className="bg-white rounded-xl p-6 shadow-lg overflow-hidden"
+    >
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl shadow-sm animate-fade-in flex items-center group hover:bg-red-100 transition-all duration-300">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5 mr-2 text-red-500 group-hover:scale-110 transition-transform duration-300"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
           {error}
         </div>
       )}
 
       {success && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded">
+        <div className="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-xl shadow-sm animate-fade-in flex items-center group hover:bg-green-100 transition-all duration-300">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5 mr-2 text-green-500 group-hover:scale-110 transition-transform duration-300"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
           {success}
         </div>
       )}
 
-      <div className="mb-4">
-        <label htmlFor="title" className="block text-gray-700 font-medium mb-2">
-          일정 제목 <span className="text-red-500">*</span>
+      <div className="mb-5 relative group">
+        <label
+          htmlFor="title"
+          className="block text-sm font-medium text-purple-600 mb-2 flex items-center"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-4 w-4 mr-1.5 group-hover:scale-110 transition-transform duration-300"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+            />
+          </svg>
+          일정 제목 <span className="text-red-500 ml-0.5">*</span>
         </label>
         <input
           type="text"
@@ -206,18 +243,32 @@ export default function ScheduleForm({
           value={formData.title}
           onChange={handleChange}
           required
-          className="w-full border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full border border-purple-200 rounded-xl px-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400 transition-all hover:border-purple-300 bg-white/50 backdrop-blur-sm"
           placeholder="일정 제목을 입력하세요"
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+        <div className="space-y-2 relative group">
           <label
             htmlFor="startTime"
-            className="block text-gray-700 font-medium mb-2"
+            className="block text-sm font-medium text-purple-600 mb-1.5 flex items-center"
           >
-            시작 시간 <span className="text-red-500">*</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4 mr-1.5 group-hover:scale-110 transition-transform duration-300"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            시작 시간 <span className="text-red-500 ml-0.5">*</span>
           </label>
           <input
             type="datetime-local"
@@ -226,16 +277,30 @@ export default function ScheduleForm({
             value={formData.startTime}
             onChange={handleChange}
             required
-            className="w-full border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full border border-purple-200 rounded-xl px-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400 transition-all hover:border-purple-300 bg-white/50 backdrop-blur-sm"
           />
         </div>
 
-        <div>
+        <div className="space-y-2 relative group">
           <label
             htmlFor="endTime"
-            className="block text-gray-700 font-medium mb-2"
+            className="block text-sm font-medium text-purple-600 mb-1.5 flex items-center"
           >
-            종료 시간 <span className="text-red-500">*</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4 mr-1.5 group-hover:scale-110 transition-transform duration-300"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            종료 시간 <span className="text-red-500 ml-0.5">*</span>
           </label>
           <input
             type="datetime-local"
@@ -244,88 +309,177 @@ export default function ScheduleForm({
             value={formData.endTime}
             onChange={handleChange}
             required
-            className="w-full border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full border border-purple-200 rounded-xl px-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400 transition-all hover:border-purple-300 bg-white/50 backdrop-blur-sm"
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+        <div className="space-y-2 relative group">
           <label
             htmlFor="scheduleType"
-            className="block text-gray-700 font-medium mb-2"
+            className="block text-sm font-medium text-purple-600 mb-1.5 flex items-center"
           >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4 mr-1.5 group-hover:scale-110 transition-transform duration-300"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
+              />
+            </svg>
             일정 유형
-          </label>{" "}
-          <select
-            id="scheduleType"
-            name="scheduleType"
-            value={formData.scheduleType}
-            onChange={handleTypeChange}
-            className="w-full border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            {Object.entries(scheduleTypeLabels).map(([type, label]) => (
-              <option key={type} value={type}>
-                {label}
-              </option>
-            ))}
-          </select>
+          </label>
+          <div className="relative">
+            <select
+              id="scheduleType"
+              name="scheduleType"
+              value={formData.scheduleType}
+              onChange={handleTypeChange}
+              className="w-full border border-purple-200 rounded-xl px-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400 transition-all bg-white/50 appearance-none cursor-pointer pr-10"
+            >
+              {Object.entries(scheduleTypeLabels).map(([type, label]) => (
+                <option key={type} value={type}>
+                  {label}
+                </option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-700">
+              <svg
+                className="fill-current h-4 w-4 text-purple-500"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+              >
+                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+              </svg>
+            </div>
+          </div>
         </div>
 
-        <div>
+        <div className="space-y-2 relative group">
           <label
             htmlFor="scheduleStatus"
-            className="block text-gray-700 font-medium mb-2"
+            className="block text-sm font-medium text-purple-600 mb-1.5 flex items-center"
           >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4 mr-1.5 group-hover:scale-110 transition-transform duration-300"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
             일정 상태
           </label>
-          <select
-            id="scheduleStatus"
-            name="scheduleStatus"
-            value={formData.scheduleStatus}
-            onChange={handleChange}
-            className="w-full border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            {Object.entries(scheduleStatusLabels).map(([key, label]) => (
-              <option key={key} value={key}>
-                {label}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              id="scheduleStatus"
+              name="scheduleStatus"
+              value={formData.scheduleStatus}
+              onChange={handleChange}
+              className="w-full border border-purple-200 rounded-xl px-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400 transition-all bg-white/50 appearance-none cursor-pointer pr-10"
+            >
+              {Object.entries(scheduleStatusLabels).map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-700">
+              <svg
+                className="fill-current h-4 w-4 text-purple-500"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+              >
+                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+              </svg>
+            </div>
+          </div>
         </div>
       </div>
 
       {formData.scheduleType === ScheduleType.DEPARTMENT && (
-        <div className="mb-4">
+        <div className="mb-5 space-y-2 relative group animate-fade-in">
           <label
             htmlFor="departmentId"
-            className="block text-gray-700 font-medium mb-2"
+            className="block text-sm font-medium text-purple-600 mb-1.5 flex items-center"
           >
-            부서 <span className="text-red-500">*</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4 mr-1.5 group-hover:scale-110 transition-transform duration-300"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+              />
+            </svg>
+            부서 <span className="text-red-500 ml-0.5">*</span>
           </label>
-          <select
-            id="departmentId"
-            name="departmentId"
-            value={formData.departmentId || ""}
-            onChange={handleChange}
-            required={formData.scheduleType === ScheduleType.DEPARTMENT}
-            className="w-full border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="">부서를 선택하세요</option>
-            {departments.map((dept) => (
-              <option key={dept.id} value={dept.id}>
-                {dept.departmentName}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              id="departmentId"
+              name="departmentId"
+              value={formData.departmentId || ""}
+              onChange={handleChange}
+              required={formData.scheduleType === ScheduleType.DEPARTMENT}
+              className="w-full border border-purple-200 rounded-xl px-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400 transition-all bg-white/50 cursor-pointer appearance-none pr-10"
+            >
+              <option value="">부서를 선택하세요</option>
+              {departments.map((dept) => (
+                <option key={dept.id} value={dept.id}>
+                  {dept.departmentName}
+                </option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-700">
+              <svg
+                className="fill-current h-4 w-4 text-purple-500"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+              >
+                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+              </svg>
+            </div>
+          </div>
         </div>
       )}
 
-      <div className="mb-4">
+      <div className="mb-5 space-y-2 relative group">
         <label
           htmlFor="description"
-          className="block text-gray-700 font-medium mb-2"
+          className="block text-sm font-medium text-purple-600 mb-1.5 flex items-center"
         >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-4 w-4 mr-1.5 group-hover:scale-110 transition-transform duration-300"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
+          </svg>
           일정 설명
         </label>
         <textarea
@@ -334,13 +488,30 @@ export default function ScheduleForm({
           value={formData.description}
           onChange={handleChange}
           rows={3}
-          className="w-full border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full border border-purple-200 rounded-xl px-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400 transition-all bg-white/50 backdrop-blur-sm resize-none"
           placeholder="일정에 대한 설명을 입력하세요"
         />
       </div>
 
-      <div className="mb-6">
-        <label htmlFor="memo" className="block text-gray-700 font-medium mb-2">
+      <div className="mb-6 space-y-2 relative group">
+        <label
+          htmlFor="memo"
+          className="block text-sm font-medium text-purple-600 mb-1.5 flex items-center"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-4 w-4 mr-1.5 group-hover:scale-110 transition-transform duration-300"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+            />
+          </svg>
           메모
         </label>
         <textarea
@@ -349,27 +520,41 @@ export default function ScheduleForm({
           value={formData.memo}
           onChange={handleChange}
           rows={3}
-          className="w-full border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full border border-purple-200 rounded-xl px-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400 transition-all bg-white/50 backdrop-blur-sm resize-none"
           placeholder="추가 메모사항을 입력하세요"
         />
       </div>
 
-      <div className="flex justify-end space-x-3">
+      <div className="flex flex-wrap sm:flex-nowrap justify-end space-x-0 sm:space-x-3 pt-4 border-t border-gray-100">
         <button
           type="button"
           onClick={onClose || (() => router.push("/schedule"))}
-          className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+          className="w-full sm:w-auto mb-2 sm:mb-0 px-5 py-2.5 text-sm font-medium border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 hover:shadow-md transition-all duration-200 flex items-center justify-center"
           disabled={loading}
         >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-4 w-4 mr-1.5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
           취소
         </button>
         <button
           type="submit"
-          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-blue-300"
+          className="w-full sm:w-auto px-5 py-2.5 text-sm font-medium bg-purple-600 text-white rounded-xl hover:bg-purple-700 focus:ring-4 focus:ring-purple-200 transition-all duration-200 shadow-sm hover:shadow-md flex items-center justify-center disabled:opacity-50"
           disabled={loading}
         >
           {loading ? (
-            <span className="flex items-center">
+            <>
               <svg
                 className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
                 xmlns="http://www.w3.org/2000/svg"
@@ -390,12 +575,26 @@ export default function ScheduleForm({
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              처리중...
-            </span>
-          ) : isEditing ? (
-            "수정하기"
+              {isEditing ? "수정 중..." : "등록 중..."}
+            </>
           ) : (
-            "등록하기"
+            <>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 mr-1.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+              {isEditing ? "수정하기" : "등록하기"}
+            </>
           )}
         </button>
       </div>

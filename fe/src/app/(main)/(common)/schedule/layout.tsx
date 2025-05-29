@@ -1,7 +1,3 @@
-// app/schedule/layout.tsx
-// "use client";
-
-// ← 맨 윗줄에 딱 한 번만 import
 import "@/features/schedule/styles/schedule-global.css";
 
 import { Suspense } from "react";

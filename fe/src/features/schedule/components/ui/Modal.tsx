@@ -33,26 +33,27 @@ export default function Modal({ children, onClose, title }: ModalProps) {
       onClose();
     }
   };
-
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm transition-all duration-300 ease-in-out animate-backdrop-fade"
       onClick={handleOverlayClick}
     >
       <div
-        className="w-full max-w-3xl max-h-[90vh] overflow-auto bg-white rounded-lg shadow-xl animate-modal-appear"
+        className="w-full max-w-3xl max-h-[90vh] overflow-auto bg-white rounded-xl shadow-[0_10px_40px_-5px_rgba(109,40,217,0.15)] border border-purple-100 transition-all transform animate-modal-slide-up"
         onClick={(e) => e.stopPropagation()}
       >
         {title && (
-          <div className="flex justify-between items-center p-5 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+          <div className="flex justify-between items-center p-5 border-b border-purple-100 bg-gradient-to-r from-purple-50 to-white">
+            <h2 className="text-xl font-semibold text-purple-800 px-1">
+              {title}
+            </h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-500 transition-colors"
+              className="flex items-center justify-center w-8 h-8 rounded-full text-purple-400 hover:text-purple-600 hover:bg-purple-50 transition-all duration-200 ease-in-out"
               aria-label="닫기"
             >
               <svg
-                className="h-6 w-6"
+                className="h-5 w-5"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -67,7 +68,7 @@ export default function Modal({ children, onClose, title }: ModalProps) {
             </button>
           </div>
         )}
-        <div className={`${title ? "p-0" : "p-5"}`}>{children}</div>
+        <div className={`${title ? "px-6 py-5" : "p-6"}`}>{children}</div>
       </div>
     </div>
   );

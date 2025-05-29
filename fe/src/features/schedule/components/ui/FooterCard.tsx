@@ -3,7 +3,7 @@
 
 import React from "react";
 import { ScheduleStatus } from "@/features/schedule/types/Enums";
-import { scheduleStatusColors } from "@/features/schedule/constants/scheduleLabels";
+import { scheduleStatusColors } from "@/features/schedule/types/scheduleLabels";
 
 export interface FooterCardProps {
   title: string;

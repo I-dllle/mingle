@@ -4,81 +4,56 @@ import {
   ScheduleFormData,
   ScheduleResponse,
   PagedResponse,
-  DepartmentResponse,
 } from "@/features/schedule/types/Schedule";
 import { ScheduleType } from "@/features/schedule/types/Enums";
 
 // API 기본 경로 (이미 apiClient에서 /api/v1 접두사가 추가됨)
 const BASE = "/schedule";
 
-/**
- * 날짜 문자열에 초(":00") 추가하는 함수
- * 백엔드가 yyyy-MM-ddTHH:mm:ss 형식을 기대하는 경우 사용
- */
+// 날짜 문자열에 초(":00") 추가하는 함수
 export function formatDateTimeWithSeconds(dateTimeString: string): string {
-  // 이미 초를 포함하고 있는지 확인
   if (dateTimeString.match(/T\d{2}:\d{2}:\d{2}/)) {
-    // 밀리초 부분이 있으면 제거 (2025-05-13T10:00:00.000Z -> 2025-05-13T10:00:00)
     if (dateTimeString.includes(".")) {
       return dateTimeString.split(".")[0];
     }
     return dateTimeString;
   }
-
-  // yyyy-MM-ddTHH:mm 형식인 경우 초 추가
   if (dateTimeString.match(/T\d{2}:\d{2}$/)) {
     return `${dateTimeString}:00`;
   }
-
   return dateTimeString;
 }
 
-/**
- * 일정 시간 포맷팅 (시간 선택 UI에 적합한 형식으로)
- */
+// 일정 시간 포맷팅
 export function formatScheduleTime(dateTime: string | Date): string {
-  // Date 객체인 경우
   if (dateTime instanceof Date) {
-    return dateTime.toISOString().slice(0, 16); // yyyy-MM-ddTHH:mm 형식으로 변환
+    return dateTime.toISOString().slice(0, 16);
   }
-
-  // 이미 문자열인 경우
-  if (typeof dateTime === "string") {
-    // 시간대 정보 또는 초 정보가 있는 경우 잘라내기
-    if (dateTime.includes("T")) {
-      const parts = dateTime.split("T");
-      const date = parts[0];
-      const time = parts[1].substring(0, 5); // HH:mm 부분만 추출
-      return `${date}T${time}`;
-    }
+  if (typeof dateTime === "string" && dateTime.includes("T")) {
+    const [date, time] = dateTime.split("T");
+    return `${date}T${time.substring(0, 5)}`;
   }
-
   return dateTime as string;
 }
 
-/**
- * ScheduleFormData를 백엔드 API에 맞게 변환하는 함수
- */
+// ScheduleFormData를 API에 맞게 변환
 function prepareScheduleDataForApi(formData: ScheduleFormData) {
   return {
     ...formData,
     startTime: formatDateTimeWithSeconds(formData.startTime),
     endTime: formatDateTimeWithSeconds(formData.endTime),
-    departmentId: formData.departmentId || null,
     postId: formData.postId || null,
     scheduleStatus:
       formData.scheduleStatus === "NONE" ? null : formData.scheduleStatus,
   };
 }
 
-/**
- * 백엔드 응답을 프론트엔드 모델로 변환하는 함수
- */
+// 백엔드 응답 → 프론트 모델
 function mapResponseToSchedule(r: ScheduleResponse): Schedule {
   return { ...r, startTime: r.startTime, endTime: r.endTime };
 }
 
-//공통 fetch 헬퍼: view(monthly/weekly/daily)
+// 공통 조회 헬퍼
 async function fetchSchedules(
   view: "monthly" | "weekly" | "daily",
   date: Date,
@@ -86,66 +61,85 @@ async function fetchSchedules(
   departmentId?: number
 ): Promise<Schedule[]> {
   const params = new URLSearchParams();
-  // 한국 로컬 타임존 기준 yyyy-MM-dd
   const yyyy = date.getFullYear();
   const mm = String(date.getMonth() + 1).padStart(2, "0");
   const dd = String(date.getDate()).padStart(2, "0");
   params.append("date", `${yyyy}-${mm}-${dd}`);
-
-  if (scheduleType != null) {
-    params.append("type", scheduleType);
-  }
-  if (departmentId != null) {
-    params.append("departmentId", String(departmentId));
-  }
-
-  // BASE만 쓰면 apiClient(baseURL=/api/v1) + "/schedule/..." → /api/v1/schedule/...
+  if (scheduleType) params.append("type", scheduleType);
+  if (departmentId != null) params.append("departmentId", String(departmentId));
   const url = `${BASE}/${view}?${params.toString()}`;
   const resp = await apiClient<ScheduleResponse[]>(url);
   return resp.map(mapResponseToSchedule);
 }
 
-/**
- * 일정 생성
- */
+// 일정 생성
 export async function createSchedule(
   data: ScheduleFormData
 ): Promise<Schedule> {
-  const preparedData = prepareScheduleDataForApi(data);
+  const prepared = prepareScheduleDataForApi(data);
   const response = await apiClient<ScheduleResponse>(`${BASE}`, {
     method: "POST",
-    body: JSON.stringify(preparedData),
+    body: JSON.stringify(prepared),
   });
   return mapResponseToSchedule(response);
 }
 
-/**
- * 일정 수정
- */
+// 부서 일정 생성 (본인 부서 자동 지정)
+export async function createDepartmentSchedule(
+  data: ScheduleFormData
+): Promise<Schedule> {
+  const prepared = prepareScheduleDataForApi(data);
+  const response = await apiClient<ScheduleResponse>(`${BASE}/department`, {
+    method: "POST",
+    body: JSON.stringify(prepared),
+  });
+  return mapResponseToSchedule(response);
+}
+
+// 회사 일정 생성 (관리자 전용)
+export async function createCompanySchedule(
+  data: ScheduleFormData
+): Promise<Schedule> {
+  const prepared = prepareScheduleDataForApi(data);
+  const response = await apiClient<ScheduleResponse>(`${BASE}/admin/company`, {
+    method: "POST",
+    body: JSON.stringify(prepared),
+  });
+  return mapResponseToSchedule(response);
+}
+
+// 일정 수정
 export async function updateSchedule(
   id: number,
   data: ScheduleFormData
 ): Promise<Schedule> {
-  const preparedData = prepareScheduleDataForApi(data);
+  const prepared = prepareScheduleDataForApi(data);
   const response = await apiClient<ScheduleResponse>(`${BASE}/${id}`, {
     method: "PUT",
-    body: JSON.stringify(preparedData),
+    body: JSON.stringify(prepared),
   });
   return mapResponseToSchedule(response);
 }
 
-/**
- * 일정 삭제
- */
-export async function deleteSchedule(id: number): Promise<void> {
-  await apiClient(`${BASE}/${id}`, {
-    method: "DELETE",
+// 회사 일정 수정 (관리자 전용)
+export async function updateAnySchedule(
+  id: number,
+  data: ScheduleFormData
+): Promise<Schedule> {
+  const prepared = prepareScheduleDataForApi(data);
+  const response = await apiClient<ScheduleResponse>(`${BASE}/admin/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(prepared),
   });
+  return mapResponseToSchedule(response);
 }
 
-/**
- * 일정 목록 조회 (페이징)
- */
+// 일정 삭제
+export async function deleteSchedule(id: number): Promise<void> {
+  await apiClient(`${BASE}/${id}`, { method: "DELETE" });
+}
+
+// 페이징 조회
 export async function getSchedules(
   params: {
     startDate?: string;
@@ -155,117 +149,102 @@ export async function getSchedules(
     scheduleType?: string;
   } = {}
 ): Promise<PagedResponse<Schedule>> {
-  // URL 쿼리 파라미터 구성
-  const queryParams = new URLSearchParams();
-  if (params.startDate) queryParams.append("startDate", params.startDate);
-  if (params.endDate) queryParams.append("endDate", params.endDate);
-  if (params.page !== undefined)
-    queryParams.append("page", params.page.toString());
-  if (params.size) queryParams.append("size", params.size.toString());
-  if (params.scheduleType)
-    queryParams.append("scheduleType", params.scheduleType);
-  const url = `${BASE}?${queryParams.toString()}`;
-  const response = await apiClient<PagedResponse<ScheduleResponse>>(url);
-
-  return {
-    ...response,
-    content: response.content.map(mapResponseToSchedule),
-  };
+  const qp = new URLSearchParams();
+  if (params.startDate) qp.append("startDate", params.startDate);
+  if (params.endDate) qp.append("endDate", params.endDate);
+  if (params.page != null) qp.append("page", String(params.page));
+  if (params.size) qp.append("size", String(params.size));
+  if (params.scheduleType) qp.append("scheduleType", params.scheduleType);
+  const resp = await apiClient<PagedResponse<ScheduleResponse>>(
+    `${BASE}?${qp.toString()}`
+  );
+  return { ...resp, content: resp.content.map(mapResponseToSchedule) };
 }
 
-/**
- * 모든 일정 조회 (페이징 없이)
- * 주로 캘린더 표시용
- */
+// 전체 조회 (캘린더용)
 export async function getAllSchedules(
-  params: {
-    startDate?: string;
-    endDate?: string;
-    scheduleType?: string;
-  } = {}
+  params: { startDate?: string; endDate?: string; scheduleType?: string } = {}
 ): Promise<Schedule[]> {
-  // URL 쿼리 파라미터 구성
-  const queryParams = new URLSearchParams();
-  if (params.startDate) queryParams.append("startDate", params.startDate);
-  if (params.endDate) queryParams.append("endDate", params.endDate);
-  if (params.scheduleType)
-    queryParams.append("scheduleType", params.scheduleType);
-  const url = `${BASE}/all?${queryParams.toString()}`;
-  const response = await apiClient<Schedule[]>(url);
-
-  return response;
+  const qp = new URLSearchParams();
+  if (params.startDate) qp.append("startDate", params.startDate);
+  if (params.endDate) qp.append("endDate", params.endDate);
+  if (params.scheduleType) qp.append("scheduleType", params.scheduleType);
+  return await apiClient<Schedule[]>(`${BASE}/all?${qp.toString()}`);
 }
 
-/**
- * 특정 일정 조회
- */
+// 검색
+export async function searchSchedules(
+  keyword: string,
+  includeMemo = false
+): Promise<Schedule[]> {
+  const qp = new URLSearchParams();
+  qp.append("keyword", keyword);
+  qp.append("includeMemo", String(includeMemo));
+  const url = `${BASE}/search?${qp.toString()}`;
+  const resp = await apiClient<ScheduleResponse[]>(url);
+  return resp.map(mapResponseToSchedule);
+}
+
+// 뷰별 조회
+export const getMonthlySchedules = (
+  date: Date,
+  type?: ScheduleType,
+  deptId?: number
+) => fetchSchedules("monthly", date, type, deptId);
+export const getWeeklyView = (
+  date: Date,
+  type?: ScheduleType,
+  deptId?: number
+) => fetchSchedules("weekly", date, type, deptId);
+export const getDailyView = (
+  date: Date,
+  type?: ScheduleType,
+  deptId?: number
+) => fetchSchedules("daily", date, type, deptId);
+
+// --- 추가 ---
 export async function getScheduleById(id: number): Promise<Schedule> {
   const response = await apiClient<ScheduleResponse>(`${BASE}/${id}`, {
     method: "GET",
   });
-  return mapResponseToSchedule(response);
+  const schedule = mapResponseToSchedule(response); // 변수로 먼저 받고
+
+  // 🔥 DEPARTMENT 타입이면 부서 이름 추가
+  if (
+    schedule.scheduleType === ScheduleType.DEPARTMENT &&
+    schedule.departmentId
+  ) {
+    try {
+      const departments = await fetchAllDepartments();
+      const dept = departments.find((d) => d.id === schedule.departmentId);
+      if (dept) {
+        (schedule as any).departmentName = dept.departmentName;
+      }
+    } catch (e) {
+      console.warn("부서 목록을 불러오지 못했습니다.", e);
+    }
+  }
+  return schedule;
 }
 
-/**
- * 부서 목록 조회
- */
-export async function getDepartments(): Promise<DepartmentResponse[]> {
-  const response = await apiClient<DepartmentResponse[]>("/departments");
-  return response;
+export async function fetchAllDepartments() {
+  const resp = await apiClient<{ id: number; departmentName: string }[]>(
+    `${BASE}/departments`
+  );
+  return resp;
 }
 
-/**
- * 일정 검색
- */
-export async function searchSchedules(
-  keyword: string,
-  includeMemo: boolean = false
-): Promise<Schedule[]> {
-  const queryParams = new URLSearchParams();
-  queryParams.append("keyword", keyword);
-  queryParams.append("includeMemo", String(includeMemo));
-
-  const url = `${BASE}/search?${queryParams.toString()}`;
-  const response = await apiClient<ScheduleResponse[]>(url);
-
-  return response.map(mapResponseToSchedule);
-}
-
-// --- 월간/주간/일간 조회 함수들 ---
-export function getMonthlySchedules(
-  date: Date,
-  scheduleType?: ScheduleType,
-  departmentId?: number
-): Promise<Schedule[]> {
-  return fetchSchedules("monthly", date, scheduleType, departmentId);
-}
-
-export function getWeeklyView(
-  date: Date,
-  scheduleType?: ScheduleType,
-  departmentId?: number
-): Promise<Schedule[]> {
-  return fetchSchedules("weekly", date, scheduleType, departmentId);
-}
-
-export function getDailyView(
-  date: Date,
-  scheduleType?: ScheduleType,
-  departmentId?: number
-): Promise<Schedule[]> {
-  return fetchSchedules("daily", date, scheduleType, departmentId);
-}
-
-// 이전 방식과의 호환성을 위한 객체도 export
+// export
 export const scheduleService = {
   createSchedule,
+  createDepartmentSchedule,
+  createCompanySchedule,
+  getScheduleById,
   updateSchedule,
+  updateAnySchedule,
   deleteSchedule,
   getSchedules,
   getAllSchedules,
-  getScheduleById,
-  getDepartments,
-  formatScheduleTime,
   searchSchedules,
   getMonthlySchedules,
   getWeeklyView,
