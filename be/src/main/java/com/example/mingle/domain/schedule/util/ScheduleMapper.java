@@ -4,6 +4,7 @@ import com.example.mingle.domain.schedule.dto.ScheduleRequest;
 import com.example.mingle.domain.schedule.dto.ScheduleResponse;
 import com.example.mingle.domain.schedule.entity.Schedule;
 import com.example.mingle.domain.post.post.entity.Post;
+import com.example.mingle.domain.schedule.entity.ScheduleType;
 import com.example.mingle.domain.user.team.entity.Department;
 import com.example.mingle.domain.user.user.entity.User;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,9 @@ public class ScheduleMapper {
         if (request == null) {
             return null;
         }
+        boolean isAdminCreatingDepartmentSchedule =
+                request.getScheduleType() == ScheduleType.DEPARTMENT
+                        && !user.getDepartment().getId().equals(department.getId());
         return Schedule.builder()
                 .user(user)
                 .post(post)
@@ -49,10 +53,15 @@ public class ScheduleMapper {
                 ? schedule.getDepartment().getId()
                 : null;
 
+        String departmentName = schedule.getDepartment() != null
+                ? schedule.getDepartment().getDepartmentName()
+                : null;
+
         return ScheduleResponse.builder()
                 .id(schedule.getId())
                 .userId(schedule.getUser().getId())
                 .postId(postId)
+                .departmentName(departmentName)
                 .departmentId(departmentId)
                 .title(schedule.getTitle())
                 .description(schedule.getDescription())
