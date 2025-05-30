@@ -1,0 +1,790 @@
+/**
+ * 스케줄 모듈 글로벌 스타일
+ * FullCalendar 컴포넌트의 모든 글로벌 스타일링을 정의합니다.
+ * 세련된 파스텔 연보라색 테마로 디자인되었습니다.
+ */
+
+/* ============================================
+   1. FullCalendar CSS 변수 설정
+   ============================================ */
+:root {
+  --fc-border-color: #f3f4f6;
+  --fc-daygrid-event-dot-width: 8px;
+  --fc-today-bg-color: rgba(147, 51, 234, 0.05);
+  --fc-page-bg-color: #ffffff;
+  --fc-neutral-bg-color: #f9fafb;
+  --fc-list-event-hover-bg-color: #f3e8ff;
+  --fc-event-border-color: transparent;
+}
+
+/* ============================================
+     2. FullCalendar 기본 컨테이너 스타일
+     ============================================ */
+.fc {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  max-width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 레이아웃 구조 - 화면을 꽉 채우도록 설정 */
+.fc .fc-view-harness {
+  flex: 1;
+  min-height: 0;
+}
+
+.fc .fc-scrollgrid {
+  height: 100% !important;
+}
+
+.fc .fc-scrollgrid-section-liquid > td {
+  height: 100%;
+}
+
+.fc .fc-daygrid-body {
+  height: 100% !important;
+}
+
+.fc .fc-scroller {
+  flex: 1 !important;
+  height: 100% !important;
+}
+
+/* ============================================
+     3. 헤더 툴바 스타일
+     ============================================ */
+.fc .fc-toolbar.fc-header-toolbar {
+  margin-bottom: 1.5em;
+  padding: 0;
+  background-color: white;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+}
+
+.fc .fc-toolbar-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #4c1d95;
+  background: linear-gradient(90deg, #6d28d9, #8b5cf6);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* 헤더 버튼 스타일 */
+.fc .fc-button-primary {
+  background-color: #f3e8ff;
+  border-color: #e9d5ff;
+  color: #6d28d9;
+  font-weight: 600;
+  text-transform: capitalize;
+  transition: all 0.2s;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.fc .fc-button-primary:not(:disabled):hover {
+  background-color: #e9d5ff;
+  border-color: #d8b4fe;
+  color: #6d28d9;
+}
+
+.fc .fc-button-primary:not(:disabled):active,
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+  background-color: #d8b4fe;
+  border-color: #c084fc;
+  color: #6d28d9;
+  box-shadow: none;
+}
+
+.fc .fc-button-primary:disabled {
+  background-color: #f3e8ff;
+  border-color: #e9d5ff;
+  opacity: 0.5;
+}
+
+.fc .fc-button-primary:focus {
+  box-shadow: 0 0 0 0.25rem rgba(139, 92, 246, 0.2);
+}
+
+/* ============================================
+     4. 캘린더 헤더 (요일) 스타일
+     ============================================ */
+.fc .fc-col-header-cell {
+  padding: 0.75rem 0;
+  background-color: #fcfaff;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.fc .fc-col-header-cell-cushion {
+  padding: 0.5rem 0;
+  font-weight: 600;
+  color: #4b5563;
+  text-decoration: none;
+}
+
+/* 주말 헤더 색상 */
+.fc .fc-day-sun .fc-col-header-cell-cushion {
+  color: #ef4444;
+}
+
+.fc .fc-day-sat .fc-col-header-cell-cushion {
+  color: #3b82f6;
+}
+
+/* 주말 날짜 텍스트 색상 */
+.fc .fc-day-sun .fc-daygrid-day-number {
+  color: #ef4444 !important;
+}
+
+.fc .fc-day-sat .fc-daygrid-day-number {
+  color: #3b82f6 !important;
+}
+
+/* ============================================
+     5. 날짜 셀 스타일
+     ============================================ */
+.fc .fc-daygrid-day {
+  transition: background-color 0.15s;
+}
+
+.fc .fc-daygrid-day:hover {
+  background-color: #fcfaff;
+  cursor: pointer;
+}
+
+.fc .fc-daygrid-day.fc-day-today {
+  background-color: #f3e8ff;
+}
+
+.fc .fc-daygrid-day-number {
+  font-size: 0.875rem;
+  padding: 0.25rem 0.5rem;
+  color: #4b5563;
+  text-decoration: none;
+  font-weight: 500;
+  text-align: left;
+  justify-content: flex-start;
+  position: absolute;
+  top: 0.25rem;
+  left: 0.25rem;
+}
+
+.fc .fc-day-today .fc-daygrid-day-number {
+  color: #6d28d9;
+  font-weight: 600;
+}
+
+.fc .fc-daygrid-day-frame {
+  min-height: 9rem; /* 셀 높이 증가 */
+  position: relative;
+  padding-top: 2rem; /* 날짜 숫자 아래로 내용 표시될 공간 확보 */
+}
+
+/* 일간 뷰(timeGridDay) 슬롯 배경을 완전 흰색으로 덮어쓰기 */
+.fc .fc-timeGridDay-view .fc-timegrid-slot-lane {
+  background-color: white !important;
+}
+/* odd/even 교차 줄무늬도 흰색 유지 */
+.fc .fc-timeGridDay-view .fc-timegrid-slot-lane:nth-child(odd) {
+  background-color: white !important;
+}
+
+.fc .fc-dayGridMonth-view td.fc-day-today {
+  background-color: rgba(147, 51, 234, 0.07) !important;
+}
+
+/* ============================================
+     6. 타임그리드 뷰 (주간, 일간) 스타일
+     ============================================ */
+.fc .fc-timegrid-slot {
+  height: 2.5em; /* 시간 슬롯 높이 조정 (시간이 많아져서 약간 줄임) */
+}
+
+.fc .fc-timegrid-slot-label {
+  vertical-align: middle;
+}
+
+.fc .fc-timegrid-slot-label-cushion {
+  font-size: 0.875rem; /* 조금 더 크고 선명하게 */
+  font-weight: 500;
+  color: #4c1d95; /* 연보라 컨셉에 맞춘 진한 보라색 */
+  letter-spacing: -0.02em;
+  padding-left: 4px;
+}
+
+.fc .fc-timegrid-now-indicator-line {
+  border-color: #ef4444 !important;
+}
+
+/* 화살표(arrow)도 동일 톤으로 통일 */
+.fc .fc-timegrid-now-indicator-arrow {
+  border-color: #ef4444 !important;
+  background-color: #ef4444 !important;
+}
+
+/* ============================================
+     7. 이벤트 공통 스타일
+     ============================================ */
+
+.fc .fc-timegrid-event .fc-event-title,
+.fc .fc-timegrid-event .fc-event-time,
+.fc .fc-event-title,
+.fc .fc-event-time,
+.fc .fc-event-main,
+.fc .fc-event-main-frame,
+.fc .fc-list-event-title a,
+.fc-daygrid-dot-event .fc-event-title,
+.fc-daygrid-event .fc-event-title {
+  color: #111827 !important; /* 진한 검정(다크 그레이) - 모든 이벤트 텍스트 통일 */
+}
+
+/* 모던 이벤트 스타일 - 모든 뷰에서 일관된 스타일 적용 */
+.fc .fc-event {
+  border-radius: 6px;
+  border: none !important;
+  font-size: 0.875rem;
+  cursor: pointer;
+  margin: 2px 0.25rem;
+  padding: 0.2rem 0.1rem; /* 좌우 패딩을 줄임 */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: all 0.25s cubic-bezier(0.2, 0, 0.2, 1);
+  display: flex !important;
+  align-items: center;
+  background: transparent !important;
+  color: #333333e0 !important;
+  min-height: 22px; /* 최소 높이 설정 */
+  position: relative;
+  overflow: hidden; /* 내용 넘침 방지 */
+}
+
+/* hover 시 */
+.fc .fc-event:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+/* 시간 + 제목 정렬 - 모든 뷰에서 일관된 레이아웃 */
+.fc .fc-event-main-frame {
+  display: flex !important;
+  flex-direction: row;
+  align-items: center;
+  gap: 1px; /* 간격 축소 */
+  width: 100%;
+  overflow: hidden; /* 넘침 방지 */
+  min-height: 18px; /* 최소 높이 확보 */
+  box-sizing: border-box; /* 사이즈 계산에 패딩, 테두리 포함 */
+}
+
+/* 시간 - 모든 뷰에서 일관된 스타일 적용 */
+.fc .fc-event-time {
+  font-size: 0.75rem;
+  font-weight: 400; /* 더 얇게 설정 */
+  color: #4b5563;
+  min-width: 42px; /* 시간 표시 공간 확보 (약간 더 늘림) */
+  flex-shrink: 0;
+  margin-left: 0.25rem; /* 더 왼쪽으로 */
+  margin-right: 0.15rem; /* 간격 줄임 */
+  text-align: left;
+  padding-left: 2px; /* 살짝 여백 추가 */
+}
+
+.fc .fc-event-title {
+  flex-grow: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500; /* 600에서 500으로 변경하여 더 얇게 */
+  max-width: calc(
+    100% - 45px
+  ); /* 주 뷰에서 넘치는 현상 방지, 시간 영역 증가에 맞춰 조정 */
+  padding-right: 4px; /* 오른쪽 여백 추가 */
+  font-size: 0.8rem; /* 폰트 사이즈 명시적 설정 */
+}
+
+/* ─────────────────────────────────────────────
+   이벤트 타입별 배경색 (15% 투명)
+───────────────────────────────────────────── */
+.fc .fc-event.personal,
+.fc .fc-event.event-personal,
+.fc .fc-daygrid-event.personal,
+.fc .fc-daygrid-event.event-personal,
+.fc .fc-timegrid-event .fc-event.personal,
+.fc .fc-timegrid-event .fc-event.event-personal {
+  background-color: rgba(147, 51, 234, 0.1) !important; /* #9333ea */
+}
+
+.fc .fc-event.department,
+.fc .fc-event.event-department,
+.fc .fc-daygrid-event.department,
+.fc .fc-daygrid-event.event-department,
+.fc .fc-timegrid-event .fc-event.department,
+.fc .fc-timegrid-event .fc-event.event-department {
+  background-color: rgba(255, 216, 177, 0.25) !important; /* #FFD8B1 */
+}
+
+.fc .fc-event.company,
+.fc .fc-event.event-company,
+.fc .fc-daygrid-event.company,
+.fc .fc-daygrid-event.event-company,
+.fc .fc-timegrid-event .fc-event.company,
+.fc .fc-timegrid-event .fc-event.event-company {
+  background-color: rgba(236, 72, 153, 0.25) !important; /* #ec4899 */
+}
+
+/* ─────────────────────────────────────────────
+   이벤트 상태별 왼쪽 엣지(border-left)
+───────────────────────────────────────────── */
+.fc .fc-event.status-important-meeting,
+.fc .status-important-meeting,
+.fc .fc-timegrid-event .fc-event.status-important-meeting {
+  border-left: 3px solid #e91e63 !important;
+}
+
+.fc .fc-event.status-meeting,
+.fc .status-meeting,
+.fc .fc-timegrid-event .fc-event.status-meeting {
+  border-left: 3px solid #ff9800 !important;
+}
+
+.fc .fc-event.status-business-trip,
+.fc .status-business-trip,
+.fc .fc-timegrid-event .fc-event.status-business-trip {
+  border-left: 3px solid #3b82f6 !important;
+}
+
+.fc .fc-event.status-completed,
+.fc .status-completed,
+.fc .fc-timegrid-event .fc-event.status-completed {
+  border-left: 3px solid #10b981 !important;
+}
+
+.fc .fc-event.status-canceled,
+.fc .status-canceled,
+.fc .fc-timegrid-event .fc-event.status-canceled {
+  border-left: 3px solid #9e9e9e !important;
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.fc .fc-event.status-vacation,
+.fc .status-vacation,
+.fc .fc-timegrid-event .fc-event.status-vacation {
+  border-left: 3px solid #00bcd4 !important;
+}
+
+.fc .fc-event.status-none,
+.fc .status-none,
+.fc .fc-timegrid-event .fc-event.status-none {
+  border-left: 3px solid #bdbdbd !important;
+}
+
+/* ============================================
+     10. 모바일 반응형 스타일
+     ============================================ */
+@media (max-width: 640px) {
+  .fc .fc-toolbar.fc-header-toolbar {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .fc .fc-toolbar-chunk {
+    display: flex;
+    justify-content: center;
+  }
+
+  .fc .fc-daygrid-day-frame {
+    min-height: 4rem !important;
+  }
+
+  .fc .fc-daygrid-body {
+    padding: 0 !important;
+  }
+}
+
+/* ============================================
+     11. 추가 레이아웃 개선 스타일
+     ============================================ */
+/* 여백 최소화 */
+.fc .fc-daygrid-body {
+  padding: 0 !important;
+}
+
+/* 스크롤바 숨기기 (WebKit 브라우저) */
+.fc .fc-scroller::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+/* 스크롤바 숨기기 (Firefox) */
+.fc .fc-scroller {
+  scrollbar-width: none;
+}
+
+/* (1) 활성화된 뷰 하니스에도 flex/height 강제 */
+.fc .fc-view-harness-active {
+  flex: 1 !important;
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+/* Day/Week 뷰 배경색을 흰색으로 설정 */
+.fc .fc-timegrid-body {
+  background-color: #ffffff !important;
+}
+
+/* 현재 시간 슬롯 강조 스타일 */
+.current-hour {
+  background-color: rgba(147, 51, 234, 0.1) !important;
+}
+
+/* 이벤트 텍스트 색상을 모두 검정색으로 통일 */
+.fc .fc-event {
+  color: #333333e0 !important;
+}
+
+/* ============================================
+     12. 현대적인 레이아웃 개선
+     ============================================ */
+/* 오늘 버튼 */
+.fc .fc-today-button {
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  color: white;
+  font-weight: 600;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.fc .fc-today-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(109, 40, 217, 0.2);
+}
+
+/* 더 깔끔한 날짜 셀 */
+.fc .fc-scrollgrid {
+  border: none !important;
+}
+
+.fc .fc-scrollgrid-section > * {
+  border-width: 0px !important;
+}
+
+.fc .fc-daygrid-day {
+  border-width: 1px !important;
+  border-color: #f3f4f6 !important;
+}
+
+/* 일정 항목 개선 */
+.fc .fc-event {
+  margin-top: 3px;
+  margin-bottom: 3px;
+  border-radius: 6px;
+  padding: 2px;
+}
+
+/* ============================================
+     주/일 뷰 이벤트 높이 제한
+     ============================================ */
+/* 주간뷰, 일간뷰에서의 이벤트 최소 높이 설정 */
+.fc-timeGridWeek-view .fc-event,
+.fc-timeGridDay-view .fc-event {
+  min-height: 22px;
+}
+
+/* 주간뷰에서 제목이 넘치지 않도록 */
+.fc-timeGridWeek-view .fc-event-title {
+  max-width: calc(100% - 45px);
+  padding-right: 2px;
+  font-size: 0.8rem;
+}
+
+/* 주간뷰에서 시간 표시 최적화 */
+.fc-timeGridWeek-view .fc-event-time {
+  font-size: 0.73rem;
+  min-width: 42px; /* 시간 영역 확보 */
+  font-weight: 400;
+}
+
+/* 일간뷰에서 이벤트 레이블 최적화 */
+.fc-timeGridDay-view .fc-event-title {
+  max-width: calc(100% - 45px);
+  font-size: 0.85rem; /* 일간 뷰에선 약간 더 크게 */
+}
+
+.fc-timeGridDay-view .fc-event-time {
+  min-width: 42px;
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+/* 월간 뷰에서 이벤트 레이블 최적화 */
+.fc-dayGridMonth-view .fc-event-title {
+  max-width: calc(100% - 45px);
+  font-size: 0.75rem;
+}
+
+.fc-dayGridMonth-view .fc-event-time {
+  min-width: 42px;
+  font-size: 0.7rem;
+  font-weight: 400;
+}
+
+/* ───────────────────────────────────────────────
+     Schedule 전용: 공통 MainLayout <main> 여백 설정
+  ─────────────────────────────────────────────── */
+body > div > main {
+  margin-left: 0 !important; /* 사이드바와의 간격 증가 (16px → 24px) */
+  margin-right: 245px !important;
+  padding: 0px, 40px, 0px, 40px !important; /* 내부 여백 증가 (20px → 24px) */
+  flex: 1 !important;
+  height: calc(100% - 48px) !important;
+  overflow: hidden !important;
+  border-radius: 16px !important; /* 테두리 둥글기 증가 (12px → 16px) */
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important; /* 그림자 효과 미세 조정 */
+  background-color: #ffffff !important;
+}
+
+/* ============================================
+    추가: 이벤트 스타일 재정의
+    ============================================ */
+
+/* 모든 뷰에서 이벤트 시간 표시 강제 설정 */
+.fc-v-event .fc-event-time,
+.fc-h-event .fc-event-time {
+  display: inline-block !important;
+  font-size: 0.75rem !important;
+  font-weight: 400 !important;
+  color: #4b5563 !important;
+  min-width: 42px !important;
+  margin-right: 4px !important;
+}
+
+/* 모든 이벤트에서 시간 + 제목의 배치 통일 */
+.fc-daygrid-event .fc-event-main {
+  display: flex !important;
+  align-items: center !important;
+  overflow: hidden !important;
+}
+
+/* 월간 뷰 테이블 셀 여백 최적화 */
+.fc-dayGridMonth-view .fc-daygrid-day-events {
+  padding-top: 0.25rem !important;
+  padding-bottom: 0.25rem !important;
+  margin-top: 0 !important;
+}
+
+/* 월간 뷰 이벤트 아이템 간격 조정 */
+.fc-dayGridMonth-view .fc-event {
+  margin-bottom: 2px !important;
+  margin-top: 2px !important;
+}
+
+/* ============================================
+   뷰 타입별 최적화된 이벤트 스타일
+   ============================================ */
+/* 커스텀 렌더러 적용 시 공통 스타일 */
+.modern-event {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 22px;
+  border-radius: 6px;
+  padding: 2px 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* 메인 프레임 레이아웃 */
+.event-main-frame {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* 이벤트 시간 스타일 */
+.event-time {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #4b5563;
+  min-width: 42px;
+  margin-right: 4px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* 이벤트 내용 컨테이너 */
+.event-content {
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+/* 이벤트 제목 스타일 */
+.event-title {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 이벤트 설명 스타일 (일간/주간 뷰에서만 표시) */
+.event-description {
+  font-size: 0.75rem;
+  color: #6b7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+
+/* 뷰 타입별 최적화 */
+.view-dayGrid-month .event-time {
+  font-size: 0.7rem;
+  min-width: 40px;
+}
+
+.view-dayGrid-month .event-title {
+  font-size: 0.75rem;
+}
+
+.view-timeGrid-week .event-time {
+  font-size: 0.75rem;
+  min-width: 42px;
+}
+
+.view-timeGrid-day .event-time {
+  font-size: 0.8rem;
+  min-width: 44px;
+}
+
+.view-timeGrid-day .event-title {
+  font-size: 0.85rem;
+}
+
+/* 모바일 환경 최적화 */
+@media (max-width: 640px) {
+  .modern-event {
+    min-height: 18px;
+    padding: 1px 3px;
+  }
+
+  .event-time {
+    min-width: 36px;
+    font-size: 0.7rem;
+  }
+
+  .event-title {
+    font-size: 0.7rem;
+  }
+
+  .event-description {
+    display: none; /* 모바일에서는 설명 숨김 */
+  }
+}
+
+/* ============================================
+   브라우저 호환성 및 모바일 최적화 추가 스타일
+   ============================================ */
+
+/* 크로스 브라우저 렌더링을 위한 추가 CSS */
+.fc .fc-daygrid-event-harness {
+  margin-top: 0 !important;
+}
+
+/* Safari 및 Firefox에서 이벤트 위치 일관성 */
+.fc-daygrid-event-harness .fc-daygrid-event {
+  left: 0 !important;
+  right: 0 !important;
+}
+
+/* 화면 크기별 최적화 */
+@media (max-width: 768px) {
+  /* 중간 크기 화면 스타일 */
+  .fc .fc-toolbar-title {
+    font-size: 1.25rem;
+  }
+
+  .fc .fc-toolbar.fc-header-toolbar {
+    padding: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .fc .fc-daygrid-day-frame {
+    min-height: 6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  /* 더 작은 모바일 화면용 스타일 */
+  .fc .fc-toolbar-title {
+    font-size: 1rem;
+  }
+
+  .fc .fc-col-header-cell-cushion {
+    font-size: 0.75rem;
+    padding: 0.25rem 0;
+  }
+
+  .fc .fc-daygrid-day-number {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.25rem;
+  }
+
+  .fc .fc-daygrid-day-frame {
+    min-height: 4.5rem;
+    padding-top: 1.5rem;
+  }
+
+  /* 모바일에서 이벤트 높이와 패딩 최적화 */
+  .fc .fc-event {
+    min-height: 18px;
+    margin: 1px 1px;
+    padding: 1px 2px;
+  }
+
+  /* 모바일에서 시간/제목 크기 최적화 */
+  .fc .fc-event-time {
+    font-size: 0.65rem;
+    min-width: 35px;
+  }
+
+  .fc .fc-event-title {
+    font-size: 0.65rem;
+    max-width: calc(100% - 38px);
+  }
+}
+
+/* 아이폰 Safari 특화 수정 - 이벤트 배치 일관성 */
+@supports (-webkit-touch-callout: none) {
+  .fc .fc-event {
+    margin: 1px 2px !important;
+  }
+
+  .fc .fc-daygrid-event-harness {
+    margin: 0 !important;
+    padding: 1px 0 !important;
+  }
+}
+
+/* Firefox 특화 수정 - 이벤트 렌더링 일관성 */
+@-moz-document url-prefix() {
+  .fc .fc-event-main-frame {
+    display: flex !important;
+  }
+
+  .fc .fc-event-time {
+    display: inline-block !important;
+  }
+
+  .fc .fc-event-title {
+    display: inline-block !important;
+  }
+}

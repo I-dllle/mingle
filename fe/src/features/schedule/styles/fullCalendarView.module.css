@@ -1,0 +1,281 @@
+/* ModernCalendarView.module.css - 모던 캘린더 컴포넌트 전용 스타일 */
+
+/* 기본 레이아웃 */
+.calendarContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: white;
+  overflow: hidden;
+}
+
+.calendarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem; /* 여백 증가 (1.25rem 1.5rem → 1.5rem 2rem) */
+  background-color: white;
+  border-bottom: 1px solid #f3f4f6;
+  width: 100%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); /* 그림자 효과 약간 강화 */
+}
+
+.calendarTitle {
+  font-size: 1.75rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, #6d28d9, #8b5cf6);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.searchButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.625rem;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 9999px;
+  color: #6b7280;
+  font-size: 1rem;
+  line-height: 1;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.searchButton:hover {
+  background-color: #f3e8ff;
+  border-color: #e9d5ff;
+  color: #6d28d9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dateControls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.dateButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background-color: #f9fafb;
+  border-radius: 50%;
+  color: #6d28d9;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dateButton:hover {
+  background-color: #f3e8ff;
+}
+
+.todayButton {
+  background-color: #f3e8ff;
+  color: #6d28d9;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.todayButton:hover {
+  background-color: #e9d5ff;
+}
+
+/* 필터 스타일 */
+.filterSection {
+  padding: 1.25rem 2rem; /* 여백 증가 (1rem 1.5rem → 1.25rem 2rem) */
+  background-color: #ffffff;
+  border-bottom: 1px solid #f3f4f6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  width: 100%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04); /* 그림자 약간 강화 */
+}
+
+.viewSelector {
+  display: flex;
+  background-color: #f3f4f6;
+  border-radius: 0.75rem;
+  padding: 0.25rem;
+  border: 1px solid #e9e9e9;
+}
+
+.viewButton {
+  padding: 0.5rem 1.25rem;
+  border: none;
+  background-color: transparent;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.viewButton.active {
+  background-color: white;
+  color: #6d28d9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.typeFilters {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.typeButton {
+  padding: 0.5rem 1.25rem;
+  border: none;
+  background-color: #f9fafb;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid #e9e9e9;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.typeButton.active {
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 2px 4px rgba(109, 40, 217, 0.2);
+}
+
+.typeButton:hover:not(.active) {
+  background-color: #f3e8ff;
+  transform: translateY(-1px);
+}
+
+/* 버튼 지시자 컬러 */
+.typeIndicator {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+}
+
+.indicatorAll {
+  background: linear-gradient(135deg, #9333ea 33%, #ffd8b1 66%, #ec4899 100%);
+}
+
+.indicatorCompany {
+  background-color: #ec4899;
+}
+
+.indicatorDepartment {
+  background-color: #ffd8b1;
+}
+
+.indicatorPersonal {
+  background-color: #9333ea;
+}
+
+/* 캘린더 래퍼 설정 */
+.calendarWrapper {
+  flex: 1 1 auto; /* 남은 공간을 전부 차지 */
+  min-height: 0; /* flex 자식에서 overflow가 작동하게 해줌 */
+  overflow-y: auto; /* 달력 자체가 높아지면 여기만 스크롤 */
+  padding: 0 1.5rem; /* 패딩 증가 (1rem → 1.5rem) */
+}
+
+/* FullCalendar 내부 요소들에 flex:1; height:100% 강제 적용 */
+.calendarWrapper :global(.fc-view-harness),
+.calendarWrapper :global(.fc-view-harness-active),
+.calendarWrapper :global(.fc-scrollgrid),
+.calendarWrapper :global(.fc-scroller),
+.calendarWrapper :global(.fc-scrollgrid-sync-table),
+.calendarWrapper :global(.fc-daygrid-body) {
+  flex: 1 !important;
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+/* 새 일정 버튼 */
+.newScheduleButton {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background-color: #8b5cf6;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+  z-index: 10;
+}
+
+.newScheduleButton:hover {
+  background-color: #7c3aed;
+  transform: translateY(-2px);
+}
+
+/* 반응형 스타일 */
+@media (max-width: 768px) {
+  .filterSection {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .viewSelector,
+  .typeFilters {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+  }
+
+  .typeFilters {
+    justify-content: flex-start;
+  }
+
+  .calendarHeader {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .calendarWrapper :global(.fc-view-harness-active) {
+    flex: 1 !important;
+    height: 100% !important;
+    min-height: 0 !important;
+  }
+
+  .calendarWrapper :global(.fc-scrollgrid-sync-table) {
+    height: 100% !important;
+  }
+
+  .footerWrapper {
+    flex: 0 0 auto;
+    /* 필요하면 padding/margin 조절 */
+  }
+}

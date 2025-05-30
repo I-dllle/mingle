@@ -1,10 +1,6 @@
-// src/app/(main)/schedule/page.tsx
-// 📅 월별 일정 페이지 (단독 진입 URL: /main/schedule)
-
-'use client';
-
-import React from 'react';
+"use client";
 
 export default function SchedulePage() {
-  return <div>스케줄 페이지입니다. 여기가 메인 화면이에요.</div>;
+  // layout.tsx에서 FullCalendarView를 직접 렌더링하므로 이 페이지는 빈 컴포넌트로 설정
+  return null;
 }
