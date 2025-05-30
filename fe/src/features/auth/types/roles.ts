@@ -1,3 +1,8 @@
+export enum Role {
+  ADMIN = 'ADMIN',
+  USER = 'USER',
+}
+
 export enum DepartmentRole {
   MEMBER = 'MEMBER',
   TEAM_LEAD = 'TEAM_LEAD',
