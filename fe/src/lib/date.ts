@@ -1,15 +1,14 @@
+// libs/date.ts
+
 import {
   format,
   parseISO,
   formatISO,
   isSameDay as dfIsSameDay,
-  getHours,
-  getMinutes,
   set,
-  startOfDay,
-  endOfDay,
 } from "date-fns";
 import { ko } from "date-fns/locale";
+import { toDate as zonedTimeToUtc, format as formatTz } from "date-fns-tz";
 
 /**
  * 날짜 포맷 (기본: yyyy-MM-dd)
@@ -26,8 +25,16 @@ export const formatDate = (
  * 시간 포맷 (24시간 HH:mm)
  */
 export const formatTime = (time: Date | string): string => {
-  const d = typeof time === "string" ? parseISO(time) : time;
-  return format(d, "HH:mm");
+  if (typeof time === "string") {
+    // "HH:mm" 형식일 경우 그대로 반환
+    if (/^\d{2}:\d{2}$/.test(time)) {
+      return time;
+    }
+    // ISO 문자열일 경우 파싱
+    return format(parseISO(time), "HH:mm");
+  }
+
+  return format(time, "HH:mm");
 };
 
 /**

@@ -1,6 +1,6 @@
 import React from "react";
 import { Room } from "@/features/room/types/room";
-import { RoomTypeLabel } from "@/features/room/constants/roomLabels";
+import { RoomTypeLabel } from "@/features/room/types/roomLabels";
 import { PencilIcon, TrashIcon } from "lucide-react";
 
 interface RoomTableRowProps {

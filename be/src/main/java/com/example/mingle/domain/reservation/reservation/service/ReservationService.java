@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,6 +86,33 @@ public class ReservationService {
         // DTO 변환 후 반환
         return toResponseDto(saved);
     }
+
+    // 나의 예약 조회
+    @Transactional(readOnly = true)
+    public List<ReservationResponseDto> getMyReservations(Long userId) {
+        return reservationRepository.findByUserId(userId).stream()
+                .map(this::toResponseDto)
+                .toList();
+    }
+
+
+    //에약 상세 조회
+    @Transactional(readOnly = true)
+    public ReservationResponseDto getReservationById(Long reservationId, Long userId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ApiException(ErrorCode.RESERVATION_NOT_FOUND));
+
+        if (!reservation.getUser().getId().equals(userId)) {
+            throw new ApiException(ErrorCode.ACCESS_DENIED);
+        }
+
+        if (reservation.getReservationStatus() == ReservationStatus.CANCELED) {
+            throw new ApiException(ErrorCode.REQUEST_NOT_FOUND);
+        }
+
+        return toResponseDto(reservation);
+    }
+
 
     // 특정 날짜와 룸 타입에 따른 모든 방 예약 리스트 조회
     @Transactional(readOnly = true)
@@ -193,6 +221,55 @@ public class ReservationService {
         reservation.setReservationStatus(ReservationStatus.CANCELED);
         reservationRepository.save(reservation);
     }
+
+    // ==================== 관리자 전용 ======================
+
+    // 관리자 - 월간 전체 예약 조회
+    @Transactional(readOnly = true)
+    public List<ReservationResponseDto> getAllReservationsByMonth(YearMonth month) {
+        LocalDate start = month.atDay(1);
+        LocalDate end = month.atEndOfMonth();
+        return reservationRepository.findAllByDateBetween(start, end).stream()
+                .map(this::toResponseDto)
+                .toList();
+    }
+
+    // 관리자 - 예약 수정
+    @Transactional
+    public ReservationResponseDto adminUpdateReservation(Long reservationId, ReservationRequestDto dto) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ApiException(ErrorCode.RESERVATION_NOT_FOUND));
+
+        boolean overlap = reservationRepository.existsOverlappingReservationExceptThisWithStatus(
+                reservation.getRoom().getId(),
+                dto.getDate(),
+                dto.getStartTime(),
+                dto.getEndTime(),
+                reservationId,
+                ReservationStatus.CONFIRMED
+        );
+        if (overlap) {
+            throw new ApiException(ErrorCode.RESERVATION_TIME_CONFLICT);
+        }
+
+        reservation.setDate(dto.getDate());
+        reservation.setStartTime(dto.getStartTime());
+        reservation.setEndTime(dto.getEndTime());
+        reservation.setTitle(dto.getTitle());
+
+        return toResponseDto(reservationRepository.save(reservation));
+    }
+
+    // 관리자 - 예약 강제 삭제
+    @Transactional
+    public void adminCancelReservation(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ApiException(ErrorCode.RESERVATION_NOT_FOUND));
+        reservation.setReservationStatus(ReservationStatus.CANCELED);
+        reservationRepository.save(reservation);
+    }
+
+
 
 
     // 엔티티를 responseDto로 변환 메서드
