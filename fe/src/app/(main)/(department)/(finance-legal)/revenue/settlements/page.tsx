@@ -50,7 +50,17 @@ export default function SettlementsPage() {
     setError(null);
     try {
       const data = await settlementService.getAllSettlements();
-      setSettlements(data);
+      console.log("정산 데이터:", data); // 디버깅용 로그
+
+      // 백엔드가 페이지네이션된 응답을 반환하는 경우 처리
+      if (data && typeof data === "object" && "content" in data) {
+        setSettlements((data as any).content);
+      } else if (Array.isArray(data)) {
+        setSettlements(data);
+      } else {
+        console.error("예상치 못한 데이터 형태:", data);
+        setSettlements([]);
+      }
     } catch (error) {
       console.error("정산 목록 조회 실패:", error);
       setError("정산 목록을 불러오는데 실패했습니다.");
@@ -78,52 +88,64 @@ export default function SettlementsPage() {
       setLoading(false);
     }
   };
-
   // 필터링된 정산 목록
-  const filteredSettlements = settlements
-    .filter((settlement) => {
-      // 상태 필터
-      if (statusFilter === "pending" && settlement.isSettled) return false;
-      if (statusFilter === "completed" && !settlement.isSettled) return false;
+  const filteredSettlements = Array.isArray(settlements)
+    ? settlements
+        .filter((settlement) => {
+          // 상태 필터
+          if (statusFilter === "pending" && settlement.isSettled) return false;
+          if (statusFilter === "completed" && !settlement.isSettled)
+            return false;
 
-      // 날짜 필터
-      if (dateFilter.startDate && settlement.date < dateFilter.startDate)
-        return false;
-      if (dateFilter.endDate && settlement.date > dateFilter.endDate)
-        return false;
+          // 날짜 필터
+          if (dateFilter.startDate && settlement.date < dateFilter.startDate)
+            return false;
+          if (dateFilter.endDate && settlement.date > dateFilter.endDate)
+            return false;
 
-      return true;
-    })
-    .sort((a, b) => {
-      let comparison = 0;
+          return true;
+        })
+        .sort((a, b) => {
+          let comparison = 0;
 
-      switch (sortBy) {
-        case "date":
-          comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
-          break;
-        case "amount":
-          comparison = a.amount - b.amount;
-          break;
-        case "status":
-          comparison = Number(a.isSettled) - Number(b.isSettled);
-          break;
-      }
+          switch (sortBy) {
+            case "date":
+              comparison =
+                new Date(a.date).getTime() - new Date(b.date).getTime();
+              break;
+            case "amount":
+              comparison = a.amount - b.amount;
+              break;
+            case "status":
+              comparison = Number(a.isSettled) - Number(b.isSettled);
+              break;
+          }
 
-      return sortOrder === "asc" ? comparison : -comparison;
-    });
-
+          return sortOrder === "asc" ? comparison : -comparison;
+        })
+    : [];
   // 통계 계산
   const statistics = {
-    total: settlements.length,
-    completed: settlements.filter((s) => s.isSettled).length,
-    pending: settlements.filter((s) => !s.isSettled).length,
-    totalAmount: settlements.reduce((sum, s) => sum + s.amount, 0),
-    completedAmount: settlements
-      .filter((s) => s.isSettled)
-      .reduce((sum, s) => sum + s.amount, 0),
-    pendingAmount: settlements
-      .filter((s) => !s.isSettled)
-      .reduce((sum, s) => sum + s.amount, 0),
+    total: Array.isArray(settlements) ? settlements.length : 0,
+    completed: Array.isArray(settlements)
+      ? settlements.filter((s) => s.isSettled).length
+      : 0,
+    pending: Array.isArray(settlements)
+      ? settlements.filter((s) => !s.isSettled).length
+      : 0,
+    totalAmount: Array.isArray(settlements)
+      ? settlements.reduce((sum, s) => sum + s.amount, 0)
+      : 0,
+    completedAmount: Array.isArray(settlements)
+      ? settlements
+          .filter((s) => s.isSettled)
+          .reduce((sum, s) => sum + s.amount, 0)
+      : 0,
+    pendingAmount: Array.isArray(settlements)
+      ? settlements
+          .filter((s) => !s.isSettled)
+          .reduce((sum, s) => sum + s.amount, 0)
+      : 0,
   }; // 정산 생성
   const handleCreateSettlement = async () => {
     if (newSettlement.contractId <= 0) {

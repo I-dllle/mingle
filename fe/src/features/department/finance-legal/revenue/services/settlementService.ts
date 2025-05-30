@@ -224,7 +224,17 @@ const getSettlementDetailsByContract = async (
 
 // 모든 정산 리스트 조회
 const getAllSettlements = async (): Promise<SettlementDto[]> => {
-  return await apiClient<SettlementDto[]>("/finance", { method: "GET" });
+  const response = await apiClient<any>("/finance", { method: "GET" });
+
+  // 백엔드가 페이지네이션된 응답을 반환하는 경우 처리
+  if (response && typeof response === "object" && "content" in response) {
+    return response.content;
+  } else if (Array.isArray(response)) {
+    return response;
+  } else {
+    console.warn("예상치 못한 정산 데이터 형태:", response);
+    return [];
+  }
 };
 
 export const settlementService = {

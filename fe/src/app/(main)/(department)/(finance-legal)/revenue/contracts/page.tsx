@@ -503,9 +503,10 @@ export default function ContractsPage() {
                             key={index}
                             className="hover:bg-gray-50 transition-colors"
                           >
+                            
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                               #{detail.settlementId}
-                            </td>{" "}
+                            </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               {detail.userId ? (
                                 `#${detail.userId}`
