@@ -34,7 +34,7 @@ export default function ContractTable({
       [ContractStatus.REVIEW]: "검토 중",
       [ContractStatus.SIGNED_OFFLINE]: "오프라인 서명",
       [ContractStatus.SIGNED]: "서명됨",
-      [ContractStatus.CONFIRMED]: "확인됨",
+      [ContractStatus.CONFIRMED]: "확정됨",
       [ContractStatus.ACTIVE]: "활성",
       [ContractStatus.EXPIRED]: "만료됨",
       [ContractStatus.PENDING]: "대기 중",
@@ -57,12 +57,65 @@ export default function ContractTable({
     };
     return colorMap[status] || "bg-gray-100 text-gray-800";
   };
-
   const formatContractId = (id: number) => {
     return `CT-${String(id).padStart(6, "0")}`;
   };
 
-  const displayContracts = contracts.length > 0 ? contracts : allContracts;
+  // 정렬 함수
+  const sortContracts = (
+    contractsToSort: any[],
+    field: string,
+    direction: "asc" | "desc"
+  ) => {
+    return [...contractsToSort].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (field) {
+        case "id":
+          aValue = a.id;
+          bValue = b.id;
+          break;
+        case "startDate":
+          aValue = new Date(a.startDate).getTime();
+          bValue = new Date(b.startDate).getTime();
+          break;
+        case "endDate":
+          aValue = new Date(a.endDate).getTime();
+          bValue = new Date(b.endDate).getTime();
+          break;
+        case "title":
+          aValue = a.title?.toLowerCase() || "";
+          bValue = b.title?.toLowerCase() || "";
+          break;
+        case "createdAt":
+          aValue = new Date(a.createdAt || a.id).getTime(); // createdAt이 없으면 id로 대체
+          bValue = new Date(b.createdAt || b.id).getTime();
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) return direction === "asc" ? -1 : 1;
+      if (aValue > bValue) return direction === "asc" ? 1 : -1;
+      return 0;
+    });
+  };
+
+  // 표시할 계약 목록 결정 및 정렬 적용
+  const getDisplayContracts = () => {
+    const contractsToDisplay = contracts.length > 0 ? contracts : allContracts;
+
+    // contracts가 있는 경우는 백엔드에서 이미 정렬되어 왔으므로 그대로 사용
+    if (contracts.length > 0) {
+      return contractsToDisplay;
+    }
+
+    // allContracts의 경우 프론트엔드에서 정렬 적용
+    return sortContracts(contractsToDisplay, sortField, sortDirection);
+  };
+
+  const displayContracts = getDisplayContracts();
   if (loading) {
     return (
       <div className="bg-white shadow-sm rounded-lg overflow-hidden">

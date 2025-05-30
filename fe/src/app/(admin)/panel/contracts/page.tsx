@@ -23,7 +23,7 @@ import ContractAlerts from "@/features/admin/components/contracts/ContractAlerts
 
 export default function AdminContractsPage() {
   const router = useRouter();
-  
+
   // 상태 관리
   const [contracts, setContracts] = useState<ContractResponse[]>([]);
   const [allContracts, setAllContracts] = useState<ContractSimpleDto[]>([]);
@@ -92,7 +92,7 @@ export default function AdminContractsPage() {
         ...condition,
         contractCategory: category,
       };
-      
+
       const response = await contractService.getFilteredContracts(
         updatedCondition,
         page,
@@ -187,7 +187,7 @@ export default function AdminContractsPage() {
       fetchAllContracts(page);
     }
   };
-  
+
   // 통계 업데이트
   const updateStats = () => {
     const total = contracts.length > 0 ? totalElements : allContracts.length;
@@ -219,7 +219,7 @@ export default function AdminContractsPage() {
     } else if (activeTab === "expiring") {
       fetchExpiringContracts(true);
     }
-    
+
     // 카테고리가 변경될 때 만료 예정 계약을 항상 업데이트 (만료 개수 표시를 위해)
     if (activeTab !== "expiring") {
       fetchExpiringContracts(false);
@@ -238,14 +238,16 @@ export default function AdminContractsPage() {
       fetchExpiringContracts(true);
     }
   }, [activeTab]);
-
   // 정렬 변경 시 재조회
   useEffect(() => {
     if (contracts.length > 0) {
       fetchFilteredContracts(currentPage, searchCondition);
+    } else if (allContracts.length > 0) {
+      // allContracts의 경우 프론트엔드에서 정렬되므로 재조회 불필요
+      // ContractTable 컴포넌트에서 정렬 처리
     }
   }, [sortField, sortDirection]);
-  
+
   // 통계 업데이트
   useEffect(() => {
     updateStats();
@@ -268,7 +270,7 @@ export default function AdminContractsPage() {
           {/* 카테고리 선택 */}{" "}
           <div className="flex items-center gap-4">
             {" "}
-            {/* 알림 시스템 */}            
+            {/* 알림 시스템 */}
             <ContractAlerts
               contracts={contracts.length > 0 ? contracts : []}
               onContractClick={handleViewDetail}
@@ -341,7 +343,7 @@ export default function AdminContractsPage() {
               {showFilters ? "검색 필터 접기 ▲" : "검색 필터 열기 ▼"}
             </button>
           </div>
-          
+
           {/* 검색 필터 (토글에 따라 표시) */}
           {showFilters && (
             <ContractSearchFilters
@@ -353,7 +355,7 @@ export default function AdminContractsPage() {
               onParticipantSearch={handleParticipantSearch}
             />
           )}
-          
+
           {/* 계약 테이블 (굵은 선 제거) */}
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
             <ContractTable
@@ -382,7 +384,7 @@ export default function AdminContractsPage() {
               loading={loading}
             />
           )}
-        </>      
+        </>
       )}
       {activeTab === "expiring" && (
         <ExpiringContractsTab

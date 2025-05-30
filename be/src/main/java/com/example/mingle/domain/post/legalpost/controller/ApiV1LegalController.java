@@ -2,6 +2,7 @@ package com.example.mingle.domain.post.legalpost.controller;
 
 import com.example.mingle.domain.admin.panel.dto.ContractResponse;
 import com.example.mingle.domain.admin.panel.dto.ContractSearchCondition;
+import com.example.mingle.domain.admin.panel.dto.InternalSearchCondition;
 import com.example.mingle.domain.admin.panel.dto.UserSearchDto;
 import com.example.mingle.domain.post.legalpost.dto.contract.*;
 import com.example.mingle.domain.post.legalpost.entity.Contract;
@@ -149,9 +150,19 @@ public class ApiV1LegalController {
     public ResponseEntity<Page<ContractSimpleDto>> getAllContracts(
             @RequestParam ContractCategory category,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortField,
+            @RequestParam(defaultValue = "desc") String sortDirection
     ) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        // 정렬 방향 설정
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("asc")
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
+
+        // 정렬 필드 유효성 검증 (필요에 따라)
+        String validSortField = validateSortField(sortField);
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, validSortField));
         Page<ContractSimpleDto> result;
 
         switch (category) {
@@ -169,6 +180,19 @@ public class ApiV1LegalController {
         }
 
         return ResponseEntity.ok(result);
+    }
+
+    // 정렬 필드 유효성 검증 메서드 (선택적)
+    private String validateSortField(String sortField) {
+        // 허용되는 정렬 필드들
+        List<String> allowedFields = List.of("id", "createdAt", "startDate", "endDate", "title");
+
+        if (allowedFields.contains(sortField)) {
+            return sortField;
+        }
+
+        // 기본값 반환
+        return "createdAt";
     }
 
     // 관리자가 계약서 최종 확정
@@ -217,44 +241,41 @@ public class ApiV1LegalController {
         return ResponseEntity.ok("게시글 삭제 완료");
 
     }
+
+//     계약서 서명 (전자)
+    @PostMapping("/{contractId}/sign")
+//    @PreAuthorize("hasRole('STAFF') or hasRole('ARTIST')")
+    @Operation(summary = "계약서 전자 서명")
+    public ResponseEntity<String> sign(
+            @PathVariable Long contractId,
+            @AuthenticationPrincipal SecurityUser user
+    ) throws IOException{
+        String signatureUrl = contractService.signContract(contractId, user);
+        return ResponseEntity.ok(signatureUrl);
+    }
+
 //    @PostMapping("/{contractId}/sign")
-//    @PreAuthorize("hasRole('STAFF')") // 법무팀만 가능
-//    @Operation(summary = "계약서 전자 서명 요청 (법무팀이 당사자에게 이메일 전송)")
-//    public ResponseEntity<String> sign(
+//    @Operation(summary = "계약서 전자 서명 요청 생성 (대리)")
+//    public ResponseEntity<String> signOnBehalf(
 //            @PathVariable Long contractId,
-//            @RequestParam Long userId, // 실제 서명할 당사자
-//            @AuthenticationPrincipal SecurityUser requester // 로그인한 법무팀
+//            @RequestParam Long userId
 //    ) throws IOException {
 //        User signer = userRepository.findById(userId)
 //                .orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
 //
-//        String signatureUrl = contractService.signContract(contractId, signer, requester);
+//        String signatureUrl = contractService.signContract(contractId, signer);
+//        // 이메일 전송도 이 시점에서 수행 가능
 //        return ResponseEntity.ok(signatureUrl);
 //    }
 
-
-    @PostMapping("/{contractId}/sign")
-    @Operation(summary = "계약서 전자 서명 요청 생성 (대리)")
-    public ResponseEntity<String> signOnBehalf(
-            @PathVariable Long contractId,
-            @RequestParam Long userId
-    ) throws IOException {
-        User signer = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
-
-        String signatureUrl = contractService.signContract(contractId, signer);
-        // 이메일 전송도 이 시점에서 수행 가능
-        return ResponseEntity.ok(signatureUrl);
-    }
-
     @GetMapping("/filtered")
-
     @Operation(summary = "계약서 목록 필터+페이징 조회")
     public ResponseEntity<Page<ContractResponse>> getFilteredContracts(
             ContractSearchCondition condition,
+            InternalSearchCondition internalCondition,
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        Page<ContractResponse> contracts = contractService.getContractsByFilter(condition, pageable);
+        Page<ContractResponse> contracts = contractService.getContractsByFilter(condition, internalCondition, pageable);
         return ResponseEntity.ok(contracts);
     }
 

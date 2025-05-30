@@ -3,17 +3,19 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { settlementService } from "@/features/department/finance-legal/revenue/services/settlementService";
-import {
-  SettlementDto,
-  SettlementRequest,
-} from "@/features/department/finance-legal/revenue/types/Settlement";
+import { SettlementDto } from "@/features/department/finance-legal/revenue/types/Settlement";
 
 export default function SettlementsPage() {
   const [settlements, setSettlements] = useState<SettlementDto[]>([]);
   const [contractId, setContractId] = useState<number>(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
+
+  // 페이지 로드 시 모든 정산 조회
+  useEffect(() => {
+    loadAllSettlements();
+  }, []);
+  const [showCreateForm, setShowCreateForm] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [selectedSettlement, setSelectedSettlement] =
     useState<SettlementDto | null>(null);
@@ -30,11 +32,9 @@ export default function SettlementsPage() {
   // 정렬 상태
   const [sortBy, setSortBy] = useState<"date" | "amount" | "status">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-
   // 새 정산 생성용 상태
   const [newSettlement, setNewSettlement] = useState({
     contractId: 0,
-    totalRevenue: 0,
   });
 
   // 정산 수정용 상태
@@ -44,9 +44,23 @@ export default function SettlementsPage() {
     isSettled: false,
     source: "",
     incomeDate: "",
-  });
+  }); // 모든 정산 목록 조회
+  const loadAllSettlements = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await settlementService.getAllSettlements();
+      setSettlements(data);
+    } catch (error) {
+      console.error("정산 목록 조회 실패:", error);
+      setError("정산 목록을 불러오는데 실패했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // 계약별 정산 목록 조회
-  const loadSettlements = async () => {
+  const loadSettlementsByContract = async () => {
     if (contractId <= 0) {
       setError("올바른 계약 ID를 입력해주세요.");
       return;
@@ -110,30 +124,25 @@ export default function SettlementsPage() {
     pendingAmount: settlements
       .filter((s) => !s.isSettled)
       .reduce((sum, s) => sum + s.amount, 0),
-  };
-  // 정산 생성
+  }; // 정산 생성
   const handleCreateSettlement = async () => {
-    if (newSettlement.contractId <= 0 || newSettlement.totalRevenue <= 0) {
-      setError("계약 ID와 총 수익을 올바르게 입력해주세요.");
+    if (newSettlement.contractId <= 0) {
+      setError("올바른 계약 ID를 입력해주세요.");
       return;
     }
 
     try {
-      const request: SettlementRequest = {
-        totalRevenue: newSettlement.totalRevenue,
-      };
-
       await settlementService.createSettlementForContract(
-        newSettlement.contractId,
-        request
+        newSettlement.contractId
       );
-      setShowCreateModal(false);
-      setNewSettlement({ contractId: 0, totalRevenue: 0 });
-      setError(null);
-
-      // 현재 조회중인 계약과 같으면 목록 새로고침
+      setShowCreateForm(false);
+      setNewSettlement({ contractId: 0 });
+      setError(null); // 현재 조회중인 계약과 같으면 목록 새로고침
       if (contractId === newSettlement.contractId) {
-        loadSettlements();
+        loadSettlementsByContract();
+      } else if (contractId === 0) {
+        // 전체 조회 상태면 전체 목록 새로고침
+        loadAllSettlements();
       }
     } catch (error) {
       console.error("정산 생성 실패:", error);
@@ -153,7 +162,13 @@ export default function SettlementsPage() {
       setShowUpdateModal(false);
       setSelectedSettlement(null);
       setError(null);
-      loadSettlements();
+
+      // 계약 ID 필터가 설정되어 있으면 해당 계약의 정산만, 아니면 전체 조회
+      if (contractId > 0) {
+        loadSettlementsByContract();
+      } else {
+        loadAllSettlements();
+      }
     } catch (error) {
       console.error("정산 수정 실패:", error);
       setError("정산 수정에 실패했습니다.");
@@ -163,10 +178,15 @@ export default function SettlementsPage() {
   // 정산 삭제
   const handleDeleteSettlement = async (settlementId: number) => {
     if (!confirm("정말로 이 정산을 삭제하시겠습니까?")) return;
-
     try {
       await settlementService.deleteSettlement(settlementId);
-      loadSettlements();
+
+      // 계약 ID 필터가 설정되어 있으면 해당 계약의 정산만, 아니면 전체 조회
+      if (contractId > 0) {
+        loadSettlementsByContract();
+      } else {
+        loadAllSettlements();
+      }
     } catch (error) {
       console.error("정산 삭제 실패:", error);
       setError("정산 삭제에 실패했습니다.");
@@ -182,7 +202,13 @@ export default function SettlementsPage() {
       await settlementService.changeSettlementStatus(settlementId, {
         isSettled,
       });
-      loadSettlements();
+
+      // 계약 ID 필터가 설정되어 있으면 해당 계약의 정산만, 아니면 전체 조회
+      if (contractId > 0) {
+        loadSettlementsByContract();
+      } else {
+        loadAllSettlements();
+      }
     } catch (error) {
       console.error("상태 변경 실패:", error);
       setError("상태 변경에 실패했습니다.");
@@ -209,14 +235,16 @@ export default function SettlementsPage() {
       setSortBy(field);
       setSortOrder("desc");
     }
-  };
-
-  // 필터 초기화
+  }; // 필터 초기화
   const resetFilters = () => {
     setStatusFilter("all");
     setDateFilter({ startDate: "", endDate: "" });
     setSortBy("date");
     setSortOrder("desc");
+    setContractId(0);
+    setError(null);
+    // 전체 정산 목록으로 되돌리기
+    loadAllSettlements();
   };
 
   const formatCurrency = (amount: number) => {
@@ -236,19 +264,26 @@ export default function SettlementsPage() {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <div className="flex justify-between items-center">
           <div>
+            {" "}
             <h1 className="text-2xl font-bold text-gray-800">정산 관리</h1>
             <p className="text-gray-600 mt-1">
-              계약별 정산 생성, 수정, 삭제 및 상태 관리
+              모든 정산을 조회하거나 특정 계약 ID로 필터링하여 정산을 관리합니다
             </p>
-          </div>
+          </div>{" "}
           <div className="flex gap-2">
             <button
-              onClick={() => setShowCreateModal(true)}
-              className="inline-flex items-center bg-blue-600 text-white px-4 py-2.5 rounded-md hover:bg-blue-700 transition-colors shadow-sm font-medium"
+              onClick={() => setShowCreateForm(!showCreateForm)}
+              className={`inline-flex items-center px-4 py-2.5 rounded-md transition-colors shadow-sm font-medium ${
+                showCreateForm
+                  ? "bg-gray-100 text-gray-700 border border-gray-300"
+                  : "bg-blue-600 text-white hover:bg-blue-700"
+              }`}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 mr-1.5"
+                className={`h-5 w-5 mr-1.5 transition-transform ${
+                  showCreateForm ? "rotate-45" : ""
+                }`}
                 viewBox="0 0 20 20"
                 fill="currentColor"
               >
@@ -258,7 +293,7 @@ export default function SettlementsPage() {
                   clipRule="evenodd"
                 />
               </svg>
-              새 정산 생성
+              {showCreateForm ? "취소" : "새 정산 생성"}
             </button>
           </div>
         </div>
@@ -297,24 +332,105 @@ export default function SettlementsPage() {
                 d="M6 18L18 6M6 6l12 12"
               />
             </svg>
-          </button>
+          </button>{" "}
+        </div>
+      )}
+      {/* 인라인 정산 생성 폼 */}
+      {showCreateForm && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="border-l-4 border-blue-500 pl-4 mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">
+              새 정산 생성
+            </h3>{" "}
+            <p className="text-sm text-gray-600">
+              계약 ID를 입력하여 새로운 정산을 생성합니다.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                계약 ID *
+              </label>
+              <input
+                type="number"
+                value={newSettlement.contractId || ""}
+                onChange={(e) =>
+                  setNewSettlement({
+                    ...newSettlement,
+                    contractId: Number(e.target.value),
+                  })
+                }
+                placeholder="계약 ID를 입력하세요"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
+            <button
+              onClick={() => {
+                setShowCreateForm(false);
+                setNewSettlement({ contractId: 0 });
+                setError(null);
+              }}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              취소
+            </button>{" "}
+            <button
+              onClick={handleCreateSettlement}
+              disabled={loading || newSettlement.contractId <= 0}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <div className="flex items-center">
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  생성 중...
+                </div>
+              ) : (
+                "정산 생성"
+              )}
+            </button>
+          </div>
         </div>
       )}
       {/* 검색 및 필터 영역 */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-4">          <div>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-4">
+          {" "}
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              계약 ID
+              계약 ID (선택사항)
             </label>
             <input
               type="number"
               value={contractId || ""}
               onChange={(e) => setContractId(Number(e.target.value))}
-              placeholder="계약 ID 입력"
+              placeholder="특정 계약의 정산만 보려면 ID 입력"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               상태 필터
@@ -333,7 +449,6 @@ export default function SettlementsPage() {
               <option value="completed">완료</option>
             </select>
           </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               시작일
@@ -347,7 +462,6 @@ export default function SettlementsPage() {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               종료일
@@ -360,7 +474,9 @@ export default function SettlementsPage() {
               }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
-          </div>        </div>        <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+          </div>{" "}
+        </div>{" "}
+        <div className="flex justify-between items-center pt-4 border-t border-gray-100">
           <div className="text-sm text-gray-500">
             {settlements.length > 0 && (
               <>
@@ -368,20 +484,34 @@ export default function SettlementsPage() {
                 {settlements.length}개)
               </>
             )}
-          </div>
+          </div>{" "}
           <div className="flex items-center gap-3">
             <button
               onClick={resetFilters}
-              className="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
+              className="px-3 py-1.5 text-sm border border-gray-300 rounded-md 
+                         hover:bg-gray-50 hover:border-gray-400 
+                         active:bg-gray-100 active:scale-95 
+                         transition-all duration-150 ease-in-out
+                         focus:outline-none"
             >
-              필터 초기화
-            </button>
+              <span className="flex items-center gap-1">🔄 필터 초기화</span>
+            </button>{" "}
             <button
-              onClick={loadSettlements}
+              onClick={() => {
+                if (contractId > 0) {
+                  loadSettlementsByContract();
+                } else {
+                  loadAllSettlements();
+                }
+              }}
               disabled={loading}
               className="bg-blue-600 text-white px-6 py-2.5 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
             >
-              {loading ? "로딩중..." : "조회"}
+              {loading
+                ? "로딩중..."
+                : contractId > 0
+                ? "계약별 조회"
+                : "전체 조회"}
             </button>
           </div>
         </div>
@@ -540,7 +670,6 @@ export default function SettlementsPage() {
             </div>
           </div>
         </div>
-
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -699,7 +828,7 @@ export default function SettlementsPage() {
                           className="text-red-600 hover:text-red-800 font-medium"
                         >
                           삭제
-                        </button>
+                        </button>{" "}
                         <button
                           onClick={() =>
                             handleStatusChange(
@@ -709,7 +838,7 @@ export default function SettlementsPage() {
                           }
                           className="text-purple-600 hover:text-purple-800 font-medium"
                         >
-                          {settlement.isSettled ? "대기로" : "완료로"}
+                          {settlement.isSettled ? "대기" : "완료"}
                         </button>
                       </div>
                     </td>
@@ -746,7 +875,6 @@ export default function SettlementsPage() {
             </tbody>
           </table>
         </div>
-
         {/* 로딩 상태 */}
         {loading && (
           <div className="text-center py-16">
@@ -774,95 +902,8 @@ export default function SettlementsPage() {
               정산 목록을 불러오는 중...
             </div>
           </div>
-        )}
+        )}{" "}
       </div>{" "}
-      {/* 정산 생성 모달 */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg w-96 max-w-md mx-4">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">
-                새 정산 생성
-              </h3>
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  계약 ID *
-                </label>
-                <input
-                  type="number"
-                  value={newSettlement.contractId || ""}
-                  onChange={(e) =>
-                    setNewSettlement({
-                      ...newSettlement,
-                      contractId: Number(e.target.value),
-                    })
-                  }
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  placeholder="계약 ID를 입력하세요"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  총 수익 *
-                </label>
-                <input
-                  type="number"
-                  value={newSettlement.totalRevenue || ""}
-                  onChange={(e) =>
-                    setNewSettlement({
-                      ...newSettlement,
-                      totalRevenue: Number(e.target.value),
-                    })
-                  }
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  placeholder="총 수익을 입력하세요"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  {newSettlement.totalRevenue > 0 &&
-                    formatCurrency(newSettlement.totalRevenue)}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-              >
-                취소
-              </button>
-              <button
-                onClick={handleCreateSettlement}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
-              >
-                생성
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       {/* 정산 수정 모달 */}
       {showUpdateModal && selectedSettlement && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, ChangeEvent, FormEvent } from "react";
+import React, { useState, ChangeEvent, FormEvent, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -12,10 +12,11 @@ import {
   SettlementRatioDto,
 } from "@/features/department/finance-legal/contracts/types/Contract";
 import { contractService } from "@/features/department/finance-legal/contracts/services/contractService";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 
 interface CreateFormData {
   userId: number;
-  teamId: number | null;
+  teamId: number; // null에서 number로 변경
   summary: string;
   title: string;
   contractCategory: ContractCategory;
@@ -35,6 +36,7 @@ interface CreateFormData {
 export default function CreateContractPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user, isLoading: authLoading } = useAuth();
   const categoryParam =
     (searchParams.get("category") as ContractCategory) ||
     ContractCategory.EXTERNAL;
@@ -42,8 +44,8 @@ export default function CreateContractPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [createFormData, setCreateFormData] = useState<CreateFormData>({
-    userId: 1,
-    teamId: null, // 외부 계약에서는 팀 ID가 선택사항이므로 null로 초기화
+    userId: 1, // 기본값, 실제로는 로그인한 사용자 ID 사용
+    teamId: 1, // 기본 팀 ID로 1 설정
     summary: "",
     title: "",
     contractCategory: categoryParam,
@@ -68,10 +70,16 @@ export default function CreateContractPage() {
         file: e.target.files[0],
       });
     }
-  };
-  // 계약서 생성
+  }; // 계약서 생성
   const handleCreateContract = async (e: FormEvent) => {
     e.preventDefault();
+
+    // 사용자 인증 확인
+    if (!user) {
+      setError("사용자 인증이 필요합니다. 다시 로그인해주세요.");
+      return;
+    }
+
     if (!createFormData.file) {
       setError("파일을 선택해주세요.");
       return;
@@ -83,7 +91,7 @@ export default function CreateContractPage() {
       let contractId: number;
       if (createFormData.contractCategory === ContractCategory.EXTERNAL) {
         const request: CreateContractRequest = {
-          userId: createFormData.userId,
+          userId: user.id, // 로그인한 사용자를 작성자(author)로 설정
           teamId: createFormData.teamId,
           summary: createFormData.summary,
           title: createFormData.title,
@@ -96,14 +104,12 @@ export default function CreateContractPage() {
           useManualRatios: createFormData.useManualRatios,
           ratios: createFormData.ratios,
           targetUserIds: createFormData.targetUserIds,
-        };
-
-        // 디버깅용 로그
+        }; // 디버깅용 로그
         console.log("외부 계약 생성 요청:", {
           ...request,
-          teamIdValue: createFormData.teamId,
-          teamIdType: typeof createFormData.teamId,
-          isTeamIdNull: createFormData.teamId === null,
+          originalTeamId: createFormData.teamId,
+          finalTeamId: request.teamId,
+          teamIdType: typeof request.teamId,
         });
 
         contractId = await contractService.createContract(
@@ -112,7 +118,8 @@ export default function CreateContractPage() {
         );
       } else {
         const request: CreateInternalContractRequest = {
-          userId: createFormData.userId,
+          userId: createFormData.userId, // 계약 당사자 ID
+          writerId: user?.id, // 로그인한 사용자를 작성자로 설정
           ratioType: createFormData.ratioType,
           defaultRatio: createFormData.defaultRatio,
           startDate: createFormData.startDate,
@@ -122,7 +129,8 @@ export default function CreateContractPage() {
           request,
           createFormData.file
         );
-      }      console.log(`계약서 생성 완료 (ID: ${contractId})`);
+      }
+      console.log(`계약서 생성 완료 (ID: ${contractId})`);
 
       // 성공 후 계약서 목록 페이지로 이동
       router.push(`/contracts`);
@@ -134,7 +142,6 @@ export default function CreateContractPage() {
       setLoading(false);
     }
   };
-
   return (
     <div className="container mx-auto p-6">
       {" "}
@@ -152,8 +159,21 @@ export default function CreateContractPage() {
           {error}
         </div>
       )}
+      {/* 인증 로딩 중 표시 */}
+      {authLoading && (
+        <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-4">
+          사용자 정보를 불러오는 중...
+        </div>
+      )}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <form onSubmit={handleCreateContract} className="space-y-4">
+        <form
+          onSubmit={handleCreateContract}
+          className="space-y-4"
+          style={{
+            opacity: authLoading ? 0.6 : 1,
+            pointerEvents: authLoading ? "none" : "auto",
+          }}
+        >
           {/* 카테고리 선택 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -172,51 +192,32 @@ export default function CreateContractPage() {
               <option value={ContractCategory.EXTERNAL}>외부 계약</option>
               <option value={ContractCategory.INTERNAL}>내부 계약</option>
             </select>
-          </div>
-
+          </div>{" "}
           {/* 외부 계약 폼 필드 */}
           {createFormData.contractCategory === ContractCategory.EXTERNAL ? (
             <>
-              {/* 작성자 ID와 팀 ID */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    작성자 ID
-                  </label>
-                  <input
-                    type="number"
-                    value={createFormData.userId}
-                    onChange={(e) =>
-                      setCreateFormData({
-                        ...createFormData,
-                        userId: Number(e.target.value),
-                      })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    min="1"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    팀 ID (선택사항)
-                  </label>
-                  <input
-                    type="number"
-                    value={createFormData.teamId || ""}
-                    onChange={(e) =>
-                      setCreateFormData({
-                        ...createFormData,
-                        teamId: e.target.value ? Number(e.target.value) : null,
-                      })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    min="1"
-                    placeholder="팀 ID를 입력하세요 (선택사항)"
-                  />
-                </div>
+              {/* 팀 ID */}{" "}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  팀 ID (선택사항)
+                </label>{" "}
+                <input
+                  type="number"
+                  value={createFormData.teamId || ""}
+                  onChange={(e) =>
+                    setCreateFormData({
+                      ...createFormData,
+                      teamId: e.target.value ? Number(e.target.value) : 1,
+                    })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  min="1"
+                  placeholder="팀 ID를 입력하세요 (비워두면 기본 팀이 설정됩니다)"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  팀 ID를 입력하지 않으면 기본 팀(ID: 1)이 자동으로 설정됩니다.
+                </p>
               </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -253,7 +254,6 @@ export default function CreateContractPage() {
                   />
                 </div>
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   계약 상대방 회사명
@@ -272,7 +272,6 @@ export default function CreateContractPage() {
                   required
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   요약
@@ -290,7 +289,6 @@ export default function CreateContractPage() {
                   required
                 />
               </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -329,7 +327,6 @@ export default function CreateContractPage() {
                   </select>
                 </div>
               </div>
-
               {/* 수동 비율 입력 섹션 */}
               {createFormData.useManualRatios && (
                 <div className="border border-gray-200 rounded-lg p-4">
@@ -444,7 +441,6 @@ export default function CreateContractPage() {
                   </div>
                 </div>
               )}
-
               {/* 내부계약 기준 대상 사용자 입력 섹션 */}
               {!createFormData.useManualRatios && (
                 <div className="border border-gray-200 rounded-lg p-4">
@@ -528,6 +524,7 @@ export default function CreateContractPage() {
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   min="1"
+                  placeholder="계약 당사자 ID를 입력하세요"
                   required
                 />
               </div>
@@ -574,7 +571,6 @@ export default function CreateContractPage() {
               </div>
             </>
           )}
-
           {/* 공통 필드 */}
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -612,7 +608,6 @@ export default function CreateContractPage() {
               />
             </div>
           </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               계약서 파일
@@ -624,12 +619,11 @@ export default function CreateContractPage() {
               accept=".pdf,.doc,.docx"
               required
             />
-          </div>
-
+          </div>{" "}
           <div className="flex gap-3">
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || authLoading || !user}
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
             >
               {loading ? "생성 중..." : "계약서 생성"}

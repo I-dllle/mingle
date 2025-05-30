@@ -146,9 +146,7 @@ export default function ContractsPage() {
         condition.startDateFrom ||
         condition.startDateTo ||
         condition.participantUserId;
-
       if (hasFilterConditions) {
-        console.log("필터링 조건으로 검색:", condition);
         const response = await getFilteredContracts(
           condition,
           page,
@@ -161,11 +159,12 @@ export default function ContractsPage() {
         setTotalPages(response.totalPages);
         setTotalElements(response.totalElements);
       } else {
-        console.log("기본 목록 조회:", condition);
         const response = await getAllContracts(
           condition.contractCategory || category,
           page,
-          size
+          size,
+          sortField,
+          sortDirection
         );
         setContracts(response.content);
         setCurrentPage(response.number);
@@ -184,13 +183,26 @@ export default function ContractsPage() {
   // 초기 로드
   useEffect(() => {
     fetchContracts();
-  }, [sortField, sortDirection]);
-  // 검색 실행
+  }, [sortField, sortDirection]); // 검색 실행
   const handleSearch = () => {
-    console.log("검색 조건:", tempCondition);
-    setSearchCondition(tempCondition);
+    // 날짜 형식을 YYYY-MM-DD로 변환하여 백엔드 호환성 확보
+    const normalizedCondition = {
+      ...tempCondition,
+      startDateFrom: tempCondition.startDateFrom
+        ? new Date(tempCondition.startDateFrom + "T00:00:00")
+            .toISOString()
+            .split("T")[0]
+        : undefined,
+      startDateTo: tempCondition.startDateTo
+        ? new Date(tempCondition.startDateTo + "T23:59:59")
+            .toISOString()
+            .split("T")[0]
+        : undefined,
+    };
+
+    setSearchCondition(normalizedCondition);
     setCurrentPage(0);
-    fetchContracts(0, tempCondition);
+    fetchContracts(0, normalizedCondition);
   };
   // 검색 초기화
   const handleReset = () => {
@@ -228,7 +240,7 @@ export default function ContractsPage() {
       [ContractStatus.REVIEW]: "검토중",
       [ContractStatus.SIGNED_OFFLINE]: "오프라인서명",
       [ContractStatus.SIGNED]: "서명됨",
-      [ContractStatus.CONFIRMED]: "확인됨",
+      [ContractStatus.CONFIRMED]: "확정됨",
       [ContractStatus.ACTIVE]: "활성화",
       [ContractStatus.EXPIRED]: "만료됨",
       [ContractStatus.PENDING]: "대기중",
@@ -394,15 +406,16 @@ export default function ContractsPage() {
                   {totalElements}
                 </span>
                 <p className="text-xs text-blue-600">총 계약</p>
-              </div>
+              </div>{" "}
               <div className="bg-green-50 rounded-lg p-3 text-center min-w-[120px]">
                 <span className="text-lg font-semibold text-green-700">
                   {
-                    contracts.filter((c) => c.status === ContractStatus.ACTIVE)
-                      .length
+                    contracts.filter(
+                      (c) => c.status === ContractStatus.CONFIRMED
+                    ).length
                   }
                 </span>
-                <p className="text-xs text-green-600">활성 계약</p>
+                <p className="text-xs text-green-600">확정 계약</p>
               </div>
               <div className="bg-yellow-50 rounded-lg p-3 text-center min-w-[120px]">
                 <span className="text-lg font-semibold text-yellow-700">
@@ -611,7 +624,7 @@ export default function ContractsPage() {
                 >
                   ─── 완료 상태 ───
                 </option>
-                <option value={ContractStatus.CONFIRMED}>확인됨</option>
+                <option value={ContractStatus.CONFIRMED}>확정됨</option>
                 <option value={ContractStatus.ACTIVE}>활성화</option>
                 <option
                   disabled

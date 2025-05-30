@@ -19,7 +19,8 @@ export default function DepartmentSidebar() {
           &quot;Teamwork. Talent. Together.&quot;
         </div>
         <div className={styles.departmentTitle}>{userDepartment}</div>
-      </div>{" "}      <ul className={styles.menuList}>
+      </div>{" "}
+      <ul className={styles.menuList}>
         {menus.map((menu) => {
           const isActive =
             pathname === menu.path || pathname.startsWith(`${menu.path}/`);
@@ -30,7 +31,7 @@ export default function DepartmentSidebar() {
                 className={`${styles.menuItem} ${
                   isActive ? styles.menuItemActive : styles.menuItemInactive
                 }`}
-                onClick={() => console.log('클릭됨:', menu.path)}
+                onClick={() => console.log("클릭됨:", menu.path)}
               >
                 {/* 아이콘 처리 */}
                 <span>{menu.name}</span>

@@ -25,7 +25,7 @@ export default function ExpiringContractsTab({
       [ContractStatus.REVIEW]: "검토 중",
       [ContractStatus.SIGNED_OFFLINE]: "오프라인 서명",
       [ContractStatus.SIGNED]: "서명됨",
-      [ContractStatus.CONFIRMED]: "확인됨",
+      [ContractStatus.CONFIRMED]: "확정됨",
       [ContractStatus.ACTIVE]: "활성",
       [ContractStatus.EXPIRED]: "만료됨",
       [ContractStatus.PENDING]: "대기 중",

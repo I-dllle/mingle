@@ -505,13 +505,13 @@ export default function ContractsPage() {
                           >
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                               #{detail.settlementId}
-                            </td>
+                            </td>{" "}
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               {detail.userId ? (
                                 `#${detail.userId}`
                               ) : (
-                                <span className="text-gray-400 italic">
-                                  미지정
+                                <span className="text-gray-700 font-semibold">
+                                  Mingle
                                 </span>
                               )}
                             </td>

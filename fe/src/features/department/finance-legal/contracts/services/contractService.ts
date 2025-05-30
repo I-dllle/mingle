@@ -22,33 +22,13 @@ export const createContract = async (
   file: File
 ): Promise<number> => {
   console.log("createContract - 요청 데이터:", request);
-  console.log("createContract - teamId 상세:", {
-    teamId: request.teamId,
-    teamIdType: typeof request.teamId,
-    isNull: request.teamId === null,
-    isUndefined: request.teamId === undefined,
-  });
-
-  // teamId가 null이거나 undefined인 경우 요청에서 제외
-  const cleanedRequest: Partial<CreateContractRequest> = { ...request };
-  if (cleanedRequest.teamId === null || cleanedRequest.teamId === undefined) {
-    delete cleanedRequest.teamId;
-    console.log("teamId가 null 또는 undefined이므로 요청에서 제외합니다.");
-  }
-
-  console.log("정리된 요청 데이터:", cleanedRequest);
 
   const formData = new FormData();
   formData.append(
     "request",
-    new Blob([JSON.stringify(cleanedRequest)], { type: "application/json" })
+    new Blob([JSON.stringify(request)], { type: "application/json" })
   );
   formData.append("file", file);
-
-  // FormData에 추가된 request 내용 확인
-  const requestBlob = formData.get("request") as Blob;
-  const requestText = await requestBlob.text();
-  console.log("FormData에 추가된 request JSON:", requestText);
 
   // multipart/form-data를 위해 직접 fetch 사용
   const fullUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}${API_BASE_URL}/contracts`;
@@ -112,15 +92,18 @@ export const changeContractStatus = async (
   category: ContractCategory
 ): Promise<void> => {
   // JSON이 아닌 텍스트 응답을 처리하기 위해 직접 fetch 사용
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}${API_BASE_URL}/${id}/status?category=${category}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(request),
-    credentials: "include",
-    cache: "no-store",
-  });
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}${API_BASE_URL}/${id}/status?category=${category}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+      credentials: "include",
+      cache: "no-store",
+    }
+  );
 
   if (!res.ok) {
     const errorText = await res.text();
@@ -149,15 +132,18 @@ export const signOfflineAsAdmin = async (
   id: number,
   request: OfflineSignRequest
 ): Promise<void> => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}${API_BASE_URL}/${id}/sign-offline`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(request),
-    credentials: "include",
-    cache: "no-store",
-  });
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}${API_BASE_URL}/${id}/sign-offline`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+      credentials: "include",
+      cache: "no-store",
+    }
+  );
 
   if (!res.ok) {
     const errorText = await res.text();
@@ -181,38 +167,47 @@ export const signOfflineAsAdmin = async (
   }
 };
 
-// 계약서 전자 서명 요청 생성 (대리)
-export const signOnBehalf = async (
-  id: number,
-  userId: number
-): Promise<string> => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}${API_BASE_URL}/${id}/sign?userId=${userId}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    cache: "no-store",
-  });
+// 계약서 전자 서명 요청 생성
+export const signOnBehalf = async (id: number): Promise<void> => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}${API_BASE_URL}/${id}/sign`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      cache: "no-store",
+    }
+  );
 
   if (!res.ok) {
     const errorText = await res.text();
     console.error(`[API Error] ${res.status}: ${errorText}`);
-    throw new Error(`API 요청 실패: ${res.statusText}`);
+
+    // DocuSign 관련 에러의 경우 더 친화적인 메시지 제공
+    if (errorText.includes("DocuSign")) {
+      throw new Error(
+        "전자서명 서비스 연동에 문제가 발생했습니다. 관리자에게 문의하세요."
+      );
+    }
+
+    throw new Error(`전자서명 요청 실패: ${res.statusText}`);
   }
 
-  // 응답이 JSON인지 텍스트인지 확인하여 적절히 처리
+  // 응답 처리 (URL 반환이 아닌 성공 확인만)
   const contentType = res.headers.get("content-type");
   if (contentType && contentType.includes("application/json")) {
     try {
-      return await res.json();
+      await res.json();
     } catch (error) {
       console.warn("JSON 파싱 실패, 텍스트로 처리:", error);
-      return await res.text();
+      await res.text();
     }
   } else {
-    // JSON이 아닌 경우 텍스트로 처리
-    return await res.text();
+    // 텍스트 응답 처리
+    const textResponse = await res.text();
+    console.log("서버 응답:", textResponse);
   }
 };
 
@@ -256,7 +251,9 @@ export const getContractDetail = async (
 export const getAllContracts = async (
   category: ContractCategory,
   page: number = 0,
-  size: number = 10
+  size: number = 10,
+  sortField?: string,
+  sortDirection?: "asc" | "desc"
 ): Promise<{
   content: ContractSimpleDto[];
   totalElements: number;
@@ -271,6 +268,14 @@ export const getAllContracts = async (
     page: page.toString(),
     size: size.toString(),
   });
+
+  // 정렬 파라미터가 있는 경우 추가
+  if (sortField) {
+    params.append("sortField", sortField);
+  }
+  if (sortDirection) {
+    params.append("sortDirection", sortDirection);
+  }
 
   return await apiClient<{
     content: ContractSimpleDto[];
@@ -294,19 +299,22 @@ export const confirmContract = async (
     category: category,
   });
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}${API_BASE_URL}/${id}/confirm?${params}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    cache: "no-store",
-  });
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}${API_BASE_URL}/${id}/confirm?${params}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      cache: "no-store",
+    }
+  );
 
   if (!res.ok) {
     const errorText = await res.text();
     console.error(`[API Error] ${res.status}: ${errorText}`);
-    throw new Error(`API 요청 실패: ${res.statusText}`);
+    throw new Error(`계약서 확정 실패: ${res.statusText}`);
   }
 
   // 응답이 JSON인지 텍스트인지 확인하여 적절히 처리
@@ -400,14 +408,17 @@ export const deleteContract = async (
     category: category,
   });
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}${API_BASE_URL}/${contractId}?${params}`, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    cache: "no-store",
-  });
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}${API_BASE_URL}/${contractId}?${params}`,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      cache: "no-store",
+    }
+  );
 
   if (!res.ok) {
     const errorText = await res.text();
@@ -463,10 +474,22 @@ export const getFilteredContracts = async (
     params.append("startDateFrom", condition.startDateFrom);
   if (condition.startDateTo)
     params.append("startDateTo", condition.startDateTo);
-  if (condition.participantUserId)
-    params.append("participantUserId", condition.participantUserId.toString());
 
-  return await apiClient<{
+  // 계약 카테고리에 따라 다른 사용자 ID 필드 사용
+  if (condition.participantUserId) {
+    if (condition.contractCategory === ContractCategory.INTERNAL) {
+      // 내부 계약서는 userId 필드 사용
+      params.append("userId", condition.participantUserId.toString());
+    } else {
+      // 외부 계약서는 participantUserId 필드 사용
+      params.append(
+        "participantUserId",
+        condition.participantUserId.toString()
+      );
+    }
+  }
+
+  const result = await apiClient<{
     content: ContractResponse[];
     totalElements: number;
     totalPages: number;
@@ -477,6 +500,8 @@ export const getFilteredContracts = async (
   }>(`${API_BASE_URL}/filtered?${params}`, {
     method: "GET",
   });
+
+  return result;
 };
 
 // 사용자 이름으로 검색

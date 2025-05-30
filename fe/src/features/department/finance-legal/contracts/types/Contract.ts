@@ -4,7 +4,7 @@ export enum ContractStatus {
   REVIEW = "REVIEW", // 검토 중
   SIGNED_OFFLINE = "SIGNED_OFFLINE", // 오프라인 서명
   SIGNED = "SIGNED", // 서명됨
-  CONFIRMED = "CONFIRMED", // 확인됨
+  CONFIRMED = "CONFIRMED", // 확정됨
   ACTIVE = "ACTIVE", // 활성화됨
   EXPIRED = "EXPIRED", // 만료됨
   PENDING = "PENDING", // 대기 중
@@ -159,8 +159,8 @@ export interface SettlementRatioDto {
 
 // 계약 생성 요청 DTO - Java의 CreateContractRequest 레코드와 동일한 구조
 export interface CreateContractRequest {
-  userId: number; // 사용자 ID
-  teamId?: number | null; // 팀 ID (선택적, null 허용)
+  userId: number; // 작성자 ID (로그인한 사용자, author ID로 사용)
+  teamId: number; // 팀 ID (기본값 1 사용)
   summary: string; // 요약
   title: string; // 제목
   contractCategory: ContractCategory; // 계약 카테고리
@@ -176,7 +176,8 @@ export interface CreateContractRequest {
 
 // 내부 계약 생성 요청 DTO - Java의 CreateInternalContractRequest 레코드와 동일한 구조
 export interface CreateInternalContractRequest {
-  userId: number; // 사용자 ID
+  userId: number; // 사용자 ID (계약 당사자)
+  writerId?: number; // 작성자 ID (로그인한 사용자, 백엔드에서 자동 설정)
   ratioType: RatioType; // 비율 타입 (ARTIST, PRODUCER 등)
   defaultRatio: number; // 기본 비율 (BigDecimal → number로 변환)
   startDate: string; // 시작일 (ISO 형식의 날짜 문자열)
@@ -350,7 +351,18 @@ export interface ContractSearchCondition {
   contractCategory?: ContractCategory; // 계약 카테고리 (선택적)
   startDateFrom?: string; // 시작일 범위 시작 (ISO 형식의 날짜 문자열) (선택적)
   startDateTo?: string; // 시작일 범위 종료 (ISO 형식의 날짜 문자열) (선택적)
-  participantUserId?: number; // 참여자 사용자 ID (선택적)
+  participantUserId?: number; // 참여자 사용자 ID (선택적) - 외부 계약서용
+}
+
+// 내부 계약서 검색 조건 DTO - Java의 InternalSearchCondition 클래스와 동일한 구조
+export interface InternalSearchCondition {
+  teamId?: number; // 팀 ID (선택적)
+  status?: ContractStatus; // 계약 상태 (선택적)
+  contractType?: ContractType; // 계약 타입 (선택적)
+  contractCategory?: ContractCategory; // 계약 카테고리 (선택적)
+  startDateFrom?: string; // 시작일 범위 시작 (ISO 형식의 날짜 문자열) (선택적)
+  startDateTo?: string; // 시작일 범위 종료 (ISO 형식의 날짜 문자열) (선택적)
+  userId?: number; // 사용자 ID (선택적) - 내부 계약서용
 }
 
 // 페이징된 응답을 위한 제네릭 인터페이스

@@ -39,11 +39,8 @@ export default function ContractDetailPage() {
     memo: "",
   });
 
-  // 전자 서명 요청 폼 상태
+  // 전자 서명 요청 폼 상태 (userId 제거)
   const [showElectronicSignForm, setShowElectronicSignForm] = useState(false);
-  const [electronicSignData, setElectronicSignData] = useState({
-    userId: 1,
-  });
 
   // 계약 상세 정보 조회
   const fetchContractDetail = async (id: number) => {
@@ -76,19 +73,13 @@ export default function ContractDetailPage() {
       );
     }
   };
-
   // 계약서 확정
   const handleConfirm = async (id: number) => {
     try {
       await contractService.confirmContract(id, category);
 
-      // 상태를 확정됨에서 활성화됨으로 변경
+      // 상태를 확정으로 변경 (확정이 최종 단계)
       await handleStatusChange(id, ContractStatus.CONFIRMED);
-
-      // 잠시 후 ACTIVE로 변경 (실제 구현에서는 백엔드에서 이 부분을 처리할 수도 있음)
-      setTimeout(async () => {
-        await handleStatusChange(id, ContractStatus.ACTIVE);
-      }, 1000);
 
       await fetchContractDetail(id);
     } catch (err) {
@@ -97,10 +88,17 @@ export default function ContractDetailPage() {
       );
     }
   };
-
-  // 계약서 삭제
+  // 계약서 삭제/종료
   const handleDelete = async (id: number) => {
-    if (!confirm("정말로 이 계약서를 삭제하시겠습니까?")) {
+    // 확정된 계약인지 확인하여 다른 메시지 표시
+    const isConfirmed =
+      contract?.status === ContractStatus.CONFIRMED ||
+      contract?.status === ContractStatus.ACTIVE;
+    const confirmMessage = isConfirmed
+      ? "확정된 계약을 종료하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+      : "정말로 이 계약서를 삭제하시겠습니까?";
+
+    if (!confirm(confirmMessage)) {
       return;
     }
     try {
@@ -151,7 +149,7 @@ export default function ContractDetailPage() {
     }
   };
 
-  // 전자 서명 요청 생성
+  // 전자 서명 요청 처리
   const handleElectronicSign = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!contract) return;
@@ -160,30 +158,19 @@ export default function ContractDetailPage() {
     setError(null);
 
     try {
-      const signatureUrl = await contractService.signOnBehalf(
-        contract.id,
-        electronicSignData.userId
-      );
+      // 계약 당사자 이메일로 서명 요청 발송
+      await contractService.signOnBehalf(contract.id);
 
-      // 서명 URL을 새 창에서 열기
-      window.open(signatureUrl, "_blank");
+      // 성공 메시지 표시
+      alert("계약 당사자에게 전자서명 요청이 발송되었습니다.");
 
-      // 계약 상태를 서명됨으로 변경
-      await handleStatusChange(contract.id, ContractStatus.SIGNED);
-
-      // 폼 초기화
-      setElectronicSignData({
-        userId: 1,
-      });
       setShowElectronicSignForm(false);
 
-      // 상세 정보 새로고침
-      await fetchContractDetail(contract.id);
+      // 상태 새로고침
+      await fetchContractDetail(contractId);
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : "전자 서명 요청 생성에 실패했습니다."
+        err instanceof Error ? err.message : "전자 서명 요청에 실패했습니다."
       );
     } finally {
       setLoading(false);
@@ -425,30 +412,28 @@ export default function ContractDetailPage() {
                   </span>
                 </div>
               </div>
-            </div>
-
+            </div>{" "}
             {/* 계약 진행 상태 표시 */}
             <div className="p-4">
               <div className="relative">
                 <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-gray-100">
                   <div
                     className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center ${
+                      contract.status === ContractStatus.CONFIRMED ||
                       contract.status === ContractStatus.ACTIVE
                         ? "bg-green-500 w-full"
                         : contract.status === ContractStatus.DRAFT
-                        ? "bg-blue-500 w-1/5"
+                        ? "bg-blue-500 w-1/4"
                         : contract.status === ContractStatus.REVIEW
-                        ? "bg-blue-500 w-2/5"
+                        ? "bg-blue-500 w-2/4"
                         : contract.status === ContractStatus.SIGNED ||
                           contract.status === ContractStatus.SIGNED_OFFLINE
-                        ? "bg-blue-500 w-3/5"
-                        : contract.status === ContractStatus.CONFIRMED
-                        ? "bg-blue-500 w-4/5"
+                        ? "bg-blue-500 w-3/4"
                         : contract.status === ContractStatus.EXPIRED ||
                           contract.status === ContractStatus.TERMINATED
                         ? "bg-red-500 w-full"
                         : contract.status === ContractStatus.PENDING
-                        ? "bg-yellow-500 w-2/5"
+                        ? "bg-yellow-500 w-2/4"
                         : "bg-gray-300 w-0"
                     }`}
                   ></div>
@@ -458,7 +443,6 @@ export default function ContractDetailPage() {
                   <span>검토</span>
                   <span>서명</span>
                   <span>확정</span>
-                  <span>활성화</span>
                 </div>
               </div>
             </div>
@@ -716,7 +700,6 @@ export default function ContractDetailPage() {
                           검토 요청
                         </button>
                       )}
-
                     {contract.status &&
                       getAvailableActions(contract.status).canSign && (
                         <>
@@ -763,7 +746,6 @@ export default function ContractDetailPage() {
                           </button>
                         </>
                       )}
-
                     {contract.status &&
                       getAvailableActions(contract.status).canConfirm && (
                         <button
@@ -786,17 +768,11 @@ export default function ContractDetailPage() {
                           </svg>
                           계약 확정
                         </button>
-                      )}
-
+                      )}{" "}
                     {contract.status &&
                       getAvailableActions(contract.status).canTerminate && (
                         <button
-                          onClick={() =>
-                            handleStatusChange(
-                              contract.id,
-                              ContractStatus.TERMINATED
-                            )
-                          }
+                          onClick={() => handleDelete(contract.id)}
                           className="w-full inline-flex justify-center items-center px-4 py-2.5 bg-orange-50 border border-orange-300 rounded-md hover:bg-orange-100 text-orange-700 transition-colors"
                         >
                           <svg
@@ -816,7 +792,6 @@ export default function ContractDetailPage() {
                           계약 종료
                         </button>
                       )}
-
                     {contract.status &&
                       getAvailableActions(contract.status).canDelete && (
                         <button
@@ -927,65 +902,34 @@ export default function ContractDetailPage() {
               )}{" "}
               {/* 전자 서명 요청 폼 */}
               {showElectronicSignForm && (
-                <div className="bg-white rounded-lg shadow-sm mb-6">
-                  <div className="p-6">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 mr-2 text-blue-600"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
+                <div className="mt-4 p-4 bg-gray-50 rounded">
+                  <h4 className="font-medium mb-3">전자 서명 요청</h4>
+                  <form onSubmit={handleElectronicSign}>
+                    <p className="text-sm text-gray-600 mb-3">
+                      계약 당사자의 이메일로 전자서명 요청이 발송됩니다.
+                      <br />
+                      당사자가 이메일을 통해 직접 서명을 완료할 수 있습니다.
+                    </p>
+
+                    <div className="flex gap-3">
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"
-                        />
-                      </svg>
-                      전자 서명 요청 생성
-                    </h2>
-
-                    <form onSubmit={handleElectronicSign} className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          서명 요청 대상 ID
-                        </label>
-                        <input
-                          type="number"
-                          value={electronicSignData.userId}
-                          onChange={(e) =>
-                            setElectronicSignData({
-                              ...electronicSignData,
-                              userId: Number(e.target.value),
-                            })
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                          min="1"
-                          required
-                        />
-                      </div>
-
-                      <div className="flex gap-2">
-                        <button
-                          type="submit"
-                          disabled={loading}
-                          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
-                        >
-                          {loading ? "생성 중..." : "서명 요청"}
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => setShowElectronicSignForm(false)}
-                          className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
-                        >
-                          취소
-                        </button>
-                      </div>
-                    </form>
-                  </div>
+                        {loading
+                          ? "요청 발송 중..."
+                          : "이메일로 서명 요청 발송"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowElectronicSignForm(false)}
+                        className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                      >
+                        취소
+                      </button>
+                    </div>
+                  </form>
                 </div>
               )}
             </div>
