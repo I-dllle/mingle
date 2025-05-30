@@ -59,7 +59,7 @@ public class ContractService {
     private final AwsS3Uploader s3Uploader;
     private final DocusignService docusignService;
     private final InternalContractRepository internalContractRepository;
-
+    private final  DocusignAuthService docusignAuthService;
     public Long createContract(CreateContractRequest req, MultipartFile file) throws IOException {
         User user1 = userRepository.findById(req.userId()).orElseThrow();
         ArtistTeam team = teamRepository.findById(req.teamId()).orElse(null);
@@ -270,32 +270,6 @@ public class ContractService {
     }
 
 //    public String signContract(Long contractId, SecurityUser user) throws IOException {
-//        Contract contract = contractRepository.findById(contractId)
-//                .orElseThrow(() -> new IllegalArgumentException("계약 없음"));
-//        System.out.println("✔ 계약 조회 완료: " + contract.getTitle());
-//
-//        byte[] fileBytes = downloadFileFromUrl(contract.getFileUrl());
-//        System.out.println("✔ 파일 다운로드 완료");
-//
-//        String fileName = extractFileNameFromUrl(contract.getFileUrl());
-//        File tempFile = new File(System.getProperty("java.io.tmpdir"), fileName);
-//        try (FileOutputStream fos = new FileOutputStream(tempFile)) {
-//            fos.write(fileBytes);
-//        }
-//        System.out.println("✔ 임시 파일 생성 완료: " + tempFile.getAbsolutePath());
-//
-//        String signatureUrl = docusignService.sendEnvelope(tempFile, user.getNickname(), user.getEmail());
-//        System.out.println("✔ DocuSign 서명 URL 발급 완료");
-//
-//        contract.setDocusignUrl(signatureUrl);
-//        contract.setSignerName(user.getNickname());
-//        contract.setStatus(ContractStatus.SIGNED);
-//        contractRepository.save(contract);
-//
-//        return signatureUrl;
-//    }
-
-//    public String signContract(Long contractId, SecurityUser user) throws IOException {
 //        InternalContract contract = internalContractRepository.findById(contractId)
 //                .orElseThrow(() -> new IllegalArgumentException("계약 없음"));
 //        System.out.println("✔ 계약 조회 완료: " + contract.getTitle());
@@ -320,6 +294,38 @@ public class ContractService {
 //
 //        return signatureUrl;
 //    }
+
+//    public String signContract(Long contractId, User signer, SecurityUser requester) throws IOException {
+//        InternalContract contract = internalContractRepository.findById(contractId)
+//                .orElseThrow(() -> new IllegalArgumentException("계약 없음"));
+//        System.out.println("✔ 계약 조회 완료: " + contract.getTitle());
+//
+//        byte[] fileBytes = downloadFileFromUrl(contract.getFileUrl());
+//        System.out.println("✔ 파일 다운로드 완료");
+//
+//        String fileName = extractFileNameFromUrl(contract.getFileUrl());
+//        File tempFile = new File(System.getProperty("java.io.tmpdir"), fileName);
+//        try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+//            fos.write(fileBytes);
+//        }
+//        System.out.println("✔ 임시 파일 생성 완료: " + tempFile.getAbsolutePath());
+//
+//        // ✅ 고정된 DocuSign 계정(yml에 등록된 법무팀 계정)으로 access token 발급
+//        String accessToken = docusignAuthService.generateAccessToken();
+//
+//        // 📩 계약 당사자에게 이메일 전자서명 요청
+//        String signatureUrl = docusignService.sendEnvelope(tempFile, signer.getNickname(), signer.getEmail(), accessToken);
+//        System.out.println("✔ DocuSign 서명 URL 발급 완료");
+//
+//        contract.setDocusignUrl(signatureUrl);
+//        contract.setSignerName(signer.getNickname());
+//        contract.setStatus(ContractStatus.SIGNED);
+//        internalContractRepository.save(contract);
+//
+//        return signatureUrl;
+//    }
+
+
 
     public String signContract(Long contractId, User signer) throws IOException {
         InternalContract contract = internalContractRepository.findById(contractId)

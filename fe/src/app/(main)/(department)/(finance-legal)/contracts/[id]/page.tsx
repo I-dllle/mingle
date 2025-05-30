@@ -303,7 +303,7 @@ export default function ContractDetailPage() {
           </div>
           <div className="flex gap-2">
             <Link
-              href={`..?category=${category}`}
+              href={`/contracts`}
               className="inline-flex items-center bg-white border border-gray-300 text-gray-700 px-4 py-2.5 rounded-md hover:bg-gray-50 transition-colors shadow-sm font-medium"
             >
               <svg

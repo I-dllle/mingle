@@ -217,29 +217,32 @@ public class ApiV1LegalController {
         return ResponseEntity.ok("게시글 삭제 완료");
 
     }
-
-    // 계약서 서명 (전자)
-//    @PostMapping("/{id}/sign")
-//    @PreAuthorize("hasRole('STAFF') or hasRole('ARTIST')")
-//    @Operation(summary = "계약서 전자 서명")
+//    @PostMapping("/{contractId}/sign")
+//    @PreAuthorize("hasRole('STAFF')") // 법무팀만 가능
+//    @Operation(summary = "계약서 전자 서명 요청 (법무팀이 당사자에게 이메일 전송)")
 //    public ResponseEntity<String> sign(
-//            @PathVariable Long id,
-//            @AuthenticationPrincipal SecurityUser user
-//    ) throws IOException{
-//        String signatureUrl = contractService.signContract(id, user);
+//            @PathVariable Long contractId,
+//            @RequestParam Long userId, // 실제 서명할 당사자
+//            @AuthenticationPrincipal SecurityUser requester // 로그인한 법무팀
+//    ) throws IOException {
+//        User signer = userRepository.findById(userId)
+//                .orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
+//
+//        String signatureUrl = contractService.signContract(contractId, signer, requester);
 //        return ResponseEntity.ok(signatureUrl);
 //    }
 
-    @PostMapping("/{id}/sign")
+
+    @PostMapping("/{contractId}/sign")
     @Operation(summary = "계약서 전자 서명 요청 생성 (대리)")
     public ResponseEntity<String> signOnBehalf(
-            @PathVariable Long id,
+            @PathVariable Long contractId,
             @RequestParam Long userId
     ) throws IOException {
         User signer = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
 
-        String signatureUrl = contractService.signContract(id, signer);
+        String signatureUrl = contractService.signContract(contractId, signer);
         // 이메일 전송도 이 시점에서 수행 가능
         return ResponseEntity.ok(signatureUrl);
     }

@@ -122,12 +122,10 @@ export default function CreateContractPage() {
           request,
           createFormData.file
         );
-      }
+      }      console.log(`계약서 생성 완료 (ID: ${contractId})`);
 
-      console.log(`계약서 생성 완료 (ID: ${contractId})`);
-
-      // 성공 후 메인 페이지로 이동
-      router.push(`..?category=${createFormData.contractCategory}`);
+      // 성공 후 계약서 목록 페이지로 이동
+      router.push(`/contracts`);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "계약서 생성에 실패했습니다."

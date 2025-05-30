@@ -14,12 +14,11 @@ export const departmentMenus: Record<
       name: "음원/영상",
       icon: "document",
       path: "/audio_video",
-    },
-    {
+    },    {
       id: "press_releases",
       name: "보도자료",
       icon: "text",
-      path: "press_releases",
+      path: "/press_releases",
     },
     {
       id: "album_covers",
