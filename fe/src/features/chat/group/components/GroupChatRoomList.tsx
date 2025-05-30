@@ -1,10 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useGroupChatRoomList } from '@/features/chat/group/services/useGroupChatRoomList';
 import { GroupChatRoomSummary } from '@/features/chat/group/types/GroupChatRoomSummary';
 import { ChatScope } from '@/features/chat/common/types/ChatScope';
 import Link from 'next/link';
+import { useAuth } from '@/features/auth/AuthProvider'; // 유저 정보 사용
+import { DepartmentRole, ProjectRole } from '@/features/auth/types/roles';
 
 // 시간 포맷팅 함수 (오전/오후 HH:MM 형태)
 function formatTime(isoTime: string | null): string {
@@ -22,13 +25,43 @@ function formatTime(isoTime: string | null): string {
 export default function GroupChatRoomList() {
   // 현재 선택된 scope (부서/프로젝트)
   const [scope, setScope] = useState<ChatScope>(ChatScope.DEPARTMENT);
-
   // 선택된 scope에 따라 API 호출
   const { rooms } = useGroupChatRoomList({ scope });
+  // 유저 정보 불러오기
+  const { user } = useAuth();
+  // 라우터 사용
+  const router = useRouter();
+
+  // 채팅방 생성 권한 있는지 판단
+  const canCreateRoom =
+    user?.role === 'ADMIN' ||
+    user?.departmentRole === DepartmentRole.TEAM_LEAD ||
+    user?.projectRole === ProjectRole.PROJECT_LEADER;
 
   return (
     <div style={{ padding: '16px' }}>
       <h2>그룹 채팅방 목록</h2>
+
+      {/* 생성 버튼 - 권한 있는 사용자만 보임 */}
+      {canCreateRoom && (
+        <div style={{ marginBottom: '12px' }}>
+          <button
+            style={{
+              padding: '8px 14px',
+              background: '#28a745',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+            }}
+            // 채팅방 생성 페이지로 이동
+            onClick={() => router.push('/group/create')}
+          >
+            + 채팅방 생성
+          </button>
+        </div>
+      )}
 
       {/* scope 전환 탭 버튼 */}
       <div style={{ marginBottom: '16px', display: 'flex', gap: '8px' }}>

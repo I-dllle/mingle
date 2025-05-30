@@ -8,6 +8,7 @@ export interface CurrentUser {
   id: number;
   name: string;
   nickname: string;
+  departmentId: number;
   departmentName: string;
   departmentRole: DepartmentRole;
   projectRole: ProjectRole;

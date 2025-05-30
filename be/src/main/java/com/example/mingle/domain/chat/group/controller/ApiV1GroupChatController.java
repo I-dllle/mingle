@@ -9,11 +9,15 @@ import com.example.mingle.domain.chat.group.service.GroupChatRoomService;
 import com.example.mingle.domain.chat.group.service.GroupChatMessageService;
 import com.example.mingle.global.security.auth.SecurityUser;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+
+import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -27,14 +31,18 @@ public class ApiV1GroupChatController {
 
     /**
      * POST
-     * 채팅방 생성 (Team Chat / Project Chat 공통)
+     * 그룹 채팅방 생성 API(Team Chat / Project Chat 공통)
+     * - 요청 body: GroupChatRoomCreateRequest
+     * - 인증된 사용자(@AuthenticationPrincipal) 기준 creatorId 전달
      */
+    @Operation(summary = "그룹 채팅방 생성")
     @PostMapping
-    public GroupChatRoomResponse createGroupChatRoom(
-            @RequestBody GroupChatRoomCreateRequest request,
+    public ResponseEntity<GroupChatRoomResponse> createGroupChatRoom(
+            @RequestBody @Valid GroupChatRoomCreateRequest request,
             @AuthenticationPrincipal SecurityUser loginUser
     ) {
-        return groupChatRoomService.createRoom(request, loginUser.getId());
+        GroupChatRoomResponse response = groupChatRoomService.createRoom(request, loginUser.getId());
+        return ResponseEntity.ok(response);
     }
 
 

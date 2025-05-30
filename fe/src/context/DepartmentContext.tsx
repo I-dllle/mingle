@@ -1,5 +1,7 @@
+'use client';
+
 import React, { createContext, useContext } from 'react';
-import { departmentMenus } from './departmentMenus'; // ← 방금 만든 파일
+import { departmentMenus } from './departmentMenus';
 
 export interface DepartmentMenu {
   icon: string;

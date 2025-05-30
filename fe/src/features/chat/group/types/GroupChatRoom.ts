@@ -1,9 +1,12 @@
+import { ChatScope } from '@/features/chat/common/types/ChatScope';
+import { RoomType } from '@/features/chat/common/types/RoomType';
+
 export interface GroupChatRoom {
   roomId: number;
   name: string;
-  roomType: 'NORMAL' | 'ARCHIVE'; // 또는 enum RoomType
+  roomType: RoomType; // 'NORMAL' | 'ARCHIVE'
   teamId: number;
-  scope: 'DEPARTMENT' | 'PROJECT'; // 또는 enum ChatScope
+  scope: ChatScope; // 'DEPARTMENT' | 'PROJECT'
   createdBy: number;
-  projectEndDate?: string; // null 가능
+  projectEndDate?: string | null;
 }

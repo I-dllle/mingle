@@ -23,11 +23,16 @@ export function useGroupChat(roomId: number) {
   }, [roomId]);
 
   const sendGroupMessage = (content: string) => {
+    const userId = Number(localStorage.getItem('userId')); // 프론트에 저장된 userId를 사용
+    if (!userId) return;
+
     const payload: ChatMessagePayload = {
       roomId,
-      chatType: ChatRoomType.GROUP,
+      senderId: userId,
+      chatType: ChatRoomType.GROUP, // DM일 때는 ChatRoomType.DM
       content,
       format: MessageFormat.TEXT,
+      createdAt: new Date().toISOString(),
     };
     sendMessage(payload);
   };

@@ -7,6 +7,8 @@ import { Role, DepartmentRole, ProjectRole } from '@/features/auth/types/roles';
 import { ChatScope } from '@/features/chat/common/types/ChatScope';
 import { RoomType } from '@/features/chat/common/types/RoomType';
 import { createGroupChatRoom } from '@/features/chat/group/services/createGroupChatRoom';
+import { getDepartments } from '@/features/user/team/services/getDepartments';
+import { DepartmentResponse } from '@/features/user/team/types/department';
 
 export default function GroupChatRoomCreatePage() {
   const router = useRouter();
@@ -15,14 +17,59 @@ export default function GroupChatRoomCreatePage() {
   // 폼 상태 정의
   const [name, setName] = useState('');
   const [roomType, setRoomType] = useState<RoomType>(RoomType.NORMAL);
-  const [scope, setScope] = useState<ChatScope>(ChatScope.DEPARTMENT);
+  const [scope, setScope] = useState<ChatScope | ''>('');
   const [teamId, setTeamId] = useState('');
   const [projectEndDate, setProjectEndDate] = useState('');
+
+  // 부서 선택 드롭다운용 상태
+  const [departments, setDepartments] = useState<DepartmentResponse[]>([]);
+  const [selectedDepartmentId, setSelectedDepartmentId] = useState<number | ''>(
+    ''
+  );
+
+  // 프로젝트 목록 상태
+  const [projects, setProjects] = useState<
+    { projectId: number; projectName: string }[]
+  >([]);
+  const [selectedProjectId, setSelectedProjectId] = useState<number | ''>('');
+
+  // 부서 목록 API 호출 (scope가 부서일 때만)
+  useEffect(() => {
+    if (scope === ChatScope.DEPARTMENT) {
+      getDepartments()
+        .then(setDepartments)
+        .catch((err) => console.error('부서 목록 불러오기 실패:', err));
+    }
+  }, [scope]);
+
+  // [자동 세팅] scope가 DEPARTMENT일 경우, 내 부서 ID로 teamId 설정
+  useEffect(() => {
+    if (selectedDepartmentId) {
+      setTeamId(String(selectedDepartmentId));
+    }
+  }, [selectedDepartmentId]);
+
+  // 프로젝트 스코프 선택 시 목록 불러오기
+  useEffect(() => {
+    if (scope === ChatScope.PROJECT) {
+      fetch('/api/v1/projects')
+        .then((res) => res.json())
+        .then((data) => setProjects(data))
+        .catch((err) => console.error('프로젝트 목록 불러오기 실패:', err));
+    }
+  }, [scope]);
+
+  // 프로젝트 선택 시 teamId 자동 설정
+  useEffect(() => {
+    if (selectedProjectId) {
+      setTeamId(String(selectedProjectId));
+    }
+  }, [selectedProjectId]);
 
   // 폼 제출 핸들러
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !teamId) {
+    if (!name || !teamId || !scope) {
       alert('채팅방 이름과 팀 ID는 필수입니다.');
       return;
     }
@@ -36,7 +83,7 @@ export default function GroupChatRoomCreatePage() {
     };
 
     try {
-      await createGroupChatRoom(formData);
+      await createGroupChatRoom(formData); // 호출 연결
       alert('채팅방이 생성되었습니다!');
       router.push('/group'); // 생성 후 목록으로 이동
     } catch (err) {
@@ -95,23 +142,55 @@ export default function GroupChatRoomCreatePage() {
           소속
           <select
             value={scope}
-            onChange={(e) => setScope(e.target.value as ChatScope)}
+            onChange={(e) => {
+              setScope(e.target.value as ChatScope);
+              setTeamId('');
+              setSelectedDepartmentId('');
+            }}
           >
+            <option value="">선택</option> {/* ← 기본 선택값 */}
             <option value={ChatScope.DEPARTMENT}>부서</option>
             <option value={ChatScope.PROJECT}>프로젝트</option>
           </select>
         </label>
 
-        <label>
-          팀 ID
-          <input
-            type="number"
-            value={teamId}
-            onChange={(e) => setTeamId(e.target.value)}
-          />
-        </label>
+        {/* 부서 선택 시 부서 드롭다운 노출 */}
+        {scope === ChatScope.DEPARTMENT && (
+          <label>
+            부서 선택
+            <select
+              value={selectedDepartmentId}
+              onChange={(e) => setSelectedDepartmentId(Number(e.target.value))}
+            >
+              <option value="">부서를 선택해주세요</option>
+              {departments.map((dept) => (
+                <option key={dept.departmentId} value={dept.departmentId}>
+                  {dept.departmentName}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
 
-        {scope === 'PROJECT' && (
+        {/* [추가] 프로젝트 선택 드롭다운 */}
+        {scope === ChatScope.PROJECT && (
+          <label>
+            프로젝트 선택
+            <select
+              value={selectedProjectId}
+              onChange={(e) => setSelectedProjectId(Number(e.target.value))}
+            >
+              <option value="">프로젝트를 선택해주세요</option>
+              {projects.map((proj) => (
+                <option key={proj.projectId} value={proj.projectId}>
+                  {proj.projectName}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+
+        {scope === ChatScope.PROJECT && (
           <label>
             프로젝트 종료일 (선택)
             <input
