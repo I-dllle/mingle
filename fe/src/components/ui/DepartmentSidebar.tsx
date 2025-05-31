@@ -1,14 +1,15 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useDepartment } from "@/context/DepartmentContext";
-import { departmentMenus } from "@/context/departmentMenus";
+import {
+  departmentMenus,
+  MenuItem as PostMenuItem,
+} from "@/constants/PostMenu";
 import styles from "./Sidebar.module.css";
+import Link from "next/link";
 
 export default function DepartmentSidebar() {
   const { name: userDepartment } = useDepartment();
-  const pathname = usePathname();
   const menus = departmentMenus[userDepartment] || departmentMenus.default;
 
   return (
@@ -19,26 +20,20 @@ export default function DepartmentSidebar() {
           &quot;Teamwork. Talent. Together.&quot;
         </div>
         <div className={styles.departmentTitle}>{userDepartment}</div>
-      </div>{" "}
+      </div>
       <ul className={styles.menuList}>
-        {menus.map((menu) => {
-          const isActive =
-            pathname === menu.path || pathname.startsWith(`${menu.path}/`);
-          return (
-            <li key={menu.id}>
-              <Link
-                href={menu.path}
-                className={`${styles.menuItem} ${
-                  isActive ? styles.menuItemActive : styles.menuItemInactive
-                }`}
-                onClick={() => console.log("클릭됨:", menu.path)}
-              >
-                {/* 아이콘 처리 */}
-                <span>{menu.name}</span>
-              </Link>
-            </li>
-          );
-        })}
+        {menus.map((menu) => (
+          <li
+            key={menu.id}
+            className={`${styles.menuItem} ${
+              menu.isActive ? styles.menuItemActive : styles.menuItemInactive
+            }`}
+          >
+            <Link href={menu.path} className={styles.menuLink}>
+              <span>{menu.name}</span>
+            </Link>
+          </li>
+        ))}
       </ul>
     </aside>
   );
