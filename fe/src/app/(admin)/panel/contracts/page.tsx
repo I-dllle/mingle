@@ -9,7 +9,6 @@ import {
   ContractSearchCondition,
   ContractStatus,
   ContractSimpleDto,
-  UserSearchDto,
   PagedResponse,
 } from "@/features/department/finance-legal/contracts/types/Contract";
 
@@ -138,17 +137,6 @@ export default function AdminContractsPage() {
   // 계약 상세 페이지로 이동
   const handleViewDetail = (id: number) => {
     router.push(`/panel/contracts/${id}?category=${category}`);
-  };
-  // 참여자 검색
-  const handleParticipantSearch = async (
-    name: string
-  ): Promise<UserSearchDto[]> => {
-    try {
-      return await contractService.searchUsers(name);
-    } catch (err) {
-      console.error("참여자 검색 실패:", err);
-      return [];
-    }
   };
 
   // 검색 실행
@@ -352,7 +340,6 @@ export default function AdminContractsPage() {
               onSearch={handleSearch}
               onReset={handleReset}
               loading={loading}
-              onParticipantSearch={handleParticipantSearch}
             />
           )}
 

@@ -4,7 +4,6 @@ export async function apiClient<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}${url}`, {
-    method: options.method || "GET", // 기본값은 GET
     ...options,
     headers: {
       "Content-Type": "application/json",
