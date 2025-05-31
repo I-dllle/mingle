@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createProject } from '@/features/services/createProject';
+import { createProject } from '@/features/projectleader/services/createProject';
 
 export default function ProjectCreatePage() {
   const router = useRouter();

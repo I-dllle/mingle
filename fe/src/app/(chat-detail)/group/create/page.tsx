@@ -5,10 +5,11 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { Role, DepartmentRole, ProjectRole } from '@/features/auth/types/roles';
 import { ChatScope } from '@/features/chat/common/types/ChatScope';
-import { RoomType } from '@/features/chat/common/types/RoomType';
 import { createGroupChatRoom } from '@/features/chat/group/services/createGroupChatRoom';
 import { getDepartments } from '@/features/user/team/services/getDepartments';
 import { DepartmentResponse } from '@/features/user/team/types/department';
+import { getProjects } from '@/features/projectleader/services/getProjects';
+import { ProjectResponse } from '@/features/projectleader/types/project';
 
 export default function GroupChatRoomCreatePage() {
   const router = useRouter();
@@ -16,10 +17,8 @@ export default function GroupChatRoomCreatePage() {
 
   // 폼 상태 정의
   const [name, setName] = useState('');
-  const [roomType, setRoomType] = useState<RoomType>(RoomType.NORMAL);
   const [scope, setScope] = useState<ChatScope | ''>('');
   const [teamId, setTeamId] = useState('');
-  const [projectEndDate, setProjectEndDate] = useState('');
 
   // 부서 선택 드롭다운용 상태
   const [departments, setDepartments] = useState<DepartmentResponse[]>([]);
@@ -28,9 +27,7 @@ export default function GroupChatRoomCreatePage() {
   );
 
   // 프로젝트 목록 상태
-  const [projects, setProjects] = useState<
-    { projectId: number; projectName: string }[]
-  >([]);
+  const [projects, setProjects] = useState<ProjectResponse[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<number | ''>('');
 
   // 부서 목록 API 호출 (scope가 부서일 때만)
@@ -45,16 +42,21 @@ export default function GroupChatRoomCreatePage() {
   // [자동 세팅] scope가 DEPARTMENT일 경우, 내 부서 ID로 teamId 설정
   useEffect(() => {
     if (selectedDepartmentId) {
-      setTeamId(String(selectedDepartmentId));
+      const dept = departments.find(
+        (d) => d.departmentId === selectedDepartmentId
+      );
+      if (dept) {
+        setTeamId(String(selectedDepartmentId));
+        setName(dept.departmentName); // 부서 이름으로 채팅방 이름 설정
+      }
     }
-  }, [selectedDepartmentId]);
+  }, [selectedDepartmentId, departments]);
 
   // 프로젝트 스코프 선택 시 목록 불러오기
   useEffect(() => {
     if (scope === ChatScope.PROJECT) {
-      fetch('/api/v1/projects')
-        .then((res) => res.json())
-        .then((data) => setProjects(data))
+      getProjects()
+        .then(setProjects)
         .catch((err) => console.error('프로젝트 목록 불러오기 실패:', err));
     }
   }, [scope]);
@@ -76,10 +78,8 @@ export default function GroupChatRoomCreatePage() {
 
     const formData = {
       name,
-      roomType,
       scope,
       teamId: Number(teamId),
-      projectEndDate: projectEndDate || null,
     };
 
     try {
@@ -119,26 +119,6 @@ export default function GroupChatRoomCreatePage() {
         style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
       >
         <label>
-          채팅방 이름
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </label>
-
-        <label>
-          방 타입
-          <select
-            value={roomType}
-            onChange={(e) => setRoomType(e.target.value as RoomType)}
-          >
-            <option value={RoomType.NORMAL}>일반방</option>
-            <option value={RoomType.ARCHIVE}>자료방</option>
-          </select>
-        </label>
-
-        <label>
           소속
           <select
             value={scope}
@@ -146,6 +126,8 @@ export default function GroupChatRoomCreatePage() {
               setScope(e.target.value as ChatScope);
               setTeamId('');
               setSelectedDepartmentId('');
+              setSelectedProjectId('');
+              setName('');
             }}
           >
             <option value="">선택</option> {/* ← 기본 선택값 */}
@@ -172,31 +154,41 @@ export default function GroupChatRoomCreatePage() {
           </label>
         )}
 
-        {/* [추가] 프로젝트 선택 드롭다운 */}
+        {/* 프로젝트 선택 드롭다운 */}
         {scope === ChatScope.PROJECT && (
-          <label>
-            프로젝트 선택
-            <select
-              value={selectedProjectId}
-              onChange={(e) => setSelectedProjectId(Number(e.target.value))}
-            >
-              <option value="">프로젝트를 선택해주세요</option>
-              {projects.map((proj) => (
-                <option key={proj.projectId} value={proj.projectId}>
-                  {proj.projectName}
-                </option>
-              ))}
-            </select>
-          </label>
+          <>
+            <label>
+              프로젝트 선택
+              <select
+                value={selectedProjectId}
+                onChange={(e) => setSelectedProjectId(Number(e.target.value))}
+              >
+                <option value="">프로젝트를 선택해주세요</option>
+                {projects.map((proj) => (
+                  <option key={proj.projectId} value={proj.projectId}>
+                    {proj.projectName}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            {/* 프로젝트 없음 안내 메시지 */}
+            {projects.length === 0 && (
+              <p style={{ color: 'gray' }}>
+                등록된 프로젝트가 없습니다. 먼저 프로젝트를 생성해 주세요.
+              </p>
+            )}
+          </>
         )}
 
+        {/* 채팅방 이름은 프로젝트일 경우에만 직접 입력 */}
         {scope === ChatScope.PROJECT && (
           <label>
-            프로젝트 종료일 (선택)
+            채팅방 이름
             <input
-              type="date"
-              value={projectEndDate}
-              onChange={(e) => setProjectEndDate(e.target.value)}
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
           </label>
         )}
