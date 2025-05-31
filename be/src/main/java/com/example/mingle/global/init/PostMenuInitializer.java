@@ -127,8 +127,6 @@ public class PostMenuInitializer implements ApplicationRunner {
             initializeMenu("SNS_CONTENT", "SNS컨텐츠", "마케팅 - SNS 콘텐츠 게시판", "Marketing & PR", creator);
             initializeMenu("EVENTS", "이벤트", "마케팅 - 이벤트 게시판", "Marketing & PR", creator);
 
-            //경영진(추후구현)
-
 
             //정산/법무팀
             initializeMenu("REVENUE_SETTLEMENT", "수익 정산 내역", "수익 정산 내역 등록 게시판", "Finance & Legal", creator);

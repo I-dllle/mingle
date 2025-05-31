@@ -3,12 +3,8 @@ package com.example.mingle.domain.admin.panel.service;
 import com.example.mingle.domain.admin.panel.dto.ContractSearchCondition;
 import com.example.mingle.domain.post.legalpost.entity.Contract;
 import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
+import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
-
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +18,7 @@ public class ContractSpecification {
             if (condition.getTeamId() != null) {
                 predicates.add(cb.equal(root.get("team").get("id"), condition.getTeamId()));
             }
+
 
             // status 필터 적용
             if (condition.getStatus() != null) {
@@ -48,6 +45,11 @@ public class ContractSpecification {
                 predicates.add(cb.lessThanOrEqualTo(root.get("startDate"), condition.getStartDateTo()));
             }
 
+            if (condition.getParticipantUserId() != null) {
+                // 'participants'는 Contract 엔티티에서의 필드명이어야 함 (@ManyToMany or @OneToMany(mappedBy = "contract"))
+                Join<Object, Object> participantJoin = root.join("participants", JoinType.INNER);
+                predicates.add(cb.equal(participantJoin.get("id"), condition.getParticipantUserId()));
+            }
             return cb.and(predicates.toArray(new Predicate[0]));
         };
     }

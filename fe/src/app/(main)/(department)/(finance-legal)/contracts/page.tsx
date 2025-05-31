@@ -1,1211 +1,1203 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import {
-  ContractCategory,
+  ContractSearchCondition,
+  ContractResponse,
   ContractSimpleDto,
-  ContractDetailDto,
   ContractStatus,
-  ChangeStatusRequest,
-  CreateContractRequest,
-  CreateInternalContractRequest,
   ContractType,
-  RatioType,
-  SettlementRatioDto,
-  OfflineSignRequest,
+  ContractCategory,
+  UserSearchDto,
 } from "@/features/department/finance-legal/contracts/types/Contract";
-import { contractService } from "@/features/department/finance-legal/contracts/services/contractService";
+import {
+  getFilteredContracts,
+  getAllContracts,
+  searchUsers,
+  getExpiringContracts,
+} from "@/features/department/finance-legal/contracts/services/contractService";
 
-interface ContractsPageProps {
-  searchParams: { [key: string]: string | string[] | undefined };
+interface PagedResponse {
+  content: ContractSimpleDto[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  first: boolean;
+  last: boolean;
 }
 
-export default function ContractsPage({ searchParams }: ContractsPageProps) {
-  const [contracts, setContracts] = useState<ContractSimpleDto[]>([]);
-  const [selectedContract, setSelectedContract] =
-    useState<ContractDetailDto | null>(null);
+export default function ContractsPage() {
   const [category, setCategory] = useState<ContractCategory>(
     ContractCategory.EXTERNAL
   );
+  const [showFilters, setShowFilters] = useState(false);
+  const [contracts, setContracts] = useState<ContractSimpleDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // 페이징 상태
   const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
-  const [showDetail, setShowDetail] = useState(false);
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [showOfflineSignForm, setShowOfflineSignForm] = useState(false);
-  const [showElectronicSignForm, setShowElectronicSignForm] = useState(false);
-  const [offlineSignData, setOfflineSignData] = useState({
-    signerName: "",
-    memo: "",
+  const [totalElements, setTotalElements] = useState(0);
+  // 검색 조건 상태
+  const [searchCondition, setSearchCondition] =
+    useState<ContractSearchCondition>({});
+  const [tempCondition, setTempCondition] = useState<ContractSearchCondition>({
+    contractCategory: category,
   });
-  const [electronicSignData, setElectronicSignData] = useState({
-    userId: 1,
-  });
-  const [createFormData, setCreateFormData] = useState({
-    // 외부 계약용 필드
-    userId: 1,
-    teamId: null as number | null,
-    summary: "",
-    title: "",
-    contractCategory: ContractCategory.EXTERNAL,
-    startDate: "",
-    endDate: "",
-    contractType: ContractType.ELECTRONIC,
-    contractAmount: 0,
-    useManualRatios: false,
-    ratios: [] as SettlementRatioDto[],
-    targetUserIds: [] as number[],
-    // 내부 계약용 필드
-    ratioType: RatioType.ARTIST,
-    defaultRatio: 50,
-    file: null as File | null,
-  });
-  // 계약서 목록 조회
-  const fetchContracts = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await contractService.getAllContracts(
-        category,
-        currentPage,
-        10
-      );
-      setContracts(response.content);
-      setTotalPages(response.totalPages);
 
-      // 첫 번째 계약이 있으면 자동으로 상세 정보 로드
-      if (response.content.length > 0) {
-        const firstContract = response.content[0];
-        await fetchContractDetail(firstContract.id);
+  // 참여자 검색 관련 상태
+  const [participantName, setParticipantName] = useState<string>("");
+  const [searchingParticipant, setSearchingParticipant] =
+    useState<boolean>(false);
+  const [participantResults, setParticipantResults] = useState<UserSearchDto[]>(
+    []
+  );
+  const [selectedParticipant, setSelectedParticipant] =
+    useState<UserSearchDto | null>(null);
+  // 정렬 상태
+  const [sortField, setSortField] = useState("createdAt");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+
+  // 만료 예정 계약 수 상태
+  const [expiringCount, setExpiringCount] = useState(0); // 카테고리 변경 핸들러
+  const handleCategoryChange = (newCategory: ContractCategory) => {
+    setCategory(newCategory);
+    setTempCondition({
+      ...tempCondition,
+      contractCategory: newCategory,
+    });
+    fetchContracts(0, { ...searchCondition, contractCategory: newCategory });
+    fetchExpiringContracts(newCategory);
+  };
+  // 참여자 이름으로 검색
+  const handleParticipantSearch = async () => {
+    if (participantName.trim().length < 2) {
+      setParticipantResults([]);
+      return;
+    }
+
+    setSearchingParticipant(true);
+    try {
+      const results = await searchUsers(participantName.trim());
+      if (results.length === 0) {
+        setParticipantResults([]);
       } else {
-        // 계약이 없으면 상세 정보 초기화
-        setSelectedContract(null);
-        setShowDetail(false);
+        setParticipantResults(results);
       }
-    } catch (err) {
+    } catch (error) {
+      console.error("사용자 검색 실패:", error);
+      setParticipantResults([]);
       setError(
-        err instanceof Error
-          ? err.message
-          : "계약서 목록을 불러오는데 실패했습니다."
+        error instanceof Error ? error.message : "사용자 검색에 실패했습니다."
       );
     } finally {
-      setLoading(false);
-    }
-  };
-  // 계약서 상세 조회
-  const fetchContractDetail = async (id: number) => {
-    try {
-      const detail = await contractService.getContractDetail(id, category);
-      setSelectedContract(detail);
-      setShowDetail(true);
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "계약서 상세 정보를 불러오는데 실패했습니다."
-      );
+      setSearchingParticipant(false);
     }
   };
 
-  // 계약서 상태 변경
-  const handleStatusChange = async (id: number, nextStatus: ContractStatus) => {
-    try {
-      const request: ChangeStatusRequest = { nextStatus };
-      await contractService.changeContractStatus(id, request, category);
-      await fetchContracts(); // 목록 새로고침
-      if (selectedContract && selectedContract.id === id) {
-        await fetchContractDetail(id); // 상세 정보 새로고침
-      }
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "상태 변경에 실패했습니다."
-      );
-    }
+  // 디바운스를 위한 타이머 변수
+  const [searchTimer, setSearchTimer] = useState<NodeJS.Timeout | null>(null);
+  // IME 조합 상태 추가
+  const [isComposing, setIsComposing] = useState(false);
+
+  // 참여자 선택
+  const handleSelectParticipant = (user: UserSearchDto) => {
+    setSelectedParticipant(user);
+    const newCondition = {
+      ...tempCondition,
+      participantUserId: user.id,
+    };
+    setTempCondition(newCondition);
+    // 변경된 조건으로 즉시 검색 실행
+    setSearchCondition(newCondition);
+    fetchContracts(0, newCondition);
+    // 검색 결과 닫기
+    setParticipantResults([]);
+    setParticipantName(user.nickname); // 선택된 사용자 이름을 입력창에 표시
   };
 
-  // 계약서 확정
-  const handleConfirm = async (id: number) => {
-    try {
-      await contractService.confirmContract(id, category);
-      await fetchContracts();
-      if (selectedContract && selectedContract.id === id) {
-        await fetchContractDetail(id);
-      }
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "계약서 확정에 실패했습니다."
-      );
-    }
-  };
-  // 계약서 삭제
-  const handleDelete = async (id: number) => {
-    if (!confirm("정말로 이 계약서를 삭제하시겠습니까?")) {
-      return;
-    }
-
-    try {
-      await contractService.deleteContract(id, category);
-      await fetchContracts();
-      if (selectedContract && selectedContract.id === id) {
-        setSelectedContract(null);
-        setShowDetail(false);
-      }
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "계약서 삭제에 실패했습니다."
-      );
-    }
-  };
-  // 계약서 생성
-  const handleCreateContract = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!createFormData.file) {
-      setError("파일을 선택해주세요.");
-      return;
-    }
-
+  // 참여자 선택 해제
+  const handleClearParticipant = () => {
+    setSelectedParticipant(null);
+    setParticipantName("");
+    const newCondition = {
+      ...tempCondition,
+      participantUserId: undefined,
+    };
+    setTempCondition(newCondition);
+    // 변경된 조건으로 즉시 검색 실행
+    setSearchCondition(newCondition);
+    fetchContracts(0, newCondition);
+  }; // 계약서 목록 조회
+  const fetchContracts = async (
+    page: number = 0,
+    condition: ContractSearchCondition = { contractCategory: category },
+    size: number = pageSize
+  ) => {
     setLoading(true);
     setError(null);
+
     try {
-      if (createFormData.contractCategory === ContractCategory.EXTERNAL) {
-        const request: CreateContractRequest = {
-          userId: createFormData.userId,
-          teamId: createFormData.teamId,
-          summary: createFormData.summary,
-          title: createFormData.title,
-          contractCategory: createFormData.contractCategory,
-          startDate: createFormData.startDate,
-          endDate: createFormData.endDate,
-          contractType: createFormData.contractType,
-          contractAmount: createFormData.contractAmount,
-          useManualRatios: createFormData.useManualRatios,
-          ratios: createFormData.ratios,
-          targetUserIds: createFormData.targetUserIds,
-        };
-        await contractService.createContract(request, createFormData.file);
-      } else {
-        const request: CreateInternalContractRequest = {
-          userId: createFormData.userId,
-          ratioType: createFormData.ratioType,
-          defaultRatio: createFormData.defaultRatio,
-          startDate: createFormData.startDate,
-          endDate: createFormData.endDate,
-        };
-        await contractService.createInternalContract(
-          request,
-          createFormData.file
+      // 필터링 조건이 있는 경우 getFilteredContracts 사용
+      const hasFilterConditions =
+        condition.teamId ||
+        condition.status ||
+        condition.contractType ||
+        condition.startDateFrom ||
+        condition.startDateTo ||
+        condition.participantUserId;
+      if (hasFilterConditions) {
+        const response = await getFilteredContracts(
+          condition,
+          page,
+          size,
+          sortField,
+          sortDirection
         );
+        setContracts(response.content);
+        setCurrentPage(response.number);
+        setTotalPages(response.totalPages);
+        setTotalElements(response.totalElements);
+      } else {
+        const response = await getAllContracts(
+          condition.contractCategory || category,
+          page,
+          size,
+          sortField,
+          sortDirection
+        );
+        setContracts(response.content);
+        setCurrentPage(response.number);
+        setTotalPages(response.totalPages);
+        setTotalElements(response.totalElements);
       }
-
-      // 폼 초기화
-      setCreateFormData({
-        userId: 1,
-        teamId: 1,
-        summary: "",
-        title: "",
-        contractCategory: ContractCategory.EXTERNAL,
-        startDate: "",
-        endDate: "",
-        contractType: ContractType.ELECTRONIC,
-        contractAmount: 0,
-        useManualRatios: false,
-        ratios: [],
-        targetUserIds: [],
-        ratioType: RatioType.ARTIST,
-        defaultRatio: 50,
-        file: null,
-      });
-      setShowCreateForm(false);
-      await fetchContracts();
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "계약서 생성에 실패했습니다."
+        err instanceof Error ? err.message : "계약서 목록 조회에 실패했습니다."
       );
     } finally {
       setLoading(false);
     }
   };
 
-  // 오프라인 서명 처리
-  const handleOfflineSign = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedContract) return;
-
-    setLoading(true);
-    setError(null);
-
+  // 만료 예정 계약 수 조회
+  const fetchExpiringContracts = async (category: ContractCategory) => {
     try {
-      const request: OfflineSignRequest = {
-        signerName: offlineSignData.signerName,
-        memo: offlineSignData.memo,
-      };
-
-      await contractService.signOfflineAsAdmin(selectedContract.id, request);
-
-      // 폼 초기화
-      setOfflineSignData({
-        signerName: "",
-        memo: "",
-      });
-      setShowOfflineSignForm(false);
-
-      // 상세 정보 및 목록 새로고침
-      await fetchContractDetail(selectedContract.id);
-      await fetchContracts();
+      const expiringContracts = await getExpiringContracts(category);
+      setExpiringCount(expiringContracts.length);
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "오프라인 서명 처리에 실패했습니다."
-      );
-    } finally {
-      setLoading(false);
+      console.error("만료 예정 계약 조회 실패:", err);
+      setExpiringCount(0);
     }
   };
 
-  // 전자 서명 요청 생성
-  const handleElectronicSign = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedContract) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const signatureUrl = await contractService.signOnBehalf(
-        selectedContract.id,
-        electronicSignData.userId
-      );
-
-      // 서명 URL을 새 창에서 열기
-      window.open(signatureUrl, "_blank");
-
-      // 폼 초기화
-      setElectronicSignData({
-        userId: 1,
-      });
-      setShowElectronicSignForm(false);
-
-      // 상세 정보 및 목록 새로고침
-      await fetchContractDetail(selectedContract.id);
-      await fetchContracts();
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "전자 서명 요청 생성에 실패했습니다."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 상태에 따른 색상 반환
-  const getStatusColor = (status: ContractStatus) => {
-    switch (status) {
-      case ContractStatus.DRAFT:
-        return "text-gray-500";
-      case ContractStatus.REVIEW:
-        return "text-yellow-500";
-      case ContractStatus.SIGNED:
-        return "text-blue-500";
-      case ContractStatus.CONFIRMED:
-        return "text-green-500";
-      case ContractStatus.ACTIVE:
-        return "text-green-600";
-      case ContractStatus.EXPIRED:
-        return "text-red-500";
-      case ContractStatus.TERMINATED:
-        return "text-red-600";
-      default:
-        return "text-gray-500";
-    }
-  };
-
-  // 상태 텍스트 반환
-  const getStatusText = (status: ContractStatus) => {
-    switch (status) {
-      case ContractStatus.DRAFT:
-        return "초안";
-      case ContractStatus.REVIEW:
-        return "검토중";
-      case ContractStatus.SIGNED:
-        return "서명됨";
-      case ContractStatus.CONFIRMED:
-        return "확정됨";
-      case ContractStatus.ACTIVE:
-        return "활성";
-      case ContractStatus.EXPIRED:
-        return "만료됨";
-      case ContractStatus.TERMINATED:
-        return "종료됨";
-      default:
-        return status;
-    }
-  };
-
-  // 컴포넌트 마운트 시 및 카테고리/페이지 변경 시 데이터 로드
+  // 초기 로드
   useEffect(() => {
     fetchContracts();
-  }, [category, currentPage]);
+    fetchExpiringContracts(category);
+  }, [sortField, sortDirection, category]); // 검색 실행
+  const handleSearch = () => {
+    // 날짜 형식을 YYYY-MM-DD로 변환하여 백엔드 호환성 확보
+    const normalizedCondition = {
+      ...tempCondition,
+      startDateFrom: tempCondition.startDateFrom
+        ? new Date(tempCondition.startDateFrom + "T00:00:00")
+            .toISOString()
+            .split("T")[0]
+        : undefined,
+      startDateTo: tempCondition.startDateTo
+        ? new Date(tempCondition.startDateTo + "T23:59:59")
+            .toISOString()
+            .split("T")[0]
+        : undefined,
+    };
+
+    setSearchCondition(normalizedCondition);
+    setCurrentPage(0);
+    fetchContracts(0, normalizedCondition);
+  };
+  // 검색 초기화
+  const handleReset = () => {
+    const resetCondition = { contractCategory: category };
+    setTempCondition(resetCondition);
+    setSearchCondition(resetCondition);
+    setCurrentPage(0);
+    // 참여자 검색 관련 상태 초기화
+    setParticipantName("");
+    setParticipantResults([]);
+    setSelectedParticipant(null);
+    fetchContracts(0, resetCondition);
+  };
+
+  // 페이지 변경
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    fetchContracts(page, searchCondition);
+  };
+
+  // 정렬 변경
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("desc");
+    }
+  };
+
+  // 상태 번역
+  const getStatusText = (status: ContractStatus) => {
+    const statusMap = {
+      [ContractStatus.DRAFT]: "초안",
+      [ContractStatus.REVIEW]: "검토중",
+      [ContractStatus.SIGNED_OFFLINE]: "오프라인서명",
+      [ContractStatus.SIGNED]: "서명됨",
+      [ContractStatus.CONFIRMED]: "확정됨",
+      [ContractStatus.ACTIVE]: "활성화",
+      [ContractStatus.EXPIRED]: "만료됨",
+      [ContractStatus.PENDING]: "대기중",
+      [ContractStatus.TERMINATED]: "종료됨",
+    };
+    return statusMap[status] || status;
+  };
+
+  // 상태별 스타일 클래스
+  const getStatusClass = (status: ContractStatus) => {
+    const classMap = {
+      [ContractStatus.DRAFT]: "bg-gray-100 text-gray-800",
+      [ContractStatus.REVIEW]: "bg-yellow-100 text-yellow-800",
+      [ContractStatus.SIGNED_OFFLINE]: "bg-blue-100 text-blue-800",
+      [ContractStatus.SIGNED]: "bg-green-100 text-green-800",
+      [ContractStatus.CONFIRMED]: "bg-green-100 text-green-800",
+      [ContractStatus.ACTIVE]: "bg-emerald-100 text-emerald-800",
+      [ContractStatus.EXPIRED]: "bg-red-100 text-red-800",
+      [ContractStatus.PENDING]: "bg-orange-100 text-orange-800",
+      [ContractStatus.TERMINATED]: "bg-gray-100 text-gray-800",
+    };
+    return classMap[status] || "bg-gray-100 text-gray-800";
+  };
   return (
     <div className="container mx-auto p-6">
-      {" "}
-      <div className="flex justify-end items-center mb-6">
-        <div className="flex gap-3">
-          <button
-            onClick={() => {
-              // 계약서 목록 페이지로 이동
-              window.location.href = "/contracts/list";
-            }}
-            className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-          >
-            계약서 목록
-          </button>
-          <button
-            onClick={() => setShowCreateForm(!showCreateForm)}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            {showCreateForm ? "취소" : "계약서 생성"}
-          </button>
-        </div>
-      </div>{" "}
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
-      {/* 계약서 생성 폼 */}
-      {showCreateForm && (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h2 className="text-lg font-semibold mb-4">계약서 생성</h2>
-          <form onSubmit={handleCreateContract} className="space-y-4">
-            {/* 카테고리 선택 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                계약 카테고리
-              </label>
-              <select
-                value={createFormData.contractCategory}
-                onChange={(e) =>
-                  setCreateFormData({
-                    ...createFormData,
-                    contractCategory: e.target.value as ContractCategory,
-                  })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              >
-                <option value={ContractCategory.EXTERNAL}>외부 계약</option>
-                <option value={ContractCategory.INTERNAL}>내부 계약</option>
-              </select>
-            </div>{" "}
-            {createFormData.contractCategory === ContractCategory.EXTERNAL ? (
-              <>
-                {" "}
-                {/* 작성자 ID와 팀 ID */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      작성자 ID
-                    </label>
-                    <input
-                      type="number"
-                      value={createFormData.userId}
-                      onChange={(e) =>
-                        setCreateFormData({
-                          ...createFormData,
-                          userId: Number(e.target.value),
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      min="1"
-                      required
-                    />
-                  </div>{" "}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      팀 ID (선택사항)
-                    </label>
-                    <input
-                      type="number"
-                      value={createFormData.teamId || ""}
-                      onChange={(e) =>
-                        setCreateFormData({
-                          ...createFormData,
-                          teamId: e.target.value
-                            ? Number(e.target.value)
-                            : null,
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      min="1"
-                      placeholder="팀 ID를 입력하세요 (선택사항)"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      제목
-                    </label>
-                    <input
-                      type="text"
-                      value={createFormData.title}
-                      onChange={(e) =>
-                        setCreateFormData({
-                          ...createFormData,
-                          title: e.target.value,
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      계약 금액
-                    </label>
-                    <input
-                      type="number"
-                      value={createFormData.contractAmount}
-                      onChange={(e) =>
-                        setCreateFormData({
-                          ...createFormData,
-                          contractAmount: Number(e.target.value),
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      required
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    요약
-                  </label>
-                  <textarea
-                    value={createFormData.summary}
-                    onChange={(e) =>
-                      setCreateFormData({
-                        ...createFormData,
-                        summary: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    rows={3}
-                    required
-                  />
-                </div>{" "}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      계약 타입
-                    </label>
-                    <select
-                      value={createFormData.contractType}
-                      onChange={(e) =>
-                        setCreateFormData({
-                          ...createFormData,
-                          contractType: e.target.value as ContractType,
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    >
-                      <option value={ContractType.ELECTRONIC}>전자 계약</option>
-                      <option value={ContractType.PAPER}>종이 계약</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      수동 비율 사용
-                    </label>
-                    <select
-                      value={createFormData.useManualRatios.toString()}
-                      onChange={(e) =>
-                        setCreateFormData({
-                          ...createFormData,
-                          useManualRatios: e.target.value === "true",
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    >
-                      <option value="false">내부계약 기준</option>
-                      <option value="true">수동 입력</option>
-                    </select>
-                  </div>
-                </div>
-                {/* 수동 비율 입력 섹션 */}
-                {createFormData.useManualRatios && (
-                  <div className="border border-gray-200 rounded-lg p-4">
-                    <h3 className="text-md font-medium mb-3">정산 비율 설정</h3>
-                    <div className="space-y-3">
-                      {createFormData.ratios.map((ratio, index) => (
-                        <div
-                          key={index}
-                          className="grid grid-cols-4 gap-3 items-end"
-                        >
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              비율 타입
-                            </label>
-                            <select
-                              value={ratio.ratioType}
-                              onChange={(e) => {
-                                const newRatios = [...createFormData.ratios];
-                                newRatios[index].ratioType = e.target
-                                  .value as RatioType;
-                                setCreateFormData({
-                                  ...createFormData,
-                                  ratios: newRatios,
-                                });
-                              }}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                            >
-                              <option value={RatioType.ARTIST}>아티스트</option>
-                              <option value={RatioType.PRODUCER}>
-                                프로듀서
-                              </option>
-                              <option value={RatioType.AGENCY}>회사</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              사용자 ID
-                            </label>
-                            <input
-                              type="number"
-                              value={ratio.userId}
-                              onChange={(e) => {
-                                const newRatios = [...createFormData.ratios];
-                                newRatios[index].userId = Number(
-                                  e.target.value
-                                );
-                                setCreateFormData({
-                                  ...createFormData,
-                                  ratios: newRatios,
-                                });
-                              }}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                              min="1"
-                              required
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              비율 (%)
-                            </label>
-                            <input
-                              type="number"
-                              value={ratio.percentage}
-                              onChange={(e) => {
-                                const newRatios = [...createFormData.ratios];
-                                newRatios[index].percentage = Number(
-                                  e.target.value
-                                );
-                                setCreateFormData({
-                                  ...createFormData,
-                                  ratios: newRatios,
-                                });
-                              }}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                              min="0"
-                              max="100"
-                              required
-                            />
-                          </div>
-                          <div>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const newRatios = createFormData.ratios.filter(
-                                  (_, i) => i !== index
-                                );
-                                setCreateFormData({
-                                  ...createFormData,
-                                  ratios: newRatios,
-                                });
-                              }}
-                              className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                            >
-                              삭제
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const newRatio: SettlementRatioDto = {
-                            ratioType: RatioType.ARTIST,
-                            userId: 1,
-                            percentage: 0,
-                          };
-                          setCreateFormData({
-                            ...createFormData,
-                            ratios: [...createFormData.ratios, newRatio],
-                          });
-                        }}
-                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                      >
-                        비율 추가
-                      </button>
-                    </div>
-                  </div>
-                )}
-                {/* 내부계약 기준 대상 사용자 입력 섹션 */}
-                {!createFormData.useManualRatios && (
-                  <div className="border border-gray-200 rounded-lg p-4">
-                    <h3 className="text-md font-medium mb-3">
-                      내부계약 기준 대상 사용자
-                    </h3>
-                    <div className="space-y-3">
-                      {createFormData.targetUserIds.map((userId, index) => (
-                        <div key={index} className="flex gap-3 items-end">
-                          <div className="flex-1">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              사용자 ID
-                            </label>
-                            <input
-                              type="number"
-                              value={userId}
-                              onChange={(e) => {
-                                const newUserIds = [
-                                  ...createFormData.targetUserIds,
-                                ];
-                                newUserIds[index] = Number(e.target.value);
-                                setCreateFormData({
-                                  ...createFormData,
-                                  targetUserIds: newUserIds,
-                                });
-                              }}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                              min="1"
-                              required
-                            />
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newUserIds =
-                                createFormData.targetUserIds.filter(
-                                  (_, i) => i !== index
-                                );
-                              setCreateFormData({
-                                ...createFormData,
-                                targetUserIds: newUserIds,
-                              });
-                            }}
-                            className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                          >
-                            삭제
-                          </button>
-                        </div>
-                      ))}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setCreateFormData({
-                            ...createFormData,
-                            targetUserIds: [...createFormData.targetUserIds, 1],
-                          });
-                        }}
-                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                      >
-                        사용자 추가
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </>
-            ) : (
-              <>
-                {/* 계약 당사자 ID 입력 */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    계약 당사자 ID
-                  </label>
-                  <input
-                    type="number"
-                    value={createFormData.userId}
-                    onChange={(e) =>
-                      setCreateFormData({
-                        ...createFormData,
-                        userId: Number(e.target.value),
-                      })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    min="1"
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      비율 타입
-                    </label>
-                    <select
-                      value={createFormData.ratioType}
-                      onChange={(e) =>
-                        setCreateFormData({
-                          ...createFormData,
-                          ratioType: e.target.value as RatioType,
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    >
-                      <option value={RatioType.ARTIST}>아티스트</option>
-                      <option value={RatioType.PRODUCER}>프로듀서</option>
-                      <option value={RatioType.AGENCY}>회사</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      기본 비율 (%)
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={createFormData.defaultRatio}
-                      onChange={(e) =>
-                        setCreateFormData({
-                          ...createFormData,
-                          defaultRatio: Number(e.target.value),
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      required
-                    />
-                  </div>
-                </div>
-              </>
-            )}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  시작일
-                </label>
-                <input
-                  type="date"
-                  value={createFormData.startDate}
-                  onChange={(e) =>
-                    setCreateFormData({
-                      ...createFormData,
-                      startDate: e.target.value,
-                    })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  종료일
-                </label>
-                <input
-                  type="date"
-                  value={createFormData.endDate}
-                  onChange={(e) =>
-                    setCreateFormData({
-                      ...createFormData,
-                      endDate: e.target.value,
-                    })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  required
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                계약서 파일
-              </label>
-              <input
-                type="file"
-                onChange={(e) =>
-                  setCreateFormData({
-                    ...createFormData,
-                    file: e.target.files?.[0] || null,
-                  })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                accept=".pdf,.doc,.docx"
-                required
-              />
-            </div>
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
-              >
-                {loading ? "생성 중..." : "생성"}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowCreateForm(false)}
-                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-              >
-                취소
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {" "}
-        {/* 계약서 목록 */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">대기중인 계약서 목록</h2>{" "}
-            <select
-              value={category}
-              onChange={(e) => {
-                setCategory(e.target.value as ContractCategory);
-                setCurrentPage(0);
-              }}
-              className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-0 focus:border-gray-300"
-            >
-              <option value={ContractCategory.EXTERNAL}>외부 계약</option>
-              <option value={ContractCategory.INTERNAL}>내부 계약</option>
-            </select>
+      {/* 헤더 영역 */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">
+              계약 관리 대시보드
+            </h1>
+            <p className="text-gray-600 mt-1">
+              계약서 관리 및 진행 상황을 확인할 수 있습니다.
+            </p>
           </div>
-
-          {loading ? (
-            <div className="text-center py-4">로딩 중...</div>
-          ) : contracts.length === 0 ? (
-            <div className="text-center py-4 text-gray-500">
-              계약서가 없습니다.
-            </div>
-          ) : (
-            <>
-              <div className="space-y-3">
-                {contracts.map((contract) => (
-                  <div
-                    key={contract.id}
-                    className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer"
-                    onClick={() => fetchContractDetail(contract.id)}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-medium">{contract.title}</h3>
-                        <p className="text-sm text-gray-600">
-                          {contract.startDate} ~ {contract.endDate}
-                        </p>
-                        <span
-                          className={`text-sm ${getStatusColor(
-                            contract.category as any
-                          )}`}
-                        >
-                          {contract.category === ContractCategory.EXTERNAL
-                            ? "외부계약"
-                            : "내부계약"}
-                        </span>
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(contract.id);
-                          }}
-                          className="text-red-500 hover:text-red-700 text-sm"
-                        >
-                          삭제
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* 페이지네이션 */}
-              {totalPages > 1 && (
-                <div className="flex justify-center mt-6 gap-2">
-                  <button
-                    onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
-                    disabled={currentPage === 0}
-                    className="px-3 py-1 border border-gray-300 rounded disabled:opacity-50"
-                  >
-                    이전
-                  </button>
-                  <span className="px-3 py-1">
-                    {currentPage + 1} / {totalPages}
-                  </span>
-                  <button
-                    onClick={() =>
-                      setCurrentPage(Math.min(totalPages - 1, currentPage + 1))
-                    }
-                    disabled={currentPage === totalPages - 1}
-                    className="px-3 py-1 border border-gray-300 rounded disabled:opacity-50"
-                  >
-                    다음
-                  </button>
-                </div>
-              )}
-            </>
-          )}
+          <div className="flex gap-2">
+            <Link
+              href={`contracts/create`}
+              className="inline-flex items-center bg-blue-600 text-white px-4 py-2.5 rounded-md hover:bg-blue-700 transition-colors shadow-sm font-medium"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 mr-1.5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              계약서 생성
+            </Link>
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="inline-flex items-center bg-white border border-gray-300 text-gray-700 px-4 py-2.5 rounded-md hover:bg-gray-50 transition-colors shadow-sm font-medium"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 mr-1.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                />
+              </svg>
+              {showFilters ? "필터 숨기기" : "필터 보기"}
+            </button>
+          </div>
         </div>{" "}
-        {/* 계약서 상세 정보 */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-lg font-semibold mb-4">
-            {category === ContractCategory.INTERNAL
-              ? "내부 계약 상세"
-              : "외부 계약서 상세"}
-          </h2>
-          {!showDetail ? (
-            <div className="text-center py-8 text-gray-500">
-              계약서를 선택하여 상세 정보를 확인하세요.
-            </div>
-          ) : selectedContract ? (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  ID
-                </label>
-                <p className="text-sm text-gray-900">{selectedContract.id}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  요약
-                </label>
-                <p className="text-sm text-gray-900">
-                  {selectedContract.summary}
-                </p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  서명자
-                </label>
-                <p className="text-sm text-gray-900">
-                  {selectedContract.signerName}
-                </p>
-              </div>{" "}
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  메모
-                </label>
-                <p className="text-sm text-gray-900">
-                  {selectedContract.signerMemo || "없음"}
-                </p>
-              </div>
-              {/* 내부 계약일 때만 사용자 ID 표시 */}
-              {(category === ContractCategory.INTERNAL ||
-                selectedContract.userId > 0) && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    사용자 ID
-                  </label>
-                  <p className="text-sm text-gray-900">
-                    {selectedContract.userId}
-                  </p>
+        {/* 카테고리 선택 및 요약 정보 */}
+        <div className="mt-6 border-t pt-6">
+          <div className="flex items-center justify-between">
+            <div
+              className="relative bg-gray-100 rounded-lg p-1 shadow-inner"
+              role="group"
+            >
+              {/* 배경 슬라이더 */}
+              <div
+                className={`absolute top-1 bottom-1 ${
+                  category === ContractCategory.EXTERNAL
+                    ? "left-1"
+                    : "left-[calc(50%)]"
+                } w-[calc(50%-2px)] bg-white rounded-md shadow-md transition-all duration-300 ease-in-out z-0`}
+              ></div>
+              {/* 외부 계약 버튼 */}
+              <button
+                onClick={() => handleCategoryChange(ContractCategory.EXTERNAL)}
+                className={`relative z-10 px-6 py-2.5 text-sm font-medium rounded-md w-[140px] transition-all duration-200 
+                  ${
+                    category === ContractCategory.EXTERNAL
+                      ? "text-blue-700 font-semibold"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+              >
+                <div className="flex items-center justify-center whitespace-nowrap">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`h-4 w-4 mr-1.5 flex-shrink-0 transition-all duration-200 ${
+                      category === ContractCategory.EXTERNAL
+                        ? "text-blue-600"
+                        : "text-gray-400"
+                    }`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    />
+                  </svg>
+                  <span>외부 계약</span>
                 </div>
-              )}
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  상태
-                </label>
-                <span
-                  className={`text-sm ${getStatusColor(
-                    selectedContract.status
-                  )}`}
-                >
-                  {getStatusText(selectedContract.status)}
+              </button>
+
+              {/* 내부 계약 버튼 */}
+              <button
+                onClick={() => handleCategoryChange(ContractCategory.INTERNAL)}
+                className={`relative z-10 px-6 py-2.5 text-sm font-medium rounded-md w-[140px] transition-all duration-200
+                  ${
+                    category === ContractCategory.INTERNAL
+                      ? "text-blue-700 font-semibold"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+              >
+                <div className="flex items-center justify-center whitespace-nowrap">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`h-4 w-4 mr-1.5 flex-shrink-0 transition-all duration-200 ${
+                      category === ContractCategory.INTERNAL
+                        ? "text-blue-600"
+                        : "text-gray-400"
+                    }`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                    />
+                  </svg>
+                  <span>내부 계약</span>
+                </div>
+              </button>
+            </div>
+
+            <div className="flex gap-4">
+              <div className="bg-blue-50 rounded-lg p-3 text-center min-w-[120px]">
+                <span className="text-lg font-semibold text-blue-700">
+                  {totalElements}
                 </span>
+                <p className="text-xs text-blue-600">총 계약</p>
+              </div>{" "}
+              <div className="bg-green-50 rounded-lg p-3 text-center min-w-[120px]">
+                <span className="text-lg font-semibold text-green-700">
+                  {
+                    contracts.filter(
+                      (c) => c.status === ContractStatus.CONFIRMED
+                    ).length
+                  }
+                </span>
+                <p className="text-xs text-green-600">확정 계약</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  계약 기간
-                </label>
-                <p className="text-sm text-gray-900">
-                  {selectedContract.startDate} ~ {selectedContract.endDate}
-                </p>
-              </div>
-              {selectedContract.fileUrl && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    파일
-                  </label>
-                  <a
-                    href={selectedContract.fileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500 hover:text-blue-700 text-sm"
-                  >
-                    파일 다운로드
-                  </a>
-                </div>
-              )}{" "}
-              {/* 액션 버튼들 */}
-              <div className="flex flex-wrap gap-2 pt-4">
-                {selectedContract.status === ContractStatus.DRAFT && (
-                  <button
-                    onClick={() =>
-                      handleStatusChange(
-                        selectedContract.id,
-                        ContractStatus.REVIEW
-                      )
-                    }
-                    className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                  >
-                    검토 시작
-                  </button>
-                )}
-
-                {selectedContract.status === ContractStatus.REVIEW && (
-                  <>
-                    <button
-                      onClick={() =>
-                        handleStatusChange(
-                          selectedContract.id,
-                          ContractStatus.SIGNED
-                        )
-                      }
-                      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                    >
-                      서명 완료
-                    </button>
-                    <button
-                      onClick={() =>
-                        setShowOfflineSignForm(!showOfflineSignForm)
-                      }
-                      className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
-                    >
-                      오프라인 서명
-                    </button>
-                    <button
-                      onClick={() =>
-                        setShowElectronicSignForm(!showElectronicSignForm)
-                      }
-                      className="px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600"
-                    >
-                      전자 서명 요청
-                    </button>
-                  </>
-                )}
-
-                {selectedContract.status === ContractStatus.SIGNED && (
-                  <button
-                    onClick={() => handleConfirm(selectedContract.id)}
-                    className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-                  >
-                    계약 확정
-                  </button>
-                )}
+              <div className="bg-yellow-50 rounded-lg p-3 text-center min-w-[120px]">
+                <span className="text-lg font-semibold text-yellow-700">
+                  {
+                    contracts.filter(
+                      (c) =>
+                        c.status === ContractStatus.PENDING ||
+                        c.status === ContractStatus.REVIEW
+                    ).length
+                  }
+                </span>
+                <p className="text-xs text-yellow-600">진행 중</p>
+              </div>{" "}
+              <div className="bg-red-50 rounded-lg p-3 text-center min-w-[120px]">
+                <span className="text-lg font-semibold text-red-700">
+                  {expiringCount}
+                </span>
+                <p className="text-xs text-red-600">만료 예정</p>
               </div>
             </div>
-          ) : (
-            <div className="text-center py-4">로딩 중...</div>
-          )}{" "}
+          </div>
         </div>
       </div>
-      {/* 오프라인 서명 폼 */}
-      {showOfflineSignForm && selectedContract && (
-        <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-          <h2 className="text-lg font-semibold mb-4">오프라인 서명 처리</h2>
-          <form onSubmit={handleOfflineSign} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                서명자 이름
-              </label>
-              <input
-                type="text"
-                value={offlineSignData.signerName}
-                onChange={(e) =>
-                  setOfflineSignData({
-                    ...offlineSignData,
-                    signerName: e.target.value,
-                  })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                placeholder="외부 계약 상대방 이름을 입력하세요"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                메모
-              </label>
-              <textarea
-                value={offlineSignData.memo}
-                onChange={(e) =>
-                  setOfflineSignData({
-                    ...offlineSignData,
-                    memo: e.target.value,
-                  })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                rows={3}
-                placeholder="서명 날짜, 위치 등의 추가 정보를 입력하세요"
-                required
-              />
-            </div>
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 disabled:opacity-50"
-              >
-                {loading ? "처리 중..." : "오프라인 서명 처리"}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowOfflineSignForm(false)}
-                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-              >
-                취소
-              </button>
-            </div>
-          </form>
+      {/* 에러 메시지 */}
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}{" "}
         </div>
       )}
-      {/* 전자 서명 요청 폼 */}
-      {showElectronicSignForm && selectedContract && (
-        <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-          <h2 className="text-lg font-semibold mb-4">전자 서명 요청 생성</h2>
-          <form onSubmit={handleElectronicSign} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                당사자 사용자 ID
+      {/* 필터링 영역 */}
+      {showFilters && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-800 flex items-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 mr-2 text-blue-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>{" "}
+              상세 검색
+            </h2>{" "}
+            <div className="text-sm text-gray-500">
+              선택한 필터:
+              {
+                Object.keys(searchCondition).filter(
+                  (key) =>
+                    searchCondition[key as keyof ContractSearchCondition] !==
+                      undefined && key !== "contractCategory"
+                ).length
+              }
+              개
+            </div>{" "}
+          </div>
+          <div className="grid grid-cols-4 gap-4">
+            {/* 팀 ID */}
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-gray-700">
+                팀 ID
               </label>
               <input
                 type="number"
-                value={electronicSignData.userId}
+                value={tempCondition.teamId || ""}
                 onChange={(e) =>
-                  setElectronicSignData({
-                    ...electronicSignData,
-                    userId: Number(e.target.value),
+                  setTempCondition({
+                    ...tempCondition,
+                    teamId: e.target.value ? Number(e.target.value) : undefined,
                   })
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                placeholder="서명할 사용자의 ID를 입력하세요"
-                min="1"
-                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+                placeholder="팀 ID 입력"
               />
             </div>
-            <div className="text-sm text-gray-600">
-              <p>• 지정된 사용자에게 전자 서명 요청이 생성됩니다.</p>
-              <p>• 생성된 서명 URL이 새 창에서 열립니다.</p>
-              <p>• 해당 사용자에게 이메일이 발송될 수 있습니다.</p>
+            {/* 참여자 검색 */}
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-gray-700">
+                참여자 검색
+              </label>{" "}
+              <div className="flex items-center gap-2">
+                <div className="relative flex-grow">
+                  {" "}
+                  <input
+                    type="text"
+                    value={participantName}
+                    onCompositionStart={() => setIsComposing(true)}
+                    onCompositionEnd={(e) => {
+                      setIsComposing(false);
+                      // 조합이 끝난 후 검색 실행
+                      const value = e.currentTarget.value;
+                      if (value.trim().length >= 2) {
+                        // 기존 타이머가 있으면 취소
+                        if (searchTimer) {
+                          clearTimeout(searchTimer);
+                        }
+                        // 즉시 검색 실행 (디바운스 없이)
+                        handleParticipantSearch();
+                      }
+                    }}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setParticipantName(value);
+
+                      // 기존 타이머가 있으면 취소
+                      if (searchTimer) {
+                        clearTimeout(searchTimer);
+                      }
+
+                      // IME 조합 중이면 검색하지 않음
+                      if (isComposing) {
+                        return;
+                      }
+
+                      if (value.trim().length >= 2) {
+                        // 300ms 디바운스로 검색 지연 (불필요한 API 호출 방지)
+                        const timer = setTimeout(() => {
+                          handleParticipantSearch();
+                        }, 300);
+                        setSearchTimer(timer);
+                      } else if (value.trim().length === 0) {
+                        // 입력값이 없을 때는 결과 초기화
+                        setParticipantResults([]);
+                      }
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+                    placeholder="참여자 이름 입력 (2글자 이상)"
+                    disabled={!!selectedParticipant}
+                  />{" "}
+                  {participantResults.length > 0 && !selectedParticipant && (
+                    <div className="absolute z-50 w-full mt-1 bg-white shadow-lg rounded-md border border-gray-200 max-h-48 overflow-y-auto">
+                      {participantResults.map((user) => (
+                        <div
+                          key={user.id}
+                          onClick={() => handleSelectParticipant(user)}
+                          className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                        >
+                          <div className="font-medium">{user.nickname}</div>
+                          <div className="text-xs text-gray-500">
+                            {user.email}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {selectedParticipant && (
+                  <button
+                    type="button"
+                    onClick={handleClearParticipant}
+                    className="px-3 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200 text-sm whitespace-nowrap"
+                  >
+                    {selectedParticipant.nickname} 해제
+                  </button>
+                )}
+              </div>
             </div>
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600 disabled:opacity-50"
+            {/* 계약 상태 */}
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-gray-700">
+                계약 상태
+              </label>
+              <select
+                value={tempCondition.status || ""}
+                onChange={(e) =>
+                  setTempCondition({
+                    ...tempCondition,
+                    status: e.target.value
+                      ? (e.target.value as ContractStatus)
+                      : undefined,
+                  })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm bg-white"
               >
-                {loading ? "생성 중..." : "전자 서명 요청 생성"}
+                <option value="">모든 상태</option>
+                <option
+                  disabled
+                  className="font-medium text-gray-500 bg-gray-100"
+                >
+                  ─── 진행 상태 ───
+                </option>
+                <option value={ContractStatus.DRAFT}>초안</option>
+                <option value={ContractStatus.REVIEW}>검토 중</option>
+                <option value={ContractStatus.PENDING}>대기 중</option>
+                <option
+                  disabled
+                  className="font-medium text-gray-500 bg-gray-100"
+                >
+                  ─── 서명 상태 ───
+                </option>
+                <option value={ContractStatus.SIGNED_OFFLINE}>
+                  오프라인 서명
+                </option>
+                <option value={ContractStatus.SIGNED}>서명됨</option>
+                <option
+                  disabled
+                  className="font-medium text-gray-500 bg-gray-100"
+                >
+                  ─── 완료 상태 ───
+                </option>
+                <option value={ContractStatus.CONFIRMED}>확정됨</option>
+                <option value={ContractStatus.ACTIVE}>활성화</option>
+                <option
+                  disabled
+                  className="font-medium text-gray-500 bg-gray-100"
+                >
+                  ─── 종료 상태 ───
+                </option>
+                <option value={ContractStatus.EXPIRED}>만료됨</option>
+                <option value={ContractStatus.TERMINATED}>종료됨</option>
+              </select>
+            </div>
+            {/* 계약 타입 */}
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-gray-700">
+                계약 타입
+              </label>
+              <select
+                value={tempCondition.contractType || ""}
+                onChange={(e) =>
+                  setTempCondition({
+                    ...tempCondition,
+                    contractType: e.target.value
+                      ? (e.target.value as ContractType)
+                      : undefined,
+                  })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm bg-white"
+              >
+                <option value="">모든 타입</option>
+                <option value={ContractType.PAPER}>종이 계약</option>{" "}
+                <option value={ContractType.ELECTRONIC}>전자 계약</option>
+              </select>
+            </div>
+            {/* 참여자 사용자 ID */}
+            {/* 날짜 범위 (시작 ~ 종료) */}
+            <div className="space-y-1 col-span-4">
+              <label className="block text-sm font-medium text-gray-700">
+                계약 기간
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="date"
+                  value={tempCondition.startDateFrom || ""}
+                  onChange={(e) =>
+                    setTempCondition({
+                      ...tempCondition,
+                      startDateFrom: e.target.value || undefined,
+                    })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+                />
+                <span className="text-gray-500 w-4 text-center">~</span>
+                <input
+                  type="date"
+                  value={tempCondition.startDateTo || ""}
+                  onChange={(e) =>
+                    setTempCondition({
+                      ...tempCondition,
+                      startDateTo: e.target.value || undefined,
+                    })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+                />
+              </div>
+            </div>
+          </div>
+          {/* 검색 버튼 */}
+          <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
+            <div className="text-sm text-gray-500">
+              {totalElements > 0
+                ? `총 ${totalElements}개의 계약서`
+                : "검색 결과가 없습니다."}
+            </div>
+            <div className="flex space-x-3">
+              <button
+                onClick={handleReset}
+                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-sm font-medium flex items-center"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 mr-1.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+                초기화
               </button>
               <button
-                type="button"
-                onClick={() => setShowElectronicSignForm(false)}
-                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                onClick={handleSearch}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium flex items-center"
               >
-                취소
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 mr-1.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+                검색
               </button>
             </div>
-          </form>
+          </div>{" "}
+        </div>
+      )}
+      {/* 계약서 목록 테이블 */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <div className="text-lg font-medium text-gray-700 flex items-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-2 text-blue-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            계약서 목록
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <div className="flex items-center">
+              <label className="text-sm text-gray-600 mr-2">정렬:</label>
+              <select
+                value={`${sortField}_${sortDirection}`}
+                onChange={(e) => {
+                  const [field, direction] = e.target.value.split("_");
+                  setSortField(field);
+                  setSortDirection(direction as "asc" | "desc");
+                }}
+                className="border border-gray-300 rounded-md text-sm px-2.5 py-1.5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="createdAt_desc">최근 생성순</option>
+                <option value="createdAt_asc">오래된 순</option>
+                <option value="startDate_desc">시작일 최신순</option>
+                <option value="startDate_asc">시작일 오래된순</option>
+                <option value="endDate_desc">종료일 최신순</option>
+                <option value="endDate_asc">종료일 오래된순</option>
+                <option value="title_asc">제목 (오름차순)</option>
+                <option value="title_desc">제목 (내림차순)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        {/* 테이블 */}
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="pl-6 pr-3 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">
+                  ID
+                </th>
+                <th
+                  className="px-3 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort("title")}
+                >
+                  <div className="flex items-center">
+                    <span>계약 제목</span>
+                    {sortField === "title" && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 ml-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d={
+                            sortDirection === "asc"
+                              ? "M7 11l5-5 5 5m-5 9V6"
+                              : "M7 13l5 5 5-5M12 18V6"
+                          }
+                        />
+                      </svg>
+                    )}
+                  </div>
+                </th>
+                <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  담당자
+                </th>
+                <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  팀
+                </th>
+                <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  계약 상대방
+                </th>
+                <th
+                  className="px-3 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort("startDate")}
+                >
+                  <div className="flex items-center">
+                    <span>시작일</span>
+                    {sortField === "startDate" && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 ml-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d={
+                            sortDirection === "asc"
+                              ? "M7 11l5-5 5 5m-5 9V6"
+                              : "M7 13l5 5 5-5M12 18V6"
+                          }
+                        />
+                      </svg>
+                    )}
+                  </div>
+                </th>
+                <th
+                  className="px-3 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort("endDate")}
+                >
+                  <div className="flex items-center">
+                    <span>종료일</span>
+                    {sortField === "endDate" && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 ml-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d={
+                            sortDirection === "asc"
+                              ? "M7 11l5-5 5 5m-5 9V6"
+                              : "M7 13l5 5 5-5M12 18V6"
+                          }
+                        />
+                      </svg>
+                    )}
+                  </div>
+                </th>
+                <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  상태
+                </th>
+                <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  구분
+                </th>
+                <th className="pr-6 pl-3 py-3.5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  액션
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {contracts.map((contract) => {
+                // 만료일까지 남은 일수 계산
+                const today = new Date();
+                const endDate = new Date(contract.endDate);
+                const daysLeft = Math.ceil(
+                  (endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+                );
+                const isExpiringSoon = daysLeft > 0 && daysLeft <= 30;
+                const isExpired = daysLeft <= 0;
+
+                return (
+                  <tr key={contract.id} className="hover:bg-gray-50">
+                    <td className="pl-6 pr-3 py-4 whitespace-nowrap text-sm font-medium text-gray-500">
+                      #{contract.id}
+                    </td>
+                    <td className="px-3 py-4 text-sm text-gray-900">
+                      <div className="flex flex-col">
+                        <div className="font-medium text-blue-600 hover:text-blue-800">
+                          <Link
+                            href={`contracts/${contract.id}?category=${contract.category}`}
+                          >
+                            {contract.title}
+                          </Link>
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          {contract.category === ContractCategory.INTERNAL
+                            ? "📋 내부계약"
+                            : "📄 외부계약"}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-3 py-4 text-sm text-gray-900">
+                      <div className="flex flex-col">
+                        <span className="font-medium">{contract.nickname}</span>
+                      </div>
+                    </td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                      -
+                    </td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <div className="flex flex-col">
+                        <span>{contract.companyName || "-"}</span>
+                      </div>
+                    </td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {new Date(contract.startDate).toLocaleDateString()}
+                    </td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm">
+                      <div className="flex items-center">
+                        <span
+                          className={
+                            isExpired
+                              ? "text-red-600"
+                              : isExpiringSoon
+                              ? "text-orange-600"
+                              : "text-gray-900"
+                          }
+                        >
+                          {new Date(contract.endDate).toLocaleDateString()}
+                        </span>
+                        {isExpiringSoon && !isExpired && (
+                          <span className="ml-2 px-1.5 py-0.5 bg-orange-100 text-orange-700 text-xs rounded">
+                            D-{daysLeft}
+                          </span>
+                        )}
+                        {isExpired && (
+                          <span className="ml-2 px-1.5 py-0.5 bg-red-100 text-red-700 text-xs rounded">
+                            만료됨
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-3 py-4 whitespace-nowrap">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full ${getStatusClass(
+                          contract.status
+                        )}`}
+                      >
+                        {getStatusText(contract.status)}
+                      </span>
+                    </td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {contract.category === ContractCategory.INTERNAL ? (
+                        <span className="inline-flex items-center px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs font-medium rounded">
+                          내부
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-1 bg-teal-50 text-teal-700 text-xs font-medium rounded">
+                          외부
+                        </span>
+                      )}
+                    </td>
+                    <td className="pr-6 pl-3 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex justify-end space-x-2">
+                        <Link
+                          href={`contracts/${contract.id}?category=${contract.category}`}
+                          className="text-blue-600 hover:text-blue-900 px-2 py-1 rounded-md hover:bg-blue-50"
+                        >
+                          상세보기
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        {/* 빈 결과 */}
+        {!loading && contracts.length === 0 && (
+          <div className="text-center py-16 bg-white rounded-lg shadow-sm border border-gray-200">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-16 w-16 mx-auto text-gray-300 mb-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            <h3 className="text-lg font-medium text-gray-700 mb-1">
+              계약서가 없습니다
+            </h3>{" "}
+            <p className="text-gray-500">
+              조건에 맞는 계약서를 찾을 수 없습니다.
+            </p>
+          </div>
+        )}
+        {/* 로딩 상태 */}
+        {loading && (
+          <div className="text-center py-16 bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-600 mb-4"></div>
+            <p className="text-gray-700 font-medium">데이터를 불러오는 중...</p>
+            <p className="text-sm text-gray-500 mt-1">잠시만 기다려주세요.</p>
+          </div>
+        )}
+      </div>{" "}
+      {/* 페이지네이션 */}
+      {totalPages > 0 && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-3">
+              <span className="text-sm text-gray-600">페이지당 항목 수:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  const newSize = Number(e.target.value);
+                  setPageSize(newSize);
+                  setCurrentPage(0);
+                  fetchContracts(0, searchCondition, newSize);
+                }}
+                className="border border-gray-300 rounded-md text-sm px-2 py-1.5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="10">10개</option>
+                <option value="20">20개</option>
+                <option value="30">30개</option>
+                <option value="50">50개</option>
+              </select>
+              <span className="text-sm text-gray-500">
+                총 <span className="font-medium">{totalElements}</span>개 중{" "}
+                <span className="font-medium">
+                  {currentPage * pageSize + 1}-
+                  {Math.min((currentPage + 1) * pageSize, totalElements)}
+                </span>
+                개 표시
+              </span>
+            </div>{" "}
+            <div className="flex items-center">
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => handlePageChange(0)}
+                  disabled={currentPage === 0}
+                  className="p-2 rounded-md disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100"
+                  title="첫 페이지"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 text-gray-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M11 19l-7-7 7-7m8 14l-7-7 7-7"
+                    />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 0}
+                  className="p-2 rounded-md disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100"
+                  title="이전 페이지"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 text-gray-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 19l-7-7 7-7"
+                    />
+                  </svg>
+                </button>
+                {/* 페이지 번호 */}
+                <div className="flex">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    const startPage = Math.max(
+                      0,
+                      Math.min(currentPage - 2, totalPages - 5)
+                    );
+                    const pageNumber = startPage + i;
+                    return (
+                      <button
+                        key={pageNumber}
+                        onClick={() => handlePageChange(pageNumber)}
+                        className={`w-9 h-9 mx-0.5 flex items-center justify-center rounded-md text-sm font-medium ${
+                          currentPage === pageNumber
+                            ? "bg-blue-50 border border-blue-400 text-blue-700"
+                            : "text-gray-700 hover:bg-gray-100"
+                        }`}
+                      >
+                        {pageNumber + 1}
+                      </button>
+                    );
+                  })}
+                </div>
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages - 1}
+                  className="p-2 rounded-md disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100"
+                  title="다음 페이지"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 text-gray-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => handlePageChange(totalPages - 1)}
+                  disabled={currentPage === totalPages - 1}
+                  className="p-2 rounded-md disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100"
+                  title="마지막 페이지"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 text-gray-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 5l7 7-7 7M5 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

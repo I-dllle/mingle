@@ -70,7 +70,6 @@ public class SecurityConfig {
                                 "/api/v1/users/signup",
                                 "/api/v1/users/login",
                                 "/api/v1/users/refresh",
-                                "/api/v1/legal/**",
                                 "/api/v1/finance/**",
                                 "/api/v1/admin/**"
                         ).permitAll() // 회원가입, 로그인, 토큰 재발급 : 허용✔️

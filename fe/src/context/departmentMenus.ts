@@ -19,7 +19,7 @@ export const departmentMenus: Record<
       id: "press_releases",
       name: "보도자료",
       icon: "text",
-      path: "press_releases",
+      path: "/press_releases",
     },
     {
       id: "album_covers",
@@ -86,6 +86,12 @@ export const departmentMenus: Record<
       name: "법률 분쟁 내역",
       icon: "refresh",
       path: "/legal-disputes",
+    },
+    {
+      id: "department_posts",
+      name: "부서 게시판",
+      icon: "document",
+      path: "/posts",
     },
   ],
   "System Operations": [
