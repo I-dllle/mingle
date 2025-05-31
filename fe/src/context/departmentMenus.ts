@@ -1,7 +1,7 @@
 export const departmentMenus: Record<
   string,
   {
-    id: string;
+    id: number;
     name: string;
     icon: string;
     path: string;
@@ -10,19 +10,19 @@ export const departmentMenus: Record<
 > = {
   "Creative Studio": [
     {
-      id: "audio_video",
+      id: 8,
       name: "음원/영상",
       icon: "document",
-      path: "/audio_video",
+      path: "/audio-video",
     },
     {
-      id: "press_releases",
+      id: 9,
       name: "보도자료",
       icon: "text",
-      path: "/press_releases",
+      path: "/press-releases",
     },
     {
-      id: "album_covers",
+      id: 10,
       name: "앨범커버",
       icon: "palette",
       path: "/contentclassification-albumcovers",
@@ -30,19 +30,19 @@ export const departmentMenus: Record<
   ],
   "Planning & A&R": [
     {
-      id: "team_composition",
+      id: 11,
       name: "팀/유닛 구성",
       icon: "user",
       path: "/team-composition",
     },
     {
-      id: "artists",
+      id: 12,
       name: "아티스트",
       icon: "document",
       path: "/artists",
     },
     {
-      id: "activity_planning",
+      id: 13,
       name: "활동기획",
       icon: "calendar",
       path: "/activity-planning",
@@ -50,13 +50,13 @@ export const departmentMenus: Record<
   ],
   "Marketing & PR": [
     {
-      id: "sns_content",
+      id: 14,
       name: "SNS컨텐츠",
       icon: "document",
       path: "/sns-content",
     },
     {
-      id: "events",
+      id: 15,
       name: "이벤트",
       icon: "calendar",
       path: "/events",
@@ -64,64 +64,58 @@ export const departmentMenus: Record<
   ],
   "Finance & Legal": [
     {
-      id: "contract_management",
+      id: 17,
       name: "계약서관리",
       icon: "document",
       path: "/contracts",
     },
     {
-      id: "revenue_analysis",
+      id: 16,
       name: "수익분석",
       icon: "chart",
       path: "/revenue",
     },
     {
-      id: "internal_policy",
+      id: 18,
       name: "내부 규정",
       icon: "book",
       path: "/policy",
     },
     {
-      id: "legal_disputes",
+      id: 19,
       name: "법률 분쟁 내역",
       icon: "refresh",
       path: "/legal-disputes",
     },
-    {
-      id: "department_posts",
-      name: "부서 게시판",
-      icon: "document",
-      path: "/posts",
-    },
   ],
   "System Operations": [
     {
-      id: "dashboard",
+      id: 14,
       name: "대시보드",
       icon: "chart",
       path: "/dashboard",
       isActive: true,
     },
     {
-      id: "user_management",
+      id: 15,
       name: "사용자 관리",
       icon: "user",
       path: "/panel/users",
     },
     {
-      id: "attendance_management",
+      id: 16,
       name: "근태관리",
       icon: "clock",
       path: "/panel/attendance",
     },
     {
-      id: "revenue_management",
+      id: 17,
       name: "수익/정산관리",
       icon: "money",
       path: "/panel/revenue",
     },
     {
-      id: "contract_management",
+      id: 18,
       name: "계약서 관리",
       icon: "document",
       path: "/panel/contracts",
@@ -129,35 +123,35 @@ export const departmentMenus: Record<
   ],
   "Artist & Manager": [
     {
-      id: "artist_report",
+      id: 26, // 백엔드 PostType 테이블의 실제 ID 사용 (menu_id=12, department_id=1)
       name: "활동보고서",
       icon: "document",
       path: "/artist-report",
     },
     {
-      id: "studio_reservation",
+      id: 29, // 적절한 PostType ID로 변경 필요
       name: "연습실 예약",
       icon: "calendar",
       path: "/studio-reservation",
     },
     {
-      id: "sns_content",
+      id: 27, // 적절한 PostType ID로 변경 필요
       name: "SNS컨텐츠",
       icon: "text",
-      path: "/sns-content", // marketing 부서와 동일
+      path: "/sns-contents",
     },
     {
-      id: "events",
+      id: 28, // 적절한 PostType ID로 변경 필요
       name: "이벤트",
       icon: "calendar",
-      path: "/events", // marketing 부서와 동일
+      path: "/artist-event",
     },
   ],
   default: [
-    { id: "dashboard", name: "대시보드", icon: "document", path: "/main" },
-    { id: "profile", name: "프로필", icon: "user", path: "/main/user/profile" },
+    { id: 0, name: "대시보드", icon: "document", path: "/main" },
+    { id: 0, name: "프로필", icon: "user", path: "/main/user/profile" },
     {
-      id: "setting",
+      id: 0,
       name: "설정",
       icon: "setting",
       path: "/main/user/setting",

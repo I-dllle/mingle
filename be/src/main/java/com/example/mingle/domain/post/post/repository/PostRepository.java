@@ -7,6 +7,8 @@ import com.example.mingle.domain.post.post.entity.PostMenu;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,7 +29,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post>  findByMenuAndNoticeType(PostMenu postMenu, NoticeType noticeType);
 
     //소프트 삭제(isDeleted)
-    List<Post> findByMenuAndIsDeletedFalse(PostMenu menu);
+    @Query("SELECT p FROM Post p LEFT JOIN FETCH p.imageUrl WHERE p.menu = :menu AND p.isDeleted = false")
+    List<Post> findAllByMenuWithImageUrl(@Param("menu") PostMenu menu);
 
     //메뉴타입으로 게시글 찾기
     List<Post> findByMenu(PostMenu menu);

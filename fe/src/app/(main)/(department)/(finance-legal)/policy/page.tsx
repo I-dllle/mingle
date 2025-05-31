@@ -15,17 +15,17 @@ const sortOptions = [
   { value: "asc", label: "오래된순" },
 ];
 
-export default function TeamCompositionPage() {
+export default function PolicyPage() {
   const { name: userDepartment } = useDepartment();
   const menus = departmentMenus[userDepartment] || departmentMenus.default;
-  const currentMenu = menus.find((menu) => menu.path === "/team-composition");
-  const boardName = currentMenu?.name || "팀/유닛 구성";
+  const currentMenu = menus.find((menu) => menu.path === "/policy");
+  const boardName = currentMenu?.name || "내부 규정";
 
   // 디버깅용
   console.log("User Department:", userDepartment);
   console.log("Available menus:", menus);
   console.log("Current menu:", currentMenu);
-  console.log("Looking for path:", "/team-composition");
+  console.log("Looking for path:", "/policy");
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchInput, setSearchInput] = useState("");
@@ -44,7 +44,7 @@ export default function TeamCompositionPage() {
     try {
       const deptId = getDepartmentIdByName(userDepartment);
       // 메뉴 ID를 11로 하드코딩하여 부서별 게시글 조회
-      const response = await postService.getPostsByMenu(deptId, 11);
+      const response = await postService.getPostsByMenu(deptId, 18);
       setPosts(response);
       // 새로운 API는 페이지네이션이 없으므로 전체를 한 번에 가져옴
       setTotalPages(1);

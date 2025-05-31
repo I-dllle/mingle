@@ -11,6 +11,7 @@ export default function PostEditor({ onSubmit }: PostEditorProps) {
   const [content, setContent] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
+  const [images, setImages] = useState<File[]>([]);
 
   useEffect(() => {
     const draft = getDraftFromLocalStorage();
@@ -27,17 +28,26 @@ export default function PostEditor({ onSubmit }: PostEditorProps) {
       setTagInput("");
     }
   };
-
   const handleRemoveTag = (tagToRemove: string) => {
     setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setImages(Array.from(e.target.files));
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setImages(images.filter((_, i) => i !== index));
+  };
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({
       title,
       content,
       tags,
+      images,
     });
     removeDraftFromLocalStorage();
   };
@@ -59,7 +69,6 @@ export default function PostEditor({ onSubmit }: PostEditorProps) {
           required
         />
       </div>
-
       <div>
         <label className="block text-sm font-medium text-gray-700">태그</label>
         <div className="mt-1 flex items-center gap-2">
@@ -98,8 +107,7 @@ export default function PostEditor({ onSubmit }: PostEditorProps) {
             </span>
           ))}
         </div>
-      </div>
-
+      </div>{" "}
       <div>
         <label className="block text-sm font-medium text-gray-700">내용</label>
         <textarea
@@ -110,7 +118,41 @@ export default function PostEditor({ onSubmit }: PostEditorProps) {
           required
         />
       </div>
-
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
+          이미지 첨부
+        </label>
+        <input
+          type="file"
+          multiple
+          accept="image/*"
+          onChange={handleImageChange}
+          className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+        />
+        {images.length > 0 && (
+          <div className="mt-2 grid grid-cols-2 md:grid-cols-4 gap-2">
+            {images.map((image, index) => (
+              <div key={index} className="relative">
+                <img
+                  src={URL.createObjectURL(image)}
+                  alt={`Preview ${index + 1}`}
+                  className="w-full h-20 object-cover rounded-lg border"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemoveImage(index)}
+                  className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center hover:bg-red-600"
+                >
+                  ×
+                </button>
+                <p className="text-xs text-gray-500 mt-1 truncate">
+                  {image.name}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
       <div className="flex gap-2">
         <button
           type="button"
@@ -132,6 +174,7 @@ export default function PostEditor({ onSubmit }: PostEditorProps) {
             setContent("");
             setTags([]);
             setTagInput("");
+            setImages([]);
             removeDraftFromLocalStorage();
           }}
           className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"

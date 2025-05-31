@@ -30,14 +30,14 @@ export interface PostResponseDto {
 // 비즈니스 문서 카테고리 enum
 export enum BusinessDocumentCategory {
   MEETING_MINUTES = "MEETING_MINUTES", // 회의록
-  RESOURCE = "RESOURCE" // 업무문서(업무보고서, 결재보고서, 업무요청)
+  RESOURCE = "RESOURCE", // 업무문서(업무보고서, 결재보고서, 업무요청)
 }
 
 // 공지사항 타입 enum
 export enum NoticeType {
-  GENERAL_NOTICE = "GENERAL_NOTICE",     // 전체 공지: 관리자만 작성 가능
+  GENERAL_NOTICE = "GENERAL_NOTICE", // 전체 공지: 관리자만 작성 가능
   DEPARTMENT_NOTICE = "DEPARTMENT_NOTICE", // 부서별 공지: 관리자 또는 해당 부서 소속 사용자
-  COMPANY_NEWS = "COMPANY_NEWS"        // 회사 소식: 관리자만 작성 가능
+  COMPANY_NEWS = "COMPANY_NEWS", // 회사 소식: 관리자만 작성 가능
 }
 
 // 백엔드 PostRequestDto에 대응하는 인터페이스
@@ -98,7 +98,12 @@ export interface Page<T> {
 }
 
 export interface PostEditorProps {
-  onSubmit: (data: { title: string; content: string; tags: string[] }) => void;
+  onSubmit: (data: {
+    title: string;
+    content: string;
+    tags: string[];
+    images?: File[];
+  }) => void;
 }
 
 export interface PostListProps {

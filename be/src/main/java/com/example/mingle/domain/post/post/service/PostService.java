@@ -180,7 +180,7 @@ public class PostService {
         PostMenu menu = menuRepository.findById(postMenuId)
                 .orElseThrow(() -> new ApiException(ErrorCode.POST_MENU_NOT_FOUND));
 
-        return postRepository.findByMenuAndIsDeletedFalse(menu).stream()
+        return postRepository.findAllByMenuWithImageUrl(menu).stream()
                 .filter(post -> post.getDepartment().getId().equals(deptId))
                 .map(PostResponseDto::fromEntity)
                 .collect(Collectors.toList());

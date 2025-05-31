@@ -43,7 +43,7 @@ public class ApiV1PostController {
                     @ApiResponse(responseCode = "404", description = "해당 게시판 없음")
             }
     )
-    @PostMapping(consumes = "multipart/form-data")
+    @PostMapping(value = "/create", consumes = "multipart/form-data")
     public ResponseEntity<PostResponseDto> createPost(
             @RequestPart("requestDto") @Valid PostRequestDto requestDto,
             @RequestPart(value = "postImage", required = false) MultipartFile[] postImage,
