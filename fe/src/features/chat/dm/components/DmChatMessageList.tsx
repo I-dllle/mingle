@@ -14,6 +14,9 @@ export default function DmChatMessageList({
 }: DmChatMessageListProps) {
   const { messages } = useDmChat(roomId, receiverId);
 
+  // 현재 로그인한 사용자 ID (임시: 로컬에서 가져옴)
+  const currentUserId = Number(localStorage.getItem('userId'));
+
   return (
     <div
       style={{
@@ -23,23 +26,33 @@ export default function DmChatMessageList({
         gap: '8px',
       }}
     >
-      {messages.map((msg: ChatMessagePayload, idx: number) => (
-        <div
-          key={idx}
-          style={{
-            background: '#fff1f0',
-            padding: '8px',
-            borderRadius: '6px',
-            border: '1px solid #ffccc7',
-          }}
-        >
-          <div style={{ fontSize: '14px', color: '#888' }}>
-            From: {msg.senderId ?? '알 수 없음'}
+      {messages.map((msg: ChatMessagePayload, idx: number) => {
+        // 보낸 사람이 나인지 확인
+        const isMe = msg.senderId === currentUserId;
+
+        return (
+          <div
+            key={idx}
+            style={{
+              // 보낸 사람에 따라 메시지 위치와 스타일 다르게 적용
+              alignSelf: isMe ? 'flex-end' : 'flex-start', // 좌우 정렬
+              background: isMe ? '#d9f7be' : '#fff1f0', // 배경 색상 구분
+              padding: '8px',
+              borderRadius: '6px',
+              border: '1px solid #ccc',
+              maxWidth: '70%',
+              textAlign: isMe ? 'right' : 'left', // 텍스트 정렬
+            }}
+          >
+            <div style={{ fontSize: '14px', color: '#888' }}>
+              {/* 발신자 라벨링 */}
+              {isMe ? '나' : `상대(${msg.senderId})`}
+            </div>
+            <div>{msg.content}</div>
+            <div style={{ fontSize: '12px', color: '#aaa' }}>{msg.format}</div>
           </div>
-          <div>{msg.content}</div>
-          <div style={{ fontSize: '12px', color: '#aaa' }}>{msg.format}</div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

@@ -10,17 +10,23 @@ export function useDmChat(roomId: number, receiverId: number | null) {
   const [messages, setMessages] = useState<ChatMessagePayload[]>([]);
 
   useEffect(() => {
+    // websocket 연결
     const token = localStorage.getItem('token');
     if (token) {
       connectWebSocket(token);
     }
 
     // 메시지 수신 핸들러 등록
-    onMessage((msg: ChatMessagePayload) => {
+    const unsubscribe = onMessage((msg: ChatMessagePayload) => {
       if (msg.chatType === ChatRoomType.DIRECT && msg.roomId === roomId) {
         setMessages((prev) => [...prev, msg]);
       }
     });
+
+    // 메시지 핸들러 정리 (메모리 누수 방지)
+    return () => {
+      unsubscribe?.(); // 수신 핸들러 해제
+    };
   }, [roomId]);
 
   // receiverId가 있을 때만 메시지 전송
@@ -30,7 +36,7 @@ export function useDmChat(roomId: number, receiverId: number | null) {
     const payload: ChatMessagePayload = {
       roomId,
       receiverId,
-      senderId: 1, // 실제 서비스에서는 인증된 유저 ID 사용
+      senderId: 1, // 후속 단계에서 auth에서 가져올 예정
       content,
       format: MessageFormat.TEXT,
       chatType: ChatRoomType.DIRECT,

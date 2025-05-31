@@ -35,6 +35,16 @@ export function sendMessage(payload: ChatMessagePayload) {
   }
 }
 
-export function onMessage(handler: (msg: ChatMessagePayload) => void) {
+export function onMessage(
+  handler: (msg: ChatMessagePayload) => void
+): () => void {
   messageHandlers.push(handler);
+
+  // 🔧 반환: 제거 함수
+  return () => {
+    const index = messageHandlers.indexOf(handler);
+    if (index !== -1) {
+      messageHandlers.splice(index, 1);
+    }
+  };
 }
