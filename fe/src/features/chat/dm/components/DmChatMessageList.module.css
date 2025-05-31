@@ -1,0 +1,59 @@
+.chatList {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 60vh;
+  overflow-y: auto;
+  background-color: #fff;
+}
+
+.dateSeparator {
+  text-align: center;
+  margin: 16px 0;
+  font-weight: bold;
+  color: #999;
+  font-size: 14px;
+}
+
+.chatBubble {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  max-width: 70%;
+}
+
+.mine {
+  align-self: flex-end;
+  background: #d9f7be;
+}
+
+.opponent {
+  align-self: flex-start;
+  background: #fff1f0;
+}
+
+.senderLabel {
+  font-size: 13px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.mine .senderLabel {
+  color: #389e0d;
+}
+
+.opponent .senderLabel {
+  color: #cf1322;
+}
+
+.messageText {
+  font-size: 14px;
+}
+
+.timeStamp {
+  font-size: 12px;
+  color: #aaa;
+  margin-top: 6px;
+  text-align: right;
+}
