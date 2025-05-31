@@ -1,42 +1,42 @@
-'use client';
+"use client";
 
-import styles from './Sidebar.module.css';
-import { FiCalendar, FiClock, FiBell, FiFileText, FiBox } from 'react-icons/fi';
+import styles from "./Sidebar.module.css";
+import { FiCalendar, FiClock, FiBell, FiFileText, FiBox } from "react-icons/fi";
 
 const iconMenus = [
   {
-    id: 'calendar',
-    title: '일정',
+    id: "calendar",
+    title: "일정",
     icon: <FiCalendar className="w-5 h-5" />,
-    path: '/schedule',
+    path: "/schedule",
   },
   {
-    id: 'board',
-    title: '공지사항',
+    id: "board",
+    title: "공지사항",
     icon: <FiFileText className="w-5 h-5" />,
-    path: '/board/common',
+    path: "/board/common/notices",
   },
   {
-    id: 'attendance',
-    title: '근태',
+    id: "attendance",
+    title: "근태",
     icon: <FiClock className="w-5 h-5" />,
-    path: '/attendance',
+    path: "/attendance",
   },
   {
-    id: 'recruit',
-    title: '모집공고',
+    id: "recruit",
+    title: "모집공고",
     icon: <FiBell className="w-5 h-5" />,
-    path: '/recruit',
+    path: "/recruit",
   },
   {
-    id: 'documents',
-    title: '업무자료',
+    id: "documents",
+    title: "업무자료",
     icon: <FiFileText className="w-5 h-5" />,
-    path: '/',
+    path: "/board/common/businessDocuments",
   },
   {
-    id: 'reservation',
-    title: '회의실 예약',
+    id: "reservation",
+    title: "회의실 예약",
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -54,13 +54,13 @@ const iconMenus = [
         <circle cx="12" cy="10" r="3"></circle>
       </svg>
     ),
-    path: '/reservation',
+    path: "/reservation",
   },
   {
-    id: 'store',
-    title: '상점',
+    id: "store",
+    title: "상점",
     icon: <FiBox className="w-5 h-5" />,
-    path: '/goods',
+    path: "/goods",
   },
 ];
 
