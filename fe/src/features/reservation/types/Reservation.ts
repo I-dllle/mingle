@@ -19,6 +19,8 @@ export interface Reservation {
 // 예약 폼 입력 데이터 타입
 export interface ReservationFormInput {
   roomId: number;
+  roomName?: string; // 방 이름 (UI 표시용)
+  roomType?: "MEETING_ROOM" | "PRACTICE_ROOM"; // 방 타입
   date: string;
   startTime: string;
   endTime: string;

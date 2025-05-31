@@ -1,51 +1,57 @@
 // features/reservation/components/ReservationCard.tsx
+"use client";
 
 import React from "react";
 import { Reservation } from "@/features/reservation/types/reservation";
-import { formatTime } from "@/lib/date";
 
 interface Props {
   reservation: Reservation;
   isMine: boolean;
   onClick: () => void;
+  rowIndex: number;
+  cellWidth: number;
+  rowHeight: number;
 }
 
-// 30분 = 50px, 1시간 = 100px 기준
-const HALF_HOUR_WIDTH = 50;
+export function ReservationCard({
+  reservation,
+  isMine,
+  onClick,
+  rowIndex,
+  cellWidth,
+  rowHeight,
+}: Props) {
+  const [sh, sm] = reservation.startTime.split(":").map(Number);
+  const [eh, em] = reservation.endTime.split(":").map(Number);
+  const startMin = sh * 60 + sm;
+  const durationMin = eh * 60 + em - startMin;
 
-const getPositionStyle = (startTime: string, endTime: string) => {
-  const [startHour, startMinute] = startTime.split(":").map(Number);
-  const [endHour, endMinute] = endTime.split(":").map(Number);
+  const left = (startMin / 60) * cellWidth;
+  const width = (durationMin / 60) * cellWidth;
+  const top = rowIndex * rowHeight + 4; // +패딩
 
-  const start = startHour * 60 + startMinute;
-  const end = endHour * 60 + endMinute;
+  const isPast =
+    new Date() > new Date(`${reservation.date}T${reservation.endTime}`);
 
-  const left = (start / 30) * HALF_HOUR_WIDTH;
-  const width = ((end - start) / 30) * HALF_HOUR_WIDTH;
-
-  return {
-    left: `${left}px`,
-    width: `${width}px`,
-  };
-};
-
-export function ReservationCard({ reservation, isMine, onClick }: Props) {
-  const style = getPositionStyle(reservation.startTime, reservation.endTime);
-
-  const titleText = `${formatTime(reservation.startTime)}~${formatTime(
-    reservation.endTime
-  )} ${reservation.title || ""}`.trim();
+  const baseClasses = `absolute text-xs rounded-md flex items-center px-1`;
 
   return (
     <div
-      className={`absolute top-1 h-8 px-2 text-xs text-white rounded-md cursor-pointer 
-        ${isMine ? "bg-indigo-500" : "bg-gray-400"}
+      onClick={() => {
+        if (!isPast) onClick();
+      }}
+      title={`${reservation.title}`}
+      className={`absolute text-xs text-white rounded-md cursor-pointer flex items-center px-1
+        ${isMine ? "bg-indigo-500" : "bg-purple-300"} 
         hover:opacity-90`}
-      style={style}
-      onClick={onClick}
-      title={titleText}
+      style={{
+        top,
+        left,
+        width: Math.max(width, cellWidth * 0.5), // 최소 폭
+        height: rowHeight * 0.6,
+      }}
     >
-      {reservation.title || ""}
+      {reservation.title || "내 예약"}
     </div>
   );
 }

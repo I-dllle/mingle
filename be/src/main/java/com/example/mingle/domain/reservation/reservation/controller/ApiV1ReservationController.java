@@ -46,7 +46,7 @@ public class ApiV1ReservationController {
     @Operation(summary = "방 타입별 예약 조회", description = "특정 날짜 및 룸 타입에 속하는 모든 방의 예약 내역을 조회합니다.")
     @GetMapping
     public ResponseEntity<List<RoomWithReservationsDto>> getRoomsWithReservations(
-            @RequestParam("roomType") RoomType roomType,
+            @RequestParam("type") RoomType roomType,
             @RequestParam("date")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             LocalDate date

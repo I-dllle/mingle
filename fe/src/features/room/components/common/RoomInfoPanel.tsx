@@ -1,12 +1,12 @@
-import { RoomWithReservationsDto } from "@/features/reservation/types/roomWithReservations";
+import { RoomWithReservations } from "@/features/reservation/types/roomWithReservations";
 import { RoomStatusBadge } from "./RoomStatusBadge";
 
 interface Props {
-  room: RoomWithReservationsDto;
+  room: RoomWithReservations;
 }
 
 function isRoomInUseNow(
-  reservations: RoomWithReservationsDto["reservations"]
+  reservations: RoomWithReservations["reservations"]
 ): boolean {
   const now = new Date();
 

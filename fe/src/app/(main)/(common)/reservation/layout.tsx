@@ -13,7 +13,7 @@ export default function ReservationLayout({
     <div className="flex flex-col h-full bg-gray-50">
       {/* (Optional) 공통 헤더 */}
       <header className="px-6 py-4 border-b bg-white">
-        <h1 className="text-xl font-bold">연습실 예약</h1>
+        <h1 className="text-xl font-bold">예약</h1>
       </header>
 
       {/* 메인 컨텐츠 스크롤 영역 */}

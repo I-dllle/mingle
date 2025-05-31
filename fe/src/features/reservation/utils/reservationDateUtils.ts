@@ -31,7 +31,10 @@ export const hasConflict = (
   endTime: string
 ): boolean => {
   return reservations.some((res) => {
+    // 같은 날짜에서만 충돌 확인, 취소된 예약은 제외
     if (res.date !== date || res.reservationStatus === "CANCELED") return false;
+
+    // 시간 겹침 확인
     return isTimeOverlap(startTime, endTime, res.startTime, res.endTime, date);
   });
 };

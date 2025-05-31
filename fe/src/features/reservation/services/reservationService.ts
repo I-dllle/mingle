@@ -6,7 +6,7 @@ import type {
   ReservationFormInput,
   ReservationStatus,
 } from "@/features/reservation/types/reservation";
-import { RoomWithReservationsDto } from "@/features/reservation/types/roomWithReservations";
+import { RoomWithReservations } from "@/features/reservation/types/roomWithReservations";
 import type { RoomType } from "@/features/room/types/room";
 
 export const reservationService = {
@@ -14,7 +14,7 @@ export const reservationService = {
   async getRoomWithReservations(
     type: RoomType,
     date: string
-  ): Promise<RoomWithReservationsDto[]> {
+  ): Promise<RoomWithReservations[]> {
     return await apiClient(`/reservations?type=${type}&date=${date}`);
   },
 
