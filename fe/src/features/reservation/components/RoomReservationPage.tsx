@@ -209,29 +209,57 @@ export default function RoomReservationPage() {
     <div className="space-y-6">
       {/* ┌──────────────────────────────────────────
           (A) 부모 최상단 헤더: “◀ 날짜 ▶ 오늘” + “방 타입 선택”
-         ─────────────────────────────────────────── */}
-      <div className="px-4 pt-6">
-        <div className="flex items-center justify-between">
+         ─────────────────────────────────────────── */}{" "}
+      <div className="px-4 pt-6 mb-6">
+        <div className="flex items-center justify-between bg-white p-4 rounded-xl shadow-sm ring-1 ring-gray-100">
           {/* ◀ 이전 / 날짜 / ▶ 다음 / 오늘 */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3">
             <button
               onClick={() => {
                 const prev = new Date(date);
                 prev.setDate(prev.getDate() - 1);
                 setDate(prev.toISOString().slice(0, 10));
               }}
-              className="p-2 rounded-full hover:bg-violet-50 text-violet-700 transition"
+              className="p-2 rounded-md hover:bg-violet-50 text-violet-700 transition flex items-center justify-center"
             >
-              &lt;
-            </button>
-
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>{" "}
             <div className="relative inline-block">
               <button
                 type="button"
                 onClick={openDatePicker}
-                className="text-base font-semibold text-gray-800 bg-transparent border-none px-1"
+                className="text-base font-semibold text-gray-800 bg-transparent border-none px-3 py-1.5 hover:bg-gray-50 rounded-md flex items-center"
               >
-                {date}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="mr-2 text-violet-600"
+                >
+                  <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                  <line x1="3" y1="9" x2="21" y2="9" />
+                  <line x1="9" y1="3" x2="9" y2="9" />
+                  <line x1="15" y1="3" x2="15" y2="9" />
+                </svg>
+                {date.replace(/-/g, ".")}
               </button>
               <input
                 ref={hiddenDateInputRef}
@@ -241,34 +269,43 @@ export default function RoomReservationPage() {
                 className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
                 style={{ pointerEvents: "all" }}
               />
-            </div>
-
+            </div>{" "}
             <button
               onClick={() => {
                 const next = new Date(date);
                 next.setDate(next.getDate() + 1);
                 setDate(next.toISOString().slice(0, 10));
               }}
-              className="p-2 rounded-full hover:bg-violet-50 text-violet-700 transition"
+              className="p-2 rounded-md hover:bg-violet-50 text-violet-700 transition flex items-center justify-center"
             >
-              &gt;
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M9 18l6-6-6-6" />
+              </svg>
             </button>
-
             <button
               onClick={() => setDate(formatDate(new Date()))}
-              className="px-3 py-1 text-sm bg-violet-100 text-violet-700 rounded-full hover:bg-violet-200 font-medium transition"
+              className="px-4 py-1.5 text-sm bg-violet-100 text-violet-700 rounded-md hover:bg-violet-200 font-medium transition shadow-sm"
             >
               오늘
             </button>
-          </div>
-
+          </div>{" "}
           {/* 우측 끝: 방 타입 드롭다운 */}
           <div className="flex items-center space-x-2">
-            <label className="text-sm font-medium text-gray-600">
+            <label className="text-sm font-medium text-gray-600 mr-1">
               방 타입:
             </label>
             <select
-              className="border rounded px-2 py-1 text-sm"
+              className="border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent shadow-sm"
               value={roomType}
               onChange={(e) => setRoomType(e.target.value as RoomType)}
             >
@@ -278,7 +315,6 @@ export default function RoomReservationPage() {
           </div>
         </div>
       </div>
-
       {/* ┌──────────────────────────────────────────
           (B) 달력 컴포넌트: 헤더 없음 → “시간 슬롯 + 예약 카드”만 렌더링
          ─────────────────────────────────────────── */}
@@ -294,15 +330,14 @@ export default function RoomReservationPage() {
           onSelect={handleReservationSelect}
         />
       )}
-
       {/* ┌──────────────────────────────────────────
           (C) 예약 상세 모달 (ReservationDetail)
-         ─────────────────────────────────────────── */}
+         ─────────────────────────────────────────── */}{" "}
       {isDetailOpen && selectedReservation && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-opacity duration-300">
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-xl shadow-xl max-w-md w-full"
+            className="bg-white rounded-2xl shadow-xl max-w-md w-full ring-1 ring-gray-100 transform transition-all duration-300 scale-100 animate-fadeIn"
           >
             <ReservationDetail
               reservation={selectedReservation}
@@ -314,15 +349,14 @@ export default function RoomReservationPage() {
           </div>
         </div>
       )}
-
       {/* ┌──────────────────────────────────────────
           (D) 예약 폼 모달 (ReservationForm)
-         ─────────────────────────────────────────── */}
+         ─────────────────────────────────────────── */}{" "}
       {isFormOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-opacity duration-300">
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-xl shadow-xl max-w-md w-full"
+            className="bg-white rounded-2xl shadow-xl max-w-md w-full ring-1 ring-gray-100 transform transition-all duration-300 scale-100 animate-fadeIn"
           >
             <ReservationForm
               initial={
@@ -347,24 +381,64 @@ export default function RoomReservationPage() {
           </div>
         </div>
       )}
-
       {/* ┌──────────────────────────────────────────
           (E) 하단: 연습실 배치도 + 연습실 상태 리스트
          ─────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-4 pb-6">
-        <div className="bg-white p-4 rounded-lg shadow-sm">
-          <h3 className="text-lg font-medium mb-4">연습실 배치도</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-4 pb-6">
+        <div className="bg-white p-6 rounded-xl shadow-sm ring-1 ring-gray-100">
+          <h3 className="text-lg font-medium mb-5 text-gray-800 flex items-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="mr-2 text-violet-600"
+            >
+              <rect width="18" height="18" x="3" y="3" rx="2" />
+              <path d="M3 9h18" />
+            </svg>
+            연습실 배치도
+          </h3>
           <RoomLayoutDiagram imageUrl="https://i.namu.wiki/i/kPP-AgF1PDjxsQxZq2VqDfw51SYDFh_FZPay3ThGtMJm4u7X2sd_mpQLY3dJ47zPga33giJTL2esWEKMvI8GqZYivMBMcYCtUmpTyG-QpidSnac5pg-0dt0MdJD4kWBBE5x5XZVbXRc6SUF41KJMZQ.webp" />
         </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm">
-          <h3 className="text-lg font-medium mb-4">연습실 정보</h3>
+        <div className="bg-white p-6 rounded-xl shadow-sm ring-1 ring-gray-100">
+          <h3 className="text-lg font-medium mb-5 text-gray-800 flex items-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="mr-2 text-violet-600"
+            >
+              <path d="M2 17 7 2h10l5 15" />
+              <path d="M2 17h20" />
+              <path d="M16 9h4" />
+              <path d="M4 9h4" />
+              <path d="M12 17v-4" />
+              <path d="M7 2v7" />
+              <path d="M17 2v7" />
+            </svg>
+            연습실 정보
+          </h3>
           <div className="space-y-3">
             {roomsWithReservations.map((room) => (
               <div
                 key={room.roomId}
-                className="flex justify-between items-center border-b pb-2"
+                className="flex justify-between items-center border-b border-gray-100 pb-3"
               >
-                <div className="text-sm font-medium">{room.roomName}</div>
+                <div className="text-sm font-medium text-gray-700">
+                  {room.roomName}
+                </div>
                 <RoomStatusBadge
                   isActive={room.reservations.some((r) => {
                     const now = new Date();

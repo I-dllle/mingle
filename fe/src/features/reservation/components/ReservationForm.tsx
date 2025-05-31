@@ -73,22 +73,94 @@ export function ReservationForm({
     onSubmit({ roomId, date, startTime, endTime, title });
   };
   return (
-    <div className="bg-white p-6 rounded-xl shadow-md w-[400px]">
-      <h3 className="text-lg font-semibold mb-2">
-        {initial.roomId && !isRoomSelected ? "예약 수정" : "새 예약"}
-      </h3>
+    <div className="bg-white p-6 rounded-2xl w-[420px]">
+      <div className="flex justify-between items-center mb-5">
+        <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="mr-2 text-violet-600"
+          >
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
+          {initial.roomId && !isRoomSelected ? "예약 수정" : "새 예약"}
+        </h3>
+        <button
+          onClick={onCancel}
+          className="text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
       {isRoomSelected && initial.roomName && (
-        <p className="text-sm text-gray-500 mb-4">
-          {initial.roomName} / {initial.date} {initial.startTime}
-        </p>
+        <div className="mb-5 p-3 bg-violet-50 rounded-lg text-sm text-violet-700 flex items-center">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="mr-2"
+          >
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
+          </svg>
+          {initial.roomName} / {initial.date.replace(/-/g, ".")}{" "}
+          {initial.startTime}
+        </div>
       )}
-      <div className="space-y-3">
-        {" "}
+
+      <div className="space-y-4">
         {/* 방 선택 (기존 예약 수정 시나 달력에서 방을 선택했을 때는 비활성화) */}
         {isRoomSelected || !!initial.roomId ? (
           <div>
-            <label className="text-sm font-medium">선택된 방</label>
-            <div className="w-full border rounded px-2 py-1 mt-1 bg-gray-50">
+            <label className="text-sm font-medium text-gray-700 flex items-center mb-1">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="mr-1.5 text-violet-500"
+              >
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
+              선택된 방
+            </label>
+            <div className="w-full border border-gray-200 rounded-md px-3 py-2 bg-gray-50 text-gray-700">
               {initial.roomName || `${roomId}번 방`}
             </div>
           </div>
@@ -102,10 +174,29 @@ export function ReservationForm({
         )}{" "}
         {/* 날짜 */}
         <div>
-          <label className="text-sm font-medium">날짜</label>
+          <label className="text-sm font-medium text-gray-700 flex items-center mb-1">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="mr-1.5 text-violet-500"
+            >
+              <rect x="3" y="4" width="18" height="18" rx="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+            날짜
+          </label>
           <input
             type="date"
-            className={`w-full border rounded px-2 py-1 mt-1 ${
+            className={`w-full border border-gray-200 rounded-md px-3 py-2 focus:ring-2 focus:ring-violet-500 focus:outline-none ${
               isRoomSelected ? "bg-gray-50" : ""
             }`}
             value={date}
@@ -114,54 +205,144 @@ export function ReservationForm({
           />
         </div>
         {/* 시간 */}
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <div className="flex-1">
-            <label className="text-sm font-medium">시작 시간</label>
+            <label className="text-sm font-medium text-gray-700 flex items-center mb-1">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="mr-1.5 text-violet-500"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              시작 시간
+            </label>
             <input
               type="time"
-              className={`w-full border rounded px-2 py-1 mt-1 ${
+              className={`w-full border border-gray-200 rounded-md px-3 py-2 focus:ring-2 focus:ring-violet-500 focus:outline-none ${
                 isRoomSelected ? "bg-gray-50" : ""
               }`}
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
-              readOnly={isRoomSelected} // 시간 슬롯에서 선택한 경우 읽기 전용
+              readOnly={isRoomSelected}
             />
           </div>
           <div className="flex-1">
-            <label className="text-sm font-medium">종료 시간</label>
+            <label className="text-sm font-medium text-gray-700 flex items-center mb-1">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="mr-1.5 text-violet-500"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              종료 시간
+            </label>
             <input
               type="time"
-              className="w-full border rounded px-2 py-1 mt-1"
+              className="w-full border border-gray-200 rounded-md px-3 py-2 focus:ring-2 focus:ring-violet-500 focus:outline-none"
               value={endTime}
               onChange={(e) => setEndTime(e.target.value)}
-              // 종료 시간은 항상 수정 가능 (시작 시간 + 1시간이 기본값이지만 사용자가 조정 가능)
             />
           </div>
         </div>
         {/* 제목 */}
         <div>
-          <label className="text-sm font-medium">제목</label>
+          <label className="text-sm font-medium text-gray-700 flex items-center mb-1">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="mr-1.5 text-violet-500"
+            >
+              <line x1="8" y1="6" x2="21" y2="6" />
+              <line x1="8" y1="12" x2="21" y2="12" />
+              <line x1="8" y1="18" x2="21" y2="18" />
+              <line x1="3" y1="6" x2="3.01" y2="6" />
+              <line x1="3" y1="12" x2="3.01" y2="12" />
+              <line x1="3" y1="18" x2="3.01" y2="18" />
+            </svg>
+            제목
+          </label>
           <input
             type="text"
-            className="w-full border rounded px-2 py-1 mt-1"
+            className="w-full border border-gray-200 rounded-md px-3 py-2 focus:ring-2 focus:ring-violet-500 focus:outline-none"
             placeholder="제목을 입력하세요"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
         </div>
-        {error && <p className="text-sm text-red-500">{error}</p>}
+        {error && (
+          <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm flex items-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="mr-2"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            {error}
+          </div>
+        )}
       </div>
-      <div className="mt-5 flex justify-end gap-2">
+      <div className="mt-6 flex justify-end gap-2 pt-4 border-t border-gray-100">
         <button
           onClick={onCancel}
-          className="px-4 py-1 border rounded hover:bg-gray-100"
+          className="px-4 py-2 border border-gray-200 rounded-md hover:bg-gray-50 text-gray-700 transition shadow-sm"
         >
           취소
         </button>
         <button
           onClick={handleSubmit}
-          className="px-4 py-1 bg-blue-500 text-white rounded hover:opacity-90"
+          className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition shadow-sm flex items-center"
         >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="mr-1"
+          >
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+            <polyline points="17 21 17 13 7 13 7 21" />
+            <polyline points="7 3 7 8 15 8" />
+          </svg>
           저장
         </button>
       </div>

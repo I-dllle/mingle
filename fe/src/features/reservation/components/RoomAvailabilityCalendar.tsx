@@ -75,7 +75,7 @@ export function RoomAvailabilityCalendar({
 
   return (
     <div
-      className={`${styles.calendarContainer} bg-white rounded-xl shadow-lg ring-1 ring-gray-200`}
+      className={`${styles.calendarContainer} bg-white rounded-xl shadow-md ring-1 ring-gray-100 overflow-hidden`}
     >
       {/* ───────────────────────────────────────────
           1) 달력 바디(헤더 제거 버전):

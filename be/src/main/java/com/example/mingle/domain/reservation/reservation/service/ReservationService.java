@@ -285,6 +285,8 @@ public class ReservationService {
                 .reservationStatus(reservation.getReservationStatus())
                 .userId(reservation.getUser().getId())
                 .userName(reservation.getUser().getName())
+                .title(reservation.getTitle())
+                .nickName(reservation.getUser().getNickname())
                 .build();
     }
 }
