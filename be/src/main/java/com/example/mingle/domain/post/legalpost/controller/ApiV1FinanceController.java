@@ -8,6 +8,10 @@ import com.example.mingle.domain.post.legalpost.service.SettlementService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,10 +37,9 @@ public class ApiV1FinanceController {
     @PostMapping("/contracts/{contractId}/settlements")
     @Operation(summary = "정산 생성(확정)")
     public ResponseEntity<?> createSettlement(
-            @PathVariable Long contractId,
-            @RequestBody SettlementRequest request
+            @PathVariable Long contractId
     ) {
-        settlementService.createSettlement(contractId, request.getTotalRevenue());
+        settlementService.createSettlement(contractId);
         return ResponseEntity.ok("정산 생성 완료");
     }
 
@@ -149,8 +152,45 @@ public class ApiV1FinanceController {
     }
 
     @GetMapping
-    @Operation(summary = "모든 정산 리스트")
-    public ResponseEntity<List<SettlementDto>> getAll() {
-        return ResponseEntity.ok(settlementService.getAllSettlements());
+    @Operation(summary = "모든 정산 리스트 조회 (페이징 및 정렬 포함)")
+    public ResponseEntity<Page<SettlementDto>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortField,
+            @RequestParam(defaultValue = "desc") String sortDirection
+    ) {
+        // 정렬 방향 설정
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("asc")
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
+
+        // 정렬 필드 유효성 검증
+        String validSortField = validateSortField(sortField);
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, validSortField));
+        Page<SettlementDto> result = settlementService.getAllSettlements(pageable);
+
+        return ResponseEntity.ok(result);
+    }
+
+    // 정렬 필드 유효성 검증 메서드
+    private String validateSortField(String sortField) {
+        // 허용되는 정렬 필드들 (정산 엔티티의 필드에 맞게 조정)
+        List<String> allowedFields = List.of(
+                "id",
+                "createdAt",
+                "settlementDate",
+                "amount",
+                "status",
+                "userId",
+                "projectId"
+        );
+
+        if (allowedFields.contains(sortField)) {
+            return sortField;
+        }
+
+        // 기본값 반환
+        return "createdAt";
     }
 }

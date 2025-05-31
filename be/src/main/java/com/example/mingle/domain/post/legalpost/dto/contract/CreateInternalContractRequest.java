@@ -10,5 +10,6 @@ public record CreateInternalContractRequest(
         RatioType ratioType,  // ARTIST, PRODUCER 등
         BigDecimal defaultRatio,
         LocalDate startDate,
-        LocalDate endDate
+        LocalDate endDate,
+        Long writerId
 ) {}

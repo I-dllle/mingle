@@ -101,9 +101,9 @@ public class PostMenuInitializer implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         try {
             log.info("[PostMenuInitializer] 게시판 초기화를 시작합니다.");
-            
+
             User creator = defaultCreator();
-            
+
             //공통
             initializeCommonMenu("CALENDAR", "캘린더", "스케쥴 관리 캘린더 게시판");
             initializeCommonMenu("BUSINESS_DOCUMENTS", "업무자료", "부서별 업무 자료 게시판");
@@ -126,8 +126,6 @@ public class PostMenuInitializer implements ApplicationRunner {
             //마케팅/홍보팀
             initializeMenu("SNS_CONTENT", "SNS컨텐츠", "마케팅 - SNS 콘텐츠 게시판", "Marketing & PR", creator);
             initializeMenu("EVENTS", "이벤트", "마케팅 - 이벤트 게시판", "Marketing & PR", creator);
-
-            //경영진(추후구현)
 
 
             //정산/법무팀

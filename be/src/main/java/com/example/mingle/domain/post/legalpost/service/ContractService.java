@@ -1,9 +1,8 @@
 package com.example.mingle.domain.post.legalpost.service;
 
-import com.example.mingle.domain.admin.panel.dto.ContractConditionResponse;
-import com.example.mingle.domain.admin.panel.dto.ContractResponse;
-import com.example.mingle.domain.admin.panel.dto.ContractSearchCondition;
+import com.example.mingle.domain.admin.panel.dto.*;
 import com.example.mingle.domain.admin.panel.service.ContractSpecification;
+import com.example.mingle.domain.admin.panel.service.InternalContractSpecification;
 import com.example.mingle.domain.post.legalpost.dto.contract.CreateContractRequest;
 import com.example.mingle.domain.post.legalpost.dto.contract.CreateInternalContractRequest;
 import com.example.mingle.domain.post.legalpost.dto.contract.UpdateContractRequest;
@@ -58,7 +57,7 @@ public class ContractService {
     private final AwsS3Uploader s3Uploader;
     private final DocusignService docusignService;
     private final InternalContractRepository internalContractRepository;
-
+    private final  DocusignAuthService docusignAuthService;
     public Long createContract(CreateContractRequest req, MultipartFile file) throws IOException {
         User user1 = userRepository.findById(req.userId()).orElseThrow();
         ArtistTeam team = teamRepository.findById(req.teamId()).orElse(null);
@@ -70,7 +69,7 @@ public class ContractService {
         contract.setFileUrl(fileUrl);
         contract.setSummary(req.summary());
         contract.setTitle(req.title());
-        contract.setCompanyName("Mingle");
+        contract.setCompanyName(req.counterpartyCompanyName());
         contract.setContractCategory(req.contractCategory());
         contract.setStartDate(req.startDate());
         contract.setEndDate(req.endDate());
@@ -152,6 +151,7 @@ public class ContractService {
         contract.setDefaultRatio(req.defaultRatio());
         contract.setStartDate(req.startDate());
         contract.setEndDate(req.endDate());
+        contract.setContractCategory(ContractCategory.INTERNAL);
         contract.setStatus(ContractStatus.DRAFT);
         contract.setFileUrl(fileUrl);
 
@@ -159,7 +159,6 @@ public class ContractService {
         return contract.getId();
     }
 
-    @Transactional
     public Long updateContract(Long contractId, UpdateContractRequest req, MultipartFile file) throws IOException {
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new EntityNotFoundException("계약서 없음"));
@@ -269,32 +268,6 @@ public class ContractService {
     }
 
 //    public String signContract(Long contractId, SecurityUser user) throws IOException {
-//        Contract contract = contractRepository.findById(contractId)
-//                .orElseThrow(() -> new IllegalArgumentException("계약 없음"));
-//        System.out.println("✔ 계약 조회 완료: " + contract.getTitle());
-//
-//        byte[] fileBytes = downloadFileFromUrl(contract.getFileUrl());
-//        System.out.println("✔ 파일 다운로드 완료");
-//
-//        String fileName = extractFileNameFromUrl(contract.getFileUrl());
-//        File tempFile = new File(System.getProperty("java.io.tmpdir"), fileName);
-//        try (FileOutputStream fos = new FileOutputStream(tempFile)) {
-//            fos.write(fileBytes);
-//        }
-//        System.out.println("✔ 임시 파일 생성 완료: " + tempFile.getAbsolutePath());
-//
-//        String signatureUrl = docusignService.sendEnvelope(tempFile, user.getNickname(), user.getEmail());
-//        System.out.println("✔ DocuSign 서명 URL 발급 완료");
-//
-//        contract.setDocusignUrl(signatureUrl);
-//        contract.setSignerName(user.getNickname());
-//        contract.setStatus(ContractStatus.SIGNED);
-//        contractRepository.save(contract);
-//
-//        return signatureUrl;
-//    }
-
-//    public String signContract(Long contractId, SecurityUser user) throws IOException {
 //        InternalContract contract = internalContractRepository.findById(contractId)
 //                .orElseThrow(() -> new IllegalArgumentException("계약 없음"));
 //        System.out.println("✔ 계약 조회 완료: " + contract.getTitle());
@@ -320,7 +293,8 @@ public class ContractService {
 //        return signatureUrl;
 //    }
 
-    public String signContract(Long contractId, User signer) throws IOException {
+
+    public String signContract(Long contractId, SecurityUser user) throws IOException {
         InternalContract contract = internalContractRepository.findById(contractId)
                 .orElseThrow(() -> new IllegalArgumentException("계약 없음"));
         System.out.println("✔ 계약 조회 완료: " + contract.getTitle());
@@ -335,16 +309,46 @@ public class ContractService {
         }
         System.out.println("✔ 임시 파일 생성 완료: " + tempFile.getAbsolutePath());
 
-        String signatureUrl = docusignService.sendEnvelope(tempFile, signer.getNickname(), signer.getEmail());
+        String signerName = contract.getUser().getNickname();   // 예: 계약 저장 시 등록된 아티스트 이름
+        String signerEmail = contract.getUser().getEmail(); // 예: 계약 저장 시 입력된 이메일
+
+        String signatureUrl = docusignService.sendEnvelope(tempFile, signerName, signerEmail);
         System.out.println("✔ DocuSign 서명 URL 발급 완료");
 
         contract.setDocusignUrl(signatureUrl);
-        contract.setSignerName(signer.getNickname());
+        contract.setSignerName(signerName);
         contract.setStatus(ContractStatus.SIGNED);
         internalContractRepository.save(contract);
 
         return signatureUrl;
     }
+
+
+//    public String signContract(Long contractId, User signer) throws IOException {
+//        InternalContract contract = internalContractRepository.findById(contractId)
+//                .orElseThrow(() -> new IllegalArgumentException("계약 없음"));
+//        System.out.println("✔ 계약 조회 완료: " + contract.getTitle());
+//
+//        byte[] fileBytes = downloadFileFromUrl(contract.getFileUrl());
+//        System.out.println("✔ 파일 다운로드 완료");
+//
+//        String fileName = extractFileNameFromUrl(contract.getFileUrl());
+//        File tempFile = new File(System.getProperty("java.io.tmpdir"), fileName);
+//        try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+//            fos.write(fileBytes);
+//        }
+//        System.out.println("✔ 임시 파일 생성 완료: " + tempFile.getAbsolutePath());
+//
+//        String signatureUrl = docusignService.sendEnvelope(tempFile, signer.getNickname(), signer.getEmail());
+//        System.out.println("✔ DocuSign 서명 URL 발급 완료");
+//
+//        contract.setDocusignUrl(signatureUrl);
+//        contract.setSignerName(signer.getNickname());
+//        contract.setStatus(ContractStatus.SIGNED);
+//        internalContractRepository.save(contract);
+//
+//        return signatureUrl;
+//    }
 
     private byte[] downloadFileFromUrl(String fileUrl) {
         try {
@@ -371,23 +375,40 @@ public class ContractService {
         return url.substring(url.lastIndexOf("/") + 1);
     }
 
-    public void signOfflineAsAdmin(Long id, String signerName, String memo) {
-        Contract contract = contractRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("계약 없음"));
+    public void signOfflineAsAdmin(Long id, ContractCategory category, String signerName, String memo) {
+        if (category == ContractCategory.EXTERNAL) {
+            Contract contract = contractRepository.findById(id)
+                    .orElseThrow(() -> new EntityNotFoundException("외부 계약 없음"));
 
-        if (contract.getContractType() != ContractType.PAPER) {
-            throw new IllegalStateException("종이 계약이 아닙니다.");
+            if (contract.getContractType() != ContractType.PAPER) {
+                throw new IllegalStateException("종이 계약이 아닙니다.");
+            }
+
+            if (contract.getStatus() != ContractStatus.REVIEW) {
+                throw new IllegalStateException("검토 상태만 서명할 수 있습니다.");
+            }
+
+            contract.setSignerName(signerName);
+            contract.setSignerMemo("오프라인 서명 메모: " + memo);
+            contract.setStatus(ContractStatus.SIGNED_OFFLINE);
+
+            contractRepository.save(contract);
+        } else if (category == ContractCategory.INTERNAL) {
+            InternalContract contract = internalContractRepository.findById(id)
+                    .orElseThrow(() -> new EntityNotFoundException("내부 계약 없음"));
+
+            if (contract.getStatus() != ContractStatus.REVIEW) {
+                throw new IllegalStateException("검토 상태만 서명할 수 있습니다.");
+            }
+
+            contract.setSignerName(signerName);
+            contract.setSignerMemo("오프라인 서명 메모: " + memo);
+            contract.setStatus(ContractStatus.SIGNED_OFFLINE);
+
+            internalContractRepository.save(contract);
+        } else {
+            throw new IllegalArgumentException("지원하지 않는 계약 카테고리입니다.");
         }
-
-        if (contract.getStatus() != ContractStatus.REVIEW) {
-            throw new IllegalStateException("검토 상태만 서명할 수 있습니다.");
-        }
-
-        contract.setSignerName(signerName);
-        contract.setSignerMemo("오프라인 서명 메모: " + memo);
-        contract.setStatus(ContractStatus.SIGNED_OFFLINE);
-
-        contractRepository.save(contract);
     }
 
 
@@ -416,10 +437,22 @@ public class ContractService {
         }
     }
 
-    public Page<ContractResponse> getContractsByFilter(ContractSearchCondition condition, Pageable pageable) {
-        return contractRepository.findAll(
-                ContractSpecification.build(condition), pageable
-        ).map(ContractResponse::from);
+    public Page<ContractResponse> getContractsByFilter(ContractSearchCondition condition, InternalSearchCondition internalSearchCondition ,  Pageable pageable) {
+        return switch (condition.getContractCategory()) {
+            case EXTERNAL -> {
+                Page<Contract> contracts = contractRepository.findAll(
+                        ContractSpecification.build(condition), pageable
+                );
+                yield contracts.map(ContractResponse::from);
+            }
+            case INTERNAL -> {
+                Page<InternalContract> internals = internalContractRepository.findAll(
+                        InternalContractSpecification.build(internalSearchCondition), pageable
+                );
+                yield internals.map(ContractResponse::fromInternal);
+            }
+            default -> throw new IllegalArgumentException("지원하지 않는 계약 카테고리입니다.");
+        };
     }
 
     public ContractConditionResponse getContractConditions(Long id) {
@@ -489,5 +522,12 @@ public class ContractService {
                 internalcontract.setStatus(ContractStatus.TERMINATED);
             }
         }
+    }
+
+    public List<UserSearchDto> searchByName(String name) {
+        List<User> users = userRepository.findByNicknameContainingIgnoreCase(name);
+        return users.stream()
+                .map(UserSearchDto::from)
+                .toList();
     }
 }

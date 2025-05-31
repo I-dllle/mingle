@@ -14,6 +14,7 @@ import java.util.List;
 public record CreateContractRequest(
         Long userId,
         Long teamId,
+        String counterpartyCompanyName,
         String summary,
         String title,
         ContractCategory contractCategory,

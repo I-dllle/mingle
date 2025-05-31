@@ -1,5 +1,6 @@
 package com.example.mingle.domain.post.legalpost.entity;
 
+import com.example.mingle.domain.post.legalpost.enums.ContractCategory;
 import com.example.mingle.domain.post.legalpost.enums.ContractStatus;
 import com.example.mingle.domain.post.legalpost.enums.RatioType;
 import com.example.mingle.domain.user.user.entity.User;
@@ -22,9 +23,16 @@ public class InternalContract extends BaseEntity {
     private LocalDate startDate;
     private LocalDate endDate;
     private BigDecimal defaultRatio;
+    private String companyName;
 
     @Column(length = 200)
     private String title;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ContractCategory contractCategory;
+
+    private Long writerId;
 
     @Column(length = 100)
     private String signerName;

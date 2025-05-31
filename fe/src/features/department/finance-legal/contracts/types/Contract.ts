@@ -4,7 +4,7 @@ export enum ContractStatus {
   REVIEW = "REVIEW", // 검토 중
   SIGNED_OFFLINE = "SIGNED_OFFLINE", // 오프라인 서명
   SIGNED = "SIGNED", // 서명됨
-  CONFIRMED = "CONFIRMED", // 확인됨
+  CONFIRMED = "CONFIRMED", // 확정됨
   ACTIVE = "ACTIVE", // 활성화됨
   EXPIRED = "EXPIRED", // 만료됨
   PENDING = "PENDING", // 대기 중
@@ -112,8 +112,11 @@ export enum RatioType {
 export interface ContractSimpleDto {
   id: number;
   title: string;
+  companyName: string; // 회사명 (계약 당사자)
+  status: ContractStatus; // 계약 상태
   startDate: string; // ISO 형식의 날짜 문자열 (YYYY-MM-DD)
   endDate: string; // ISO 형식의 날짜 문자열 (YYYY-MM-DD)
+  nickname: string; // 사용자 닉네임 (외부 계약자 이름)
   category: ContractCategory;
 }
 
@@ -124,8 +127,11 @@ export const ContractSimpleDtoUtils = {
     return {
       id: contract.id,
       title: contract.title,
+      companyName: contract.companyName,
+      status: contract.status,
       startDate: contract.startDate as string, // LocalDate → string으로 변환 필요
       endDate: contract.endDate as string, // LocalDate → string으로 변환 필요
+      nickname: contract.user.nickname || "외부 사용자", // 우선순위: user.nickname > userName > signerName
       category: contract.contractCategory,
     };
   },
@@ -134,8 +140,11 @@ export const ContractSimpleDtoUtils = {
     return {
       id: internal.id,
       title: "(내부계약) 사용자 정산 계약",
+      companyName: "Mingle",
+      status: internal.status,
       startDate: internal.startDate as string, // LocalDate → string으로 변환 필요
       endDate: internal.endDate as string, // LocalDate → string으로 변환 필요
+      nickname: internal.user.nickname || "내부 사용자", // 내부 계약의 경우 고정값 사용
       category: ContractCategory.INTERNAL,
     };
   },
@@ -150,8 +159,8 @@ export interface SettlementRatioDto {
 
 // 계약 생성 요청 DTO - Java의 CreateContractRequest 레코드와 동일한 구조
 export interface CreateContractRequest {
-  userId: number; // 사용자 ID
-  teamId: number | null; // 팀 ID (null 허용)
+  userId: number; // 작성자 ID (로그인한 사용자, author ID로 사용)
+  teamId: number; // 팀 ID (기본값 1 사용)
   summary: string; // 요약
   title: string; // 제목
   contractCategory: ContractCategory; // 계약 카테고리
@@ -159,6 +168,7 @@ export interface CreateContractRequest {
   endDate: string; // 종료일 (ISO 형식의 날짜 문자열)
   contractType: ContractType; // 계약 타입
   contractAmount: number; // 계약 금액 (BigDecimal → number로 변환)
+  counterpartyCompanyName: string; // 상대 회사 이름
   useManualRatios: boolean; // true면 수동 입력, false면 내부계약 기준
   ratios: SettlementRatioDto[]; // 수동 입력용 정산 비율 목록
   targetUserIds: number[]; // 내부계약 기준 유저 ID 리스트
@@ -166,7 +176,8 @@ export interface CreateContractRequest {
 
 // 내부 계약 생성 요청 DTO - Java의 CreateInternalContractRequest 레코드와 동일한 구조
 export interface CreateInternalContractRequest {
-  userId: number; // 사용자 ID
+  userId: number; // 사용자 ID (계약 당사자)
+  writerId?: number; // 작성자 ID (로그인한 사용자, 백엔드에서 자동 설정)
   ratioType: RatioType; // 비율 타입 (ARTIST, PRODUCER 등)
   defaultRatio: number; // 기본 비율 (BigDecimal → number로 변환)
   startDate: string; // 시작일 (ISO 형식의 날짜 문자열)
@@ -287,6 +298,9 @@ export interface ContractResponse {
   status: ContractStatus; // 계약 상태
   contractCategory: ContractCategory; // 계약 카테고리
   contractType: ContractType; // 계약 타입
+  // ContractSimpleDto와 호환성을 위한 추가 필드들
+  nickname: string; // 사용자 닉네임 (ContractSimpleDto 호환)
+  category: ContractCategory; // 계약 카테고리 (ContractSimpleDto 호환)
 }
 
 // Java의 정적 메서드를 TypeScript 유틸리티 함수로 구현
@@ -304,6 +318,9 @@ export const ContractResponseUtils = {
       status: contract.status,
       contractCategory: contract.contractCategory,
       contractType: contract.contractType,
+      // ContractSimpleDto와 호환성을 위한 추가 필드들
+      nickname: contract.user?.nickname || contract.signerName || "외부 사용자",
+      category: contract.contractCategory,
     };
   },
   // InternalContract 엔티티로부터 ContractResponse 생성
@@ -319,6 +336,9 @@ export const ContractResponseUtils = {
       status: contract.status,
       contractCategory: ContractCategory.INTERNAL,
       contractType: ContractType.ELECTRONIC,
+      // ContractSimpleDto와 호환성을 위한 추가 필드들
+      nickname: contract.user?.nickname || "내부 사용자",
+      category: ContractCategory.INTERNAL,
     };
   },
 };
@@ -331,6 +351,18 @@ export interface ContractSearchCondition {
   contractCategory?: ContractCategory; // 계약 카테고리 (선택적)
   startDateFrom?: string; // 시작일 범위 시작 (ISO 형식의 날짜 문자열) (선택적)
   startDateTo?: string; // 시작일 범위 종료 (ISO 형식의 날짜 문자열) (선택적)
+  participantUserId?: number; // 참여자 사용자 ID (선택적) - 외부 계약서용
+}
+
+// 내부 계약서 검색 조건 DTO - Java의 InternalSearchCondition 클래스와 동일한 구조
+export interface InternalSearchCondition {
+  teamId?: number; // 팀 ID (선택적)
+  status?: ContractStatus; // 계약 상태 (선택적)
+  contractType?: ContractType; // 계약 타입 (선택적)
+  contractCategory?: ContractCategory; // 계약 카테고리 (선택적)
+  startDateFrom?: string; // 시작일 범위 시작 (ISO 형식의 날짜 문자열) (선택적)
+  startDateTo?: string; // 시작일 범위 종료 (ISO 형식의 날짜 문자열) (선택적)
+  userId?: number; // 사용자 ID (선택적) - 내부 계약서용
 }
 
 // 페이징된 응답을 위한 제네릭 인터페이스
@@ -368,6 +400,6 @@ export const RecentContractDtoUtils = {
 // 사용자 검색 DTO
 export interface UserSearchDto {
   id: number;
-  name: string;
+  nickname: string;
   email: string;
 }

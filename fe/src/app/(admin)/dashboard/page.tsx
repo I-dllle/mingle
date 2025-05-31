@@ -369,7 +369,6 @@ export default function Dashboard() {
                 <p className="text-sm text-gray-600">정산 및 수익 상세 관리</p>
               </div>
             </a>
-
             <a
               href="/contracts"
               className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
@@ -393,10 +392,9 @@ export default function Dashboard() {
                 <h4 className="font-medium text-gray-900">계약 관리</h4>
                 <p className="text-sm text-gray-600">계약서 생성 및 관리</p>
               </div>
-            </a>
-
+            </a>{" "}
             <a
-              href="/analytics"
+              href="/panel/users"
               className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
             >
               <div className="p-2 bg-purple-100 rounded-lg mr-3">
@@ -410,13 +408,15 @@ export default function Dashboard() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth="2"
-                    d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
                   ></path>
                 </svg>
               </div>
               <div>
-                <h4 className="font-medium text-gray-900">분석 리포트</h4>
-                <p className="text-sm text-gray-600">상세 분석 및 통계</p>
+                <h4 className="font-medium text-gray-900">사용자 관리</h4>
+                <p className="text-sm text-gray-600">
+                  사용자 계정 및 권한 관리
+                </p>
               </div>
             </a>
           </div>

@@ -2,6 +2,8 @@ package com.example.mingle.domain.post.legalpost.controller;
 
 import com.example.mingle.domain.admin.panel.dto.ContractResponse;
 import com.example.mingle.domain.admin.panel.dto.ContractSearchCondition;
+import com.example.mingle.domain.admin.panel.dto.InternalSearchCondition;
+import com.example.mingle.domain.admin.panel.dto.UserSearchDto;
 import com.example.mingle.domain.post.legalpost.dto.contract.*;
 import com.example.mingle.domain.post.legalpost.entity.Contract;
 import com.example.mingle.domain.post.legalpost.entity.InternalContract;
@@ -55,7 +57,7 @@ public class ApiV1LegalController {
         return ResponseEntity.ok(contractId);
     }
 
-    @PostMapping(value = "/internal-contracts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/internal/contracts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "내부 계약 생성 (파일 포함)")
     public ResponseEntity<Long> createInternalContract(
             @RequestPart("request") CreateInternalContractRequest request,
@@ -75,14 +77,15 @@ public class ApiV1LegalController {
 
     // 계약서 서명 (종이 방식 - 외부 계약자용)
     @PostMapping("/{id}/sign-offline")
-    @Operation(summary = "외부 계약서 종이 서명 처리")
     public ResponseEntity<?> signOfflineAsAdmin(
             @PathVariable Long id,
-            @RequestBody OfflineSignRequest request // signerName + memo 포함
+            @RequestParam ContractCategory category,
+            @RequestBody OfflineSignRequest request
     ) {
-        contractService.signOfflineAsAdmin(id, request.getSignerName(), request.getMemo());
+        contractService.signOfflineAsAdmin(id, category, request.getSignerName(), request.getMemo());
         return ResponseEntity.ok("오프라인 서명 완료");
     }
+
 
 
     // 특정 유저 계약서 리스트 조회
@@ -148,19 +151,29 @@ public class ApiV1LegalController {
     public ResponseEntity<Page<ContractSimpleDto>> getAllContracts(
             @RequestParam ContractCategory category,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortField,
+            @RequestParam(defaultValue = "desc") String sortDirection
     ) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        // 정렬 방향 설정
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("asc")
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
+
+        // 정렬 필드 유효성 검증 (필요에 따라)
+        String validSortField = validateSortField(sortField);
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, validSortField));
         Page<ContractSimpleDto> result;
 
         switch (category) {
             case EXTERNAL -> {
-                List<ContractStatus> excluded = List.of(ContractStatus.TERMINATED, ContractStatus.CONFIRMED);
+                List<ContractStatus> excluded = List.of(ContractStatus.TERMINATED);
                 Page<Contract> contracts = contractRepository.findAllByStatusNotIn(excluded, pageable);
                 result = contracts.map(ContractSimpleDto::from);
             }
             case INTERNAL -> {
-                List<ContractStatus> excluded = List.of(ContractStatus.TERMINATED, ContractStatus.CONFIRMED);
+                List<ContractStatus> excluded = List.of(ContractStatus.TERMINATED);
                 Page<InternalContract> internals = internalContractRepository.findAllByStatusNotIn(excluded, pageable);
                 result = internals.map(ContractSimpleDto::fromInternal);
             }
@@ -168,6 +181,19 @@ public class ApiV1LegalController {
         }
 
         return ResponseEntity.ok(result);
+    }
+
+    // 정렬 필드 유효성 검증 메서드 (선택적)
+    private String validateSortField(String sortField) {
+        // 허용되는 정렬 필드들
+        List<String> allowedFields = List.of("id", "createdAt", "startDate", "endDate", "title");
+
+        if (allowedFields.contains(sortField)) {
+            return sortField;
+        }
+
+        // 기본값 반환
+        return "createdAt";
     }
 
     // 관리자가 계약서 최종 확정
@@ -217,40 +243,46 @@ public class ApiV1LegalController {
 
     }
 
-    // 계약서 서명 (전자)
-//    @PostMapping("/{id}/sign")
+//     계약서 서명 (전자)
+    @PostMapping("/{contractId}/sign")
 //    @PreAuthorize("hasRole('STAFF') or hasRole('ARTIST')")
-//    @Operation(summary = "계약서 전자 서명")
-//    public ResponseEntity<String> sign(
-//            @PathVariable Long id,
-//            @AuthenticationPrincipal SecurityUser user
-//    ) throws IOException{
-//        String signatureUrl = contractService.signContract(id, user);
-//        return ResponseEntity.ok(signatureUrl);
-//    }
-
-    @PostMapping("/{id}/sign")
-    @Operation(summary = "계약서 전자 서명 요청 생성 (대리)")
-    public ResponseEntity<String> signOnBehalf(
-            @PathVariable Long id,
-            @RequestParam Long userId
-    ) throws IOException {
-        User signer = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
-
-        String signatureUrl = contractService.signContract(id, signer);
-        // 이메일 전송도 이 시점에서 수행 가능
+    @Operation(summary = "계약서 전자 서명")
+    public ResponseEntity<String> sign(
+            @PathVariable Long contractId,
+            @AuthenticationPrincipal SecurityUser user
+    ) throws IOException{
+        String signatureUrl = contractService.signContract(contractId, user);
         return ResponseEntity.ok(signatureUrl);
     }
 
-    @GetMapping("/filtered")
+//    @PostMapping("/{contractId}/sign")
+//    @Operation(summary = "계약서 전자 서명 요청 생성 (대리)")
+//    public ResponseEntity<String> signOnBehalf(
+//            @PathVariable Long contractId,
+//            @RequestParam Long userId
+//    ) throws IOException {
+//        User signer = userRepository.findById(userId)
+//                .orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
+//
+//        String signatureUrl = contractService.signContract(contractId, signer);
+//        // 이메일 전송도 이 시점에서 수행 가능
+//        return ResponseEntity.ok(signatureUrl);
+//    }
 
+    @GetMapping("/filtered")
     @Operation(summary = "계약서 목록 필터+페이징 조회")
     public ResponseEntity<Page<ContractResponse>> getFilteredContracts(
             ContractSearchCondition condition,
+            InternalSearchCondition internalCondition,
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        Page<ContractResponse> contracts = contractService.getContractsByFilter(condition, pageable);
+        Page<ContractResponse> contracts = contractService.getContractsByFilter(condition, internalCondition, pageable);
         return ResponseEntity.ok(contracts);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<UserSearchDto>> searchUsers(@RequestParam String name) {
+        List<UserSearchDto> result = contractService.searchByName(name);
+        return ResponseEntity.ok(result);
     }
 }
