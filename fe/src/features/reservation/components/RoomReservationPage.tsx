@@ -158,19 +158,45 @@ export default function RoomReservationPage() {
   // ───────────────────────────────────────────
   const handleCancelReservation = async () => {
     if (!selectedReservationId) return;
+    // ★ 2차 검증: 삭제 전 확인창 띄우기
+    const proceed = window.confirm("정말 취소하시겠습니까?");
+    if (!proceed) {
+      return; // “취소”를 누르면 이 함수 종료(삭제 로직 실행 안 됨)
+    }
+
     try {
-      await reservationService.cancel(selectedReservationId);
+      // 예시: fetch 요청에 credentials: 'include' 추가
+      const response = await fetch(
+        `http://localhost:8080/api/v1/reservations/${selectedReservationId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            // Authorization 헤더를 사용하지 않고, 쿠키(JWT)를 전송하려면 아래 credentials 설정이 필수입니다.
+          },
+          credentials: "include",
+          // └── "include" 로 하면 cross‐origin(3000→8080) 요청에도 쿠키가 자동으로 따라갑니다.
+          // └── 만약 백엔드/프론트가 동일 도메인이라면 'same-origin' 도 사용 가능합니다.
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || `예약 취소 실패: ${response.status}`);
+      }
+
+      // 예약 취소 성공 시 달력 갱신
       const data = await reservationService.getRoomWithReservations(
         roomType,
         date
       );
       setRoomsWithReservations(data);
       setIsDetailOpen(false);
-    } catch (err) {
+    } catch (err: any) {
       console.error("예약 취소 실패:", err);
+      alert("예약 취소 중 오류가 발생했습니다.\n" + err.message);
     }
   };
-
   // ───────────────────────────────────────────
   // F) 예약 폼 제출 → 신규 or 수정 → 달력 리프레시
   // ───────────────────────────────────────────
@@ -210,8 +236,8 @@ export default function RoomReservationPage() {
       {/* ┌──────────────────────────────────────────
           (A) 부모 최상단 헤더: “◀ 날짜 ▶ 오늘” + “방 타입 선택”
          ─────────────────────────────────────────── */}{" "}
-      <div className="px-4 pt-6 mb-6">
-        <div className="flex items-center justify-between bg-white p-4 rounded-xl shadow-sm ring-1 ring-gray-100">
+      <div className="p-4 m-0 bg-white rounded-xl shadow-sm ring-1 ring-gray-100">
+        <div className="flex items-center justify-between w-full">
           {/* ◀ 이전 / 날짜 / ▶ 다음 / 오늘 */}
           <div className="flex items-center space-x-3">
             <button
@@ -299,6 +325,26 @@ export default function RoomReservationPage() {
               오늘
             </button>
           </div>{" "}
+          <div className="flex-1 space-x-6 mt-2 px-4">
+            {/* 타인 예약 (연결된 CSS 클래스가 calendar.module.css에서 정의한 .otherReservation 스타일과 색을 맞춰주세요) */}
+            <div className="flex items-center space-x-1">
+              <span
+                className="w-3 h-3 rounded-full"
+                style={{ backgroundColor: "#C084FC" }}
+                /* #C084FC ≒ 다른 예약의 왼쪽 보더 색(purple-400) */
+              />
+              <span className="text-sm text-gray-600">타인 예약</span>
+            </div>
+            {/* 내 예약 (calendar.module.css에서 정의한 .myReservation의 보더 색을 맞춰주세요) */}
+            <div className="flex items-center space-x-1">
+              <span
+                className="w-3 h-3 rounded-full"
+                style={{ backgroundColor: "#8B5CF6" }}
+                /* #8B5CF6 ≒ 내 예약의 왼쪽 보더 색(violet-500) */
+              />
+              <span className="text-sm text-gray-600">내 예약</span>
+            </div>
+          </div>
           {/* 우측 끝: 방 타입 드롭다운 */}
           <div className="flex items-center space-x-2">
             <label className="text-sm font-medium text-gray-600 mr-1">
@@ -384,7 +430,7 @@ export default function RoomReservationPage() {
       {/* ┌──────────────────────────────────────────
           (E) 하단: 연습실 배치도 + 연습실 상태 리스트
          ─────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-4 pb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pb-6">
         <div className="bg-white p-6 rounded-xl shadow-sm ring-1 ring-gray-100">
           <h3 className="text-lg font-medium mb-5 text-gray-800 flex items-center">
             <svg
@@ -402,9 +448,9 @@ export default function RoomReservationPage() {
               <rect width="18" height="18" x="3" y="3" rx="2" />
               <path d="M3 9h18" />
             </svg>
-            연습실 배치도
+            {roomType === "PRACTICE_ROOM" ? "연습실 배치도" : "회의실 배치도"}
           </h3>
-          <RoomLayoutDiagram imageUrl="https://i.namu.wiki/i/kPP-AgF1PDjxsQxZq2VqDfw51SYDFh_FZPay3ThGtMJm4u7X2sd_mpQLY3dJ47zPga33giJTL2esWEKMvI8GqZYivMBMcYCtUmpTyG-QpidSnac5pg-0dt0MdJD4kWBBE5x5XZVbXRc6SUF41KJMZQ.webp" />
+          <RoomLayoutDiagram roomType={roomType} />
         </div>
         <div className="bg-white p-6 rounded-xl shadow-sm ring-1 ring-gray-100">
           <h3 className="text-lg font-medium mb-5 text-gray-800 flex items-center">
@@ -431,28 +477,36 @@ export default function RoomReservationPage() {
             연습실 정보
           </h3>
           <div className="space-y-3">
-            {roomsWithReservations.map((room) => (
-              <div
-                key={room.roomId}
-                className="flex justify-between items-center border-b border-gray-100 pb-3"
-              >
-                <div className="text-sm font-medium text-gray-700">
-                  {room.roomName}
+            {" "}
+            {[...roomsWithReservations]
+              .sort((a, b) =>
+                a.roomName.localeCompare(b.roomName, "ko", {
+                  numeric: true,
+                  sensitivity: "base",
+                })
+              )
+              .map((room) => (
+                <div
+                  key={room.roomId}
+                  className="flex justify-between items-center border-b border-gray-100 pb-8"
+                >
+                  <div className="text-sm font-medium text-gray-700">
+                    {room.roomName}
+                  </div>
+                  <RoomStatusBadge
+                    isActive={room.reservations.some((r) => {
+                      const now = new Date();
+                      const start = new Date(`${r.date}T${r.startTime}`);
+                      const end = new Date(`${r.date}T${r.endTime}`);
+                      return (
+                        r.reservationStatus !== "CANCELED" &&
+                        now >= start &&
+                        now < end
+                      );
+                    })}
+                  />
                 </div>
-                <RoomStatusBadge
-                  isActive={room.reservations.some((r) => {
-                    const now = new Date();
-                    const start = new Date(`${r.date}T${r.startTime}`);
-                    const end = new Date(`${r.date}T${r.endTime}`);
-                    return (
-                      r.reservationStatus !== "CANCELED" &&
-                      now >= start &&
-                      now < end
-                    );
-                  })}
-                />
-              </div>
-            ))}
+              ))}
           </div>
         </div>
       </div>

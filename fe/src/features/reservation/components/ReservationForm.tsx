@@ -1,12 +1,11 @@
 // features/reservation/components/ReservationForm.tsx
-
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { RoomSelector } from "@/features/room/components/common/RoomSelector";
 import { formatDate, formatTime } from "@/lib/date";
 import type { ReservationFormInput } from "@/features/reservation/types/reservation";
-import { hasConflict } from "@/features/reservation/utils/reservationDateUtils";
+import * as reservationDateUtils from "@/features/reservation/utils/reservationDateUtils";
 
 interface Props {
   initial?: Partial<ReservationFormInput>;
@@ -28,40 +27,74 @@ export function ReservationForm({
   const [startTime, setStartTime] = useState<string>(
     initial.startTime ?? "09:00"
   );
-  const [endTime, setEndTime] = useState<string>(initial.endTime ?? "10:00");
-  // 기본 제목 생성 (방 이름과 날짜/시간 조합)
+  const [endTime, setEndTime] = useState<string>(
+    // 초기 endTime이 없으면 startTime +1 을 디폴트로, 있으면 그대로 내려받은 초기값 사용
+    initial.endTime ??
+      (() => {
+        const [h, m] = (initial.startTime ?? "09:00").split(":").map(Number);
+        const hh = (h + 1) % 24;
+        return `${String(hh).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+      })()
+  );
+  // ▶ 변경: “기본 제목 생성” 로직은 그대로 두되, 사용자가 직접 수정 가능
   const defaultTitle = initial.roomName
     ? `${initial.roomName} ${initial.date?.replace(/-/g, "/")} ${
         initial.startTime || ""
       }`
     : "";
-
   const [title, setTitle] = useState<string>(initial.title ?? defaultTitle);
 
   // 시작 시간이 변경될 때 종료 시간을 자동으로 업데이트하는 useEffect 추가
   useEffect(() => {
-    if (!initial.endTime && startTime) {
-      try {
-        const [hours, minutes] = startTime.split(":").map(Number);
-        const endHours = hours + 1;
-        const endTimeString = `${String(endHours % 24).padStart(
-          2,
-          "0"
-        )}:${String(minutes).padStart(2, "0")}`;
-        setEndTime(endTimeString);
-      } catch (error) {
-        console.error("시간 형식 변환 오류", error);
-      }
+    try {
+      const [hours, minutes] = startTime.split(":").map(Number);
+      const endHours = (hours + 1) % 24;
+      const endTimeString = `${String(endHours).padStart(2, "0")}:00`;
+      setEndTime((prev) => {
+        // ★ 자동 설정된 endTime 조건:
+        //    1) prev가 초기값(initial.endTime)과 같거나
+        //    2) prev가 "시작시간 HH:00" 이었던 과거 자동값과 같다면,
+        //    → 새로 계산한 endTimeString(다음 정시)으로 덮어쓰기
+        const wasAuto =
+          prev === initial.endTime ||
+          // "현재 startTime의 시:00" 이었던 과거 자동값(예: startTime=03:xx 였다면 "03:00")과 같거나
+          prev === `${String(hours % 24).padStart(2, "0")}:00`;
+
+        return wasAuto ? endTimeString : prev;
+      });
+    } catch (error) {
+      console.error("시간 형식 변환 오류", error);
     }
   }, [startTime, initial.endTime]);
-
   // validation error
   const [error, setError] = useState<string>("");
+  // 2) handleSubmit 수정: isValidTimeRange 검사 추가
   const handleSubmit = () => {
-    if (!roomId) return setError("방을 선택해주세요.");
+    // 1) 방 선택 여부
+    if (!roomId) {
+      return setError("방을 선택해주세요.");
+    }
+
+    // 2) 과거 날짜 선택 금지
+    const todayZeroTs = new Date().setHours(0, 0, 0, 0);
+    const selectedZeroTs = new Date(date).setHours(0, 0, 0, 0);
+    if (selectedZeroTs < todayZeroTs) {
+      return setError("오늘 이전 날짜는 선택할 수 없습니다.");
+    }
+
+    // 3) “오늘이고, 시작 시간이 현재 시각보다 이전”인지 검사
+    if (!reservationDateUtils.isNotPastStartTime(date, startTime)) {
+      return setError("시작 시간이 현재 시각 이전일 수 없습니다.");
+    }
+
+    // 4) 시작/종료 시각 유효성 검사 (시작 < 종료)
+    if (!reservationDateUtils.isValidTimeRange(startTime, endTime, date)) {
+      return setError("시작 시간은 종료 시간보다 이전이어야 합니다.");
+    }
+
+    // 5) 기존 예약과 겹치는지 검사
     if (
-      hasConflict(
-        // need reservations list passed in or fetched
+      reservationDateUtils.hasConflict(
         initial.reservations ?? [],
         date,
         startTime,
@@ -70,8 +103,11 @@ export function ReservationForm({
     ) {
       return setError("해당 시간에 이미 예약이 있습니다.");
     }
+
+    // 모든 검사를 통과하면 onSubmit 호출
     onSubmit({ roomId, date, startTime, endTime, title });
   };
+
   return (
     <div className="bg-white p-6 rounded-2xl w-[420px]">
       <div className="flex justify-between items-center mb-5">
@@ -133,7 +169,7 @@ export function ReservationForm({
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
             <polyline points="9 22 9 12 15 12 15 22" />
           </svg>
-          {initial.roomName} / {initial.date.replace(/-/g, ".")}{" "}
+          {initial.roomName} / {initial.date?.replace(/-/g, ".")}{" "}
           {initial.startTime}
         </div>
       )}
@@ -227,12 +263,10 @@ export function ReservationForm({
             </label>
             <input
               type="time"
-              className={`w-full border border-gray-200 rounded-md px-3 py-2 focus:ring-2 focus:ring-violet-500 focus:outline-none ${
-                isRoomSelected ? "bg-gray-50" : ""
+              className={`w-full border border-gray-200 rounded-md px-3 py-2 focus:ring-2 focus:ring-violet-500 focus:outline-none"
               }`}
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
-              readOnly={isRoomSelected}
             />
           </div>
           <div className="flex-1">
@@ -256,9 +290,14 @@ export function ReservationForm({
             </label>
             <input
               type="time"
-              className="w-full border border-gray-200 rounded-md px-3 py-2 focus:ring-2 focus:ring-violet-500 focus:outline-none"
+              className={`w-full border border-gray-200 rounded-md px-3 py-2 focus:ring-2 focus:ring-violet-500 focus:outline-none ${
+                isRoomSelected ? "bg-gray-50" : ""
+              }`}
               value={endTime}
               onChange={(e) => setEndTime(e.target.value)}
+              readOnly={isRoomSelected}
+              min={startTime}
+              max="23:59"
             />
           </div>
         </div>

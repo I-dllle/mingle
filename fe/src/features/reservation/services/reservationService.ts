@@ -1,11 +1,11 @@
 // features/reservation/services/reservationService.ts
-
 import { apiClient } from "@/lib/api/apiClient";
+import { NextResponse } from "next/server";
 import type {
   Reservation,
   ReservationFormInput,
-  ReservationStatus,
 } from "@/features/reservation/types/reservation";
+import type { ReservationStatus } from "@/features/reservation/types/reservationStatus";
 import { RoomWithReservations } from "@/features/reservation/types/roomWithReservations";
 import type { RoomType } from "@/features/room/types/room";
 
@@ -46,7 +46,7 @@ export const reservationService = {
 
   // ✅ 예약 취소 (사용자)
   async cancel(id: number): Promise<void> {
-    return await apiClient(`/reservations/${id}`, {
+    await apiClient(`/reservations/${id}`, {
       method: "PATCH",
     });
   },
@@ -69,8 +69,8 @@ export const reservationService = {
 
   // ✅ 관리자 전용: 강제 삭제
   async adminDelete(id: number): Promise<void> {
-    return await apiClient(`/reservations/admin${id}`, {
-      method: "DELETE",
+    await apiClient(`/reservations/admin/${id}`, {
+      method: "PATCH",
     });
   },
 };

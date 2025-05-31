@@ -22,6 +22,39 @@ export const isTimeOverlap = (
 };
 
 /**
+ * 시작 시간이 종료 시간보다 이전인지 검사
+ */
+export const isValidTimeRange = (
+  startTime: string,
+  endTime: string,
+  date: string
+): boolean => {
+  const start = combineDateAndTime(date, startTime);
+  const end = combineDateAndTime(date, endTime);
+  return start < end;
+};
+
+/**
+ * 오늘 날짜인지, 그리고 선택된 시작시간이 현재 시각 이전인지 검사
+ *  - date가 오늘이고, combineDateAndTime(date, startTime) < now 라면 false 리턴
+ *  - 그 외의 경우 (미래 날짜 혹은 시작시간 >= now)엔 true 리턴
+ */
+export const isNotPastStartTime = (
+  date: string,
+  startTime: string
+): boolean => {
+  const now = new Date();
+  const todayStr = now.toISOString().slice(0, 10); // "YYYY-MM-DD"
+  if (date !== todayStr) {
+    // 오늘이 아닌 날짜를 선택했으면 무조건 OK
+    return true;
+  }
+
+  const startDt = combineDateAndTime(date, startTime); // Date 객체
+  return startDt >= now;
+};
+
+/**
  * 특정 시간대에 겹치는 예약이 있는지 확인
  */
 export const hasConflict = (

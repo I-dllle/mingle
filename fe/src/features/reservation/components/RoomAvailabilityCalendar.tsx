@@ -35,23 +35,50 @@ export function RoomAvailabilityCalendar({
     (_, i) => startHour + i
   );
 
-  // 3) 자동 스크롤 & 현재 시간 인디케이터 업데이트
+  // ───────────────────────────────────────────────────────────────
+  // “selectedDate” 가 바뀔 때마다 스크롤을 조절하는 통합 로직
+  // ───────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (scrollContainerRef.current) {
-      const currentHour = new Date().getHours();
-      const scrollPosition = Math.max(0, (currentHour - startHour - 1) * 100);
-      scrollContainerRef.current.scrollLeft = scrollPosition;
-    }
+    if (!scrollContainerRef.current) return;
 
-    const isTodaySlot =
-      format(selectedDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
-    if (isTodaySlot) {
+    // 1) 현재 날짜(YYYY-MM-DD) 문자열과 비교
+    const todayStr = format(new Date(), "yyyy-MM-dd");
+    const selDateStr = format(selectedDate, "yyyy-MM-dd");
+
+    if (selDateStr === todayStr) {
+      // ──────────────────────────────────────────────
+      //  “오늘”인 경우: 현재 시간 기준으로 스크롤
+      // ──────────────────────────────────────────────
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+
+      // (예) “09시 30분”이라면, (9 * 60 + 30) / 60 * 100 px 만큼 왼쪽에서 떨어진 지점
+      const pixelsPerHour = 100;
+      const scrollPosition =
+        ((currentHour * 60 + currentMinute) / 60) * pixelsPerHour;
+
+      scrollContainerRef.current.scrollLeft = scrollPosition;
+
+      // “오늘”일 때만 1분마다 현재 시간을 기준으로 다시 스크롤을 갱신
       const timer = setInterval(() => {
-        setSelectedDate((prev) => new Date(prev.getTime()));
-      }, 60000);
+        const now2 = new Date();
+        const h2 = now2.getHours();
+        const m2 = now2.getMinutes();
+        const pos2 = ((h2 * 60 + m2) / 60) * pixelsPerHour;
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollLeft = pos2;
+        }
+      }, 60 * 1000);
+
       return () => clearInterval(timer);
+    } else {
+      // ──────────────────────────────────────────────
+      //  “오늘이 아닐 경우”: 무조건 맨 왼쪽(00시)으로 스크롤
+      // ──────────────────────────────────────────────
+      scrollContainerRef.current.scrollLeft = 0;
     }
-  }, [startHour, selectedDate]);
+  }, [selectedDate]);
 
   // 4) “부모(dateChange 이벤트)”로 선택 날짜가 바뀌었을 때 최신화
   useEffect(() => {
@@ -62,6 +89,14 @@ export function RoomAvailabilityCalendar({
       );
     }
   }, [selectedDate, date]);
+
+  // 1) 렌더링 직전에 rooms 배열을 복사해서 'roomName' 기준으로 정렬
+  const sortedRooms: RoomWithReservations[] = React.useMemo(() => {
+    return [...rooms].sort((a, b) =>
+      // 한글/영문/숫자 순서대로 정렬
+      a.roomName.localeCompare(b.roomName, "ko")
+    );
+  }, [rooms]);
 
   // 5) 오늘/과거 여부 계산
   const dateStr = format(selectedDate, "yyyy-MM-dd");
@@ -75,7 +110,7 @@ export function RoomAvailabilityCalendar({
 
   return (
     <div
-      className={`${styles.calendarContainer} bg-white rounded-xl shadow-md ring-1 ring-gray-100 overflow-hidden`}
+      className={`${styles.calendarContainer} bg-white rounded-xl shadow-md ring-1 ring-gray-100/80 overflow-hidden h-[calc(100vh-200px)]`}
     >
       {/* ───────────────────────────────────────────
           1) 달력 바디(헤더 제거 버전):
@@ -86,24 +121,25 @@ export function RoomAvailabilityCalendar({
         <div className="flex">
           {/* ─────────────────────────────────────────
               좌측 “방 이름” 고정 열
-             ───────────────────────────────────────── */}
-          <div className={`flex-none border-r ${styles.roomNameCell}`}>
-            <div className="h-10 bg-violet-50 border-b flex items-center px-3 text-sm font-semibold text-violet-700">
+             ───────────────────────────────────────── */}{" "}
+          <div className={`flex-none ${styles.roomNameCell}`}>
+            {" "}
+            <div className="h-15 bg-violet-50/80 border-b border-gray-100 flex items-center px-4 text-sm font-semibold text-violet-700">
               {rooms[0]?.roomType === "MEETING_ROOM"
                 ? "회의실 예약"
                 : "연습실 예약"}
             </div>
-            {rooms.map((room) => (
+            {sortedRooms.map((room) => (
               <div
                 key={room.roomId}
-                className="h-14 flex items-center px-3 border-b hover:bg-gray-50"
+                className="h-16 flex items-center px-3 border-b border-gray-100 hover:bg-gray-50/70 transition duration-150"
               >
                 <div className="flex items-center space-x-2">
                   <div className="font-medium text-gray-800">
                     {room.roomName.replace(/\d+$/, "")}
                   </div>
                   {room.roomName.match(/\d+$/)?.[0] && (
-                    <div className="px-1.5 py-0.5 bg-violet-100 text-violet-600 text-xs rounded-md font-semibold">
+                    <div className="px-1.5 py-0.5 bg-violet-100/80 text-violet-600 text-xs rounded-md font-semibold shadow-sm">
                       {room.roomName.match(/\d+$/)?.[0] || ""}
                     </div>
                   )}
@@ -111,19 +147,19 @@ export function RoomAvailabilityCalendar({
               </div>
             ))}
           </div>
-
           {/* ─────────────────────────────────────────
               우측 “시간 슬롯(00~23시) + 예약 카드”
-             ───────────────────────────────────────── */}
+             ───────────────────────────────────────── */}{" "}
           <div
-            className="flex-1 overflow-x-auto scrollbar-thin scrollbar-thumb-violet-200 scrollbar-track-gray-100"
+            className="flex-1 overflow-x-auto scrollbar-thin scrollbar-thumb-violet-200 scrollbar-track-gray-50"
             ref={scrollContainerRef}
           >
             <div className="relative" style={{ minWidth: "100%" }}>
+              {" "}
               <div
                 className={styles.calendarGrid}
                 style={{
-                  gridTemplateColumns: `repeat(${hours.length}, 100px)`,
+                  gridTemplateColumns: `repeat(${hours.length}, 150px)`,
                 }}
               >
                 {/* 2-1) 시간 헤더 (00:00~23:00) */}
@@ -132,8 +168,7 @@ export function RoomAvailabilityCalendar({
                     {String(hour).padStart(2, "0")}:00
                   </div>
                 ))}
-
-                {/* 2-2) 현재 시간 인디케이터 */}
+                {/* 2-2) 현재 시간 인디케이터 */}{" "}
                 {isToday && (
                   <div
                     className={styles.currentTimeIndicator}
@@ -141,15 +176,14 @@ export function RoomAvailabilityCalendar({
                       left: `${
                         ((todayObj.getHours() * 60 + todayObj.getMinutes()) /
                           60) *
-                        100
+                        150
                       }px`,
-                      height: `${(rooms.length + 1) * 14 + 10}px`,
+                      height: `${rooms.length * 12 + 9}px`,
                     }}
                   >
                     <div className={styles.currentTimeDot}></div>
                   </div>
                 )}
-
                 {/* 2-3) 각 방별 시간 슬롯 + 예약 카드 */}
                 {rooms.map((room) =>
                   hours.map((hour) => {
