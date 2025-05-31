@@ -47,11 +47,12 @@ export default function ContractStatsCards({
       title: "검토 중",
       value: stats.review,
       icon: AlertTriangle,
-      color: "bg-red-500",
-      bgColor: "bg-red-50",
-      textColor: "text-red-600",
+      color: "bg-purple-500",
+      bgColor: "bg-purple-50",
+      textColor: "text-purple-600",
     },
   ];
+
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

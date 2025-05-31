@@ -10,6 +10,7 @@ import {
   CreateContractRequest,
   CreateInternalContractRequest,
   SettlementRatioDto,
+  UserSearchDto,
 } from "@/features/department/finance-legal/contracts/types/Contract";
 import { contractService } from "@/features/department/finance-legal/contracts/services/contractService";
 import { useAuth } from "@/features/auth/hooks/useAuth";
@@ -40,9 +41,23 @@ export default function CreateContractPage() {
   const categoryParam =
     (searchParams.get("category") as ContractCategory) ||
     ContractCategory.EXTERNAL;
-
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  // 내부 계약 당사자 검색 관련 상태
+  const [contractPartyName, setContractPartyName] = useState<string>("");
+  const [contractPartyResults, setContractPartyResults] = useState<
+    UserSearchDto[]
+  >([]);
+  const [selectedContractParty, setSelectedContractParty] =
+    useState<UserSearchDto | null>(null);
+  const [isSearchingContractParty, setIsSearchingContractParty] =
+    useState<boolean>(false);
+  const [contractPartySearchTimer, setContractPartySearchTimer] =
+    useState<NodeJS.Timeout | null>(null);
+  const [isContractPartyComposing, setIsContractPartyComposing] =
+    useState<boolean>(false);
+
   const [createFormData, setCreateFormData] = useState<CreateFormData>({
     userId: 1, // 기본값, 실제로는 로그인한 사용자 ID 사용
     teamId: 1, // 기본 팀 ID로 1 설정
@@ -61,7 +76,6 @@ export default function CreateContractPage() {
     defaultRatio: 50,
     file: null,
   });
-
   // 파일 선택 핸들러
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -70,7 +84,47 @@ export default function CreateContractPage() {
         file: e.target.files[0],
       });
     }
-  }; // 계약서 생성
+  }; // 계약 당사자 검색 핸들러
+  const handleContractPartySearch = async () => {
+    setIsSearchingContractParty(true);
+    try {
+      const results = await contractService.searchUsers(
+        contractPartyName.trim(),
+        createFormData.contractCategory
+      );
+      setContractPartyResults(results || []);
+    } catch (error) {
+      console.error("계약 당사자 검색 실패:", error);
+      setContractPartyResults([]);
+      setError(
+        error instanceof Error ? error.message : "사용자 검색에 실패했습니다."
+      );
+    } finally {
+      setIsSearchingContractParty(false);
+    }
+  };
+
+  // 계약 당사자 선택 핸들러
+  const handleSelectContractParty = (user: UserSearchDto) => {
+    setSelectedContractParty(user);
+    setContractPartyName(user.nickname);
+    setContractPartyResults([]);
+    setCreateFormData((prev) => ({
+      ...prev,
+      userId: user.id,
+    }));
+  }; // 계약 당사자 선택 해제 핸들러
+  const handleClearContractParty = () => {
+    setSelectedContractParty(null);
+    setContractPartyName("");
+    setContractPartyResults([]);
+    setCreateFormData((prev) => ({
+      ...prev,
+      userId: 1, // 기본값으로 초기화
+    }));
+  };
+
+  // 계약서 생성
   const handleCreateContract = async (e: FormEvent) => {
     e.preventDefault();
 
@@ -196,6 +250,7 @@ export default function CreateContractPage() {
           {/* 외부 계약 폼 필드 */}
           {createFormData.contractCategory === ContractCategory.EXTERNAL ? (
             <>
+              {" "}
               {/* 팀 ID */}{" "}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -203,7 +258,9 @@ export default function CreateContractPage() {
                 </label>{" "}
                 <input
                   type="number"
-                  value={createFormData.teamId || ""}
+                  value={
+                    createFormData.teamId === 1 ? "" : createFormData.teamId
+                  }
                   onChange={(e) =>
                     setCreateFormData({
                       ...createFormData,
@@ -242,14 +299,22 @@ export default function CreateContractPage() {
                   </label>
                   <input
                     type="number"
-                    value={createFormData.contractAmount}
+                    value={
+                      createFormData.contractAmount === 0
+                        ? ""
+                        : createFormData.contractAmount
+                    }
                     onChange={(e) =>
                       setCreateFormData({
                         ...createFormData,
-                        contractAmount: Number(e.target.value),
+                        contractAmount: e.target.value
+                          ? Number(e.target.value)
+                          : 0,
                       })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    min="0"
+                    placeholder="계약 금액을 입력하세요"
                     required
                   />
                 </div>
@@ -358,17 +423,19 @@ export default function CreateContractPage() {
                             <option value={RatioType.PRODUCER}>프로듀서</option>
                             <option value={RatioType.AGENCY}>회사</option>
                           </select>
-                        </div>
+                        </div>{" "}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             사용자 ID
                           </label>
                           <input
                             type="number"
-                            value={ratio.userId}
+                            value={ratio.userId === 1 ? "" : ratio.userId}
                             onChange={(e) => {
                               const newRatios = [...createFormData.ratios];
-                              newRatios[index].userId = Number(e.target.value);
+                              newRatios[index].userId = e.target.value
+                                ? Number(e.target.value)
+                                : 1;
                               setCreateFormData({
                                 ...createFormData,
                                 ratios: newRatios,
@@ -376,21 +443,24 @@ export default function CreateContractPage() {
                             }}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md"
                             min="1"
+                            placeholder="사용자 ID"
                             required
                           />
-                        </div>
+                        </div>{" "}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             비율 (%)
                           </label>
                           <input
                             type="number"
-                            value={ratio.percentage}
+                            value={
+                              ratio.percentage === 0 ? "" : ratio.percentage
+                            }
                             onChange={(e) => {
                               const newRatios = [...createFormData.ratios];
-                              newRatios[index].percentage = Number(
-                                e.target.value
-                              );
+                              newRatios[index].percentage = e.target.value
+                                ? Number(e.target.value)
+                                : 0;
                               setCreateFormData({
                                 ...createFormData,
                                 ratios: newRatios,
@@ -399,6 +469,7 @@ export default function CreateContractPage() {
                             className="w-full px-3 py-2 border border-gray-300 rounded-md"
                             min="0"
                             max="100"
+                            placeholder="비율 (%)"
                             required
                           />
                         </div>
@@ -450,18 +521,21 @@ export default function CreateContractPage() {
                   <div className="space-y-3">
                     {createFormData.targetUserIds.map((userId, index) => (
                       <div key={index} className="flex gap-3 items-end">
+                        {" "}
                         <div className="flex-1">
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             사용자 ID
                           </label>
                           <input
                             type="number"
-                            value={userId}
+                            value={userId === 1 ? "" : userId}
                             onChange={(e) => {
                               const newUserIds = [
                                 ...createFormData.targetUserIds,
                               ];
-                              newUserIds[index] = Number(e.target.value);
+                              newUserIds[index] = e.target.value
+                                ? Number(e.target.value)
+                                : 1;
                               setCreateFormData({
                                 ...createFormData,
                                 targetUserIds: newUserIds,
@@ -469,6 +543,7 @@ export default function CreateContractPage() {
                             }}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md"
                             min="1"
+                            placeholder="사용자 ID"
                             required
                           />
                         </div>
@@ -508,27 +583,108 @@ export default function CreateContractPage() {
             </>
           ) : (
             <>
+              {" "}
               {/* 내부 계약 폼 필드 */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  계약 당사자 ID
+                  계약 당사자 검색
                 </label>
-                <input
-                  type="number"
-                  value={createFormData.userId}
-                  onChange={(e) =>
-                    setCreateFormData({
-                      ...createFormData,
-                      userId: Number(e.target.value),
-                    })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  min="1"
-                  placeholder="계약 당사자 ID를 입력하세요"
-                  required
-                />
-              </div>
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-grow">
+                    {" "}
+                    <input
+                      type="text"
+                      value={contractPartyName}
+                      onCompositionStart={() =>
+                        setIsContractPartyComposing(true)
+                      }
+                      onCompositionEnd={(e) => {
+                        setIsContractPartyComposing(false);
+                        const value = e.currentTarget.value;
+                        if (value.trim().length >= 2) {
+                          if (contractPartySearchTimer) {
+                            clearTimeout(contractPartySearchTimer);
+                          }
+                          const timer = setTimeout(() => {
+                            handleContractPartySearch();
+                          }, 300);
+                          setContractPartySearchTimer(timer);
+                        }
+                      }}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setContractPartyName(value);
 
+                        if (contractPartySearchTimer) {
+                          clearTimeout(contractPartySearchTimer);
+                        }
+
+                        if (isContractPartyComposing) {
+                          return;
+                        }
+
+                        if (value.trim().length >= 2) {
+                          const timer = setTimeout(() => {
+                            handleContractPartySearch();
+                          }, 300);
+                          setContractPartySearchTimer(timer);
+                        } else if (value.trim().length === 0) {
+                          setContractPartyResults([]);
+                          if (selectedContractParty) {
+                            handleClearContractParty();
+                          }
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          if (contractPartyName.trim().length >= 2) {
+                            handleContractPartySearch();
+                          }
+                        }
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      placeholder="계약 당사자 이름 입력 (2글자 이상)"
+                      disabled={
+                        !!selectedContractParty || isSearchingContractParty
+                      }
+                      required
+                    />
+                    {contractPartyResults.length > 0 &&
+                      !selectedContractParty && (
+                        <div className="absolute z-50 w-full mt-1 bg-white shadow-lg rounded-md border border-gray-200 max-h-48 overflow-y-auto">
+                          {contractPartyResults.map((user) => (
+                            <div
+                              key={user.id}
+                              onClick={() => handleSelectContractParty(user)}
+                              className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                            >
+                              <div className="font-medium">{user.nickname}</div>
+                              <div className="text-xs text-gray-500">
+                                {user.email}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                  </div>
+                  {selectedContractParty && (
+                    <button
+                      type="button"
+                      onClick={handleClearContractParty}
+                      className="px-3 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200 text-sm whitespace-nowrap"
+                    >
+                      {selectedContractParty.nickname} 해제
+                    </button>
+                  )}
+                </div>
+                {selectedContractParty && (
+                  <p className="text-xs text-green-600 mt-1">
+                    선택된 계약 당사자: {selectedContractParty.nickname} (ID:{" "}
+                    {selectedContractParty.id})
+                  </p>
+                )}
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -548,7 +704,7 @@ export default function CreateContractPage() {
                     <option value={RatioType.PRODUCER}>프로듀서</option>
                     <option value={RatioType.AGENCY}>회사</option>
                   </select>
-                </div>
+                </div>{" "}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     기본 비율 (%)
@@ -557,14 +713,21 @@ export default function CreateContractPage() {
                     type="number"
                     min="0"
                     max="100"
-                    value={createFormData.defaultRatio}
+                    value={
+                      createFormData.defaultRatio === 50
+                        ? ""
+                        : createFormData.defaultRatio
+                    }
                     onChange={(e) =>
                       setCreateFormData({
                         ...createFormData,
-                        defaultRatio: Number(e.target.value),
+                        defaultRatio: e.target.value
+                          ? Number(e.target.value)
+                          : 50,
                       })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    placeholder="기본 비율 (%)"
                     required
                   />
                 </div>

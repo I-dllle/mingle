@@ -375,23 +375,40 @@ public class ContractService {
         return url.substring(url.lastIndexOf("/") + 1);
     }
 
-    public void signOfflineAsAdmin(Long id, String signerName, String memo) {
-        Contract contract = contractRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("계약 없음"));
+    public void signOfflineAsAdmin(Long id, ContractCategory category, String signerName, String memo) {
+        if (category == ContractCategory.EXTERNAL) {
+            Contract contract = contractRepository.findById(id)
+                    .orElseThrow(() -> new EntityNotFoundException("외부 계약 없음"));
 
-        if (contract.getContractType() != ContractType.PAPER) {
-            throw new IllegalStateException("종이 계약이 아닙니다.");
+            if (contract.getContractType() != ContractType.PAPER) {
+                throw new IllegalStateException("종이 계약이 아닙니다.");
+            }
+
+            if (contract.getStatus() != ContractStatus.REVIEW) {
+                throw new IllegalStateException("검토 상태만 서명할 수 있습니다.");
+            }
+
+            contract.setSignerName(signerName);
+            contract.setSignerMemo("오프라인 서명 메모: " + memo);
+            contract.setStatus(ContractStatus.SIGNED_OFFLINE);
+
+            contractRepository.save(contract);
+        } else if (category == ContractCategory.INTERNAL) {
+            InternalContract contract = internalContractRepository.findById(id)
+                    .orElseThrow(() -> new EntityNotFoundException("내부 계약 없음"));
+
+            if (contract.getStatus() != ContractStatus.REVIEW) {
+                throw new IllegalStateException("검토 상태만 서명할 수 있습니다.");
+            }
+
+            contract.setSignerName(signerName);
+            contract.setSignerMemo("오프라인 서명 메모: " + memo);
+            contract.setStatus(ContractStatus.SIGNED_OFFLINE);
+
+            internalContractRepository.save(contract);
+        } else {
+            throw new IllegalArgumentException("지원하지 않는 계약 카테고리입니다.");
         }
-
-        if (contract.getStatus() != ContractStatus.REVIEW) {
-            throw new IllegalStateException("검토 상태만 서명할 수 있습니다.");
-        }
-
-        contract.setSignerName(signerName);
-        contract.setSignerMemo("오프라인 서명 메모: " + memo);
-        contract.setStatus(ContractStatus.SIGNED_OFFLINE);
-
-        contractRepository.save(contract);
     }
 
 

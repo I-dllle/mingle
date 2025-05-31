@@ -72,14 +72,12 @@ export default function ContractDetailPage() {
         err instanceof Error ? err.message : "상태 변경에 실패했습니다."
       );
     }
-  };
-  // 계약서 확정
+  }; // 계약서 확정
   const handleConfirm = async (id: number) => {
     try {
       await contractService.confirmContract(id, category);
 
-      // 상태를 확정으로 변경 (확정이 최종 단계)
-      await handleStatusChange(id, ContractStatus.CONFIRMED);
+      // confirmContract API가 이미 상태를 변경해주므로 별도 상태 변경 호출 제거
 
       await fetchContractDetail(id);
     } catch (err) {
@@ -118,16 +116,14 @@ export default function ContractDetailPage() {
 
     setLoading(true);
     setError(null);
-
     try {
       const request: OfflineSignRequest = {
         signerName: offlineSignData.signerName,
         memo: offlineSignData.memo,
       };
-      await contractService.signOfflineAsAdmin(contract.id, request);
+      await contractService.signOfflineAsAdmin(contract.id, request, category);
 
-      // 상태를 오프라인 서명됨으로 변경
-      await handleStatusChange(contract.id, ContractStatus.SIGNED_OFFLINE);
+      // signOfflineAsAdmin API가 이미 상태를 변경해주므로 별도 상태 변경 호출 제거
 
       // 폼 초기화
       setOfflineSignData({
@@ -699,10 +695,11 @@ export default function ContractDetailPage() {
                           </svg>
                           검토 요청
                         </button>
-                      )}
+                      )}{" "}
                     {contract.status &&
                       getAvailableActions(contract.status).canSign && (
                         <>
+                          {/* 오프라인 서명: 모든 계약 유형에서 사용 가능 */}
                           <button
                             onClick={() => setShowOfflineSignForm(true)}
                             className="w-full inline-flex justify-center items-center px-4 py-2.5 bg-yellow-50 border border-yellow-300 rounded-md hover:bg-yellow-100 text-yellow-700 transition-colors"
@@ -724,6 +721,7 @@ export default function ContractDetailPage() {
                             오프라인 서명
                           </button>
 
+                          {/* 전자 서명: 모든 계약 유형에서 사용 가능 */}
                           <button
                             onClick={() => setShowElectronicSignForm(true)}
                             className="w-full inline-flex justify-center items-center px-4 py-2.5 bg-blue-50 border border-blue-300 rounded-md hover:bg-blue-100 text-blue-700 transition-colors"

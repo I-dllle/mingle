@@ -29,6 +29,7 @@ export default function AdminContractsPage() {
   const [expiringContracts, setExpiringContracts] = useState<
     ContractResponse[]
   >([]);
+  const [expiringLoading, setExpiringLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"all" | "expiring">("all");
@@ -48,9 +49,7 @@ export default function AdminContractsPage() {
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [category, setCategory] = useState<ContractCategory>(
     ContractCategory.EXTERNAL
-  );
-
-  // 통계 데이터
+  ); // 통계 데이터
   const [stats, setStats] = useState({
     total: 0,
     active: 0,
@@ -111,17 +110,17 @@ export default function AdminContractsPage() {
       setLoading(false);
     }
   };
-
   // 만료 예정 계약 조회
   const fetchExpiringContracts = async (showLoading = true) => {
     if (showLoading) {
-      setLoading(true);
+      setExpiringLoading(true);
     }
     setError(null);
     try {
       const response = await contractService.getExpiringContracts(category);
       setExpiringContracts(response);
     } catch (err) {
+      console.error("만료 예정 계약 조회 에러:", err);
       setError(
         err instanceof Error
           ? err.message
@@ -129,7 +128,7 @@ export default function AdminContractsPage() {
       );
     } finally {
       if (showLoading) {
-        setLoading(false);
+        setExpiringLoading(false);
       }
     }
   };
@@ -175,7 +174,6 @@ export default function AdminContractsPage() {
       fetchAllContracts(page);
     }
   };
-
   // 통계 업데이트
   const updateStats = () => {
     const total = contracts.length > 0 ? totalElements : allContracts.length;
@@ -305,9 +303,17 @@ export default function AdminContractsPage() {
           }`}
         >
           ⏰ 만료 예정
-          {expiringContracts.length > 0 && (
+          {expiringLoading ? (
+            <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs animate-pulse">
+              ...
+            </span>
+          ) : expiringContracts.length > 0 ? (
             <span className="bg-red-100 text-red-600 px-2 py-0.5 rounded-full text-xs">
               {expiringContracts.length}
+            </span>
+          ) : (
+            <span className="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full text-xs">
+              0
             </span>
           )}
         </button>

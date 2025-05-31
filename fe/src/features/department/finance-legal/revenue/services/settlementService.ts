@@ -151,8 +151,14 @@ const getTotalRevenue = async (
   endDate?: string
 ): Promise<number> => {
   const params = new URLSearchParams();
-  if (startDate) params.append("startDate", startDate);
-  if (endDate) params.append("endDate", endDate);
+  if (startDate) {
+    // 시작일은 해당 날짜의 00:00:00으로 설정
+    params.append("startDate", `${startDate}T00:00:00`);
+  }
+  if (endDate) {
+    // 종료일은 해당 날짜의 23:59:59로 설정
+    params.append("endDate", `${endDate}T23:59:59`);
+  }
 
   return await apiClient<number>(
     `/finance/total-revenue?${params.toString()}`,
@@ -173,9 +179,14 @@ const getAgencyNetRevenue = async (
   endDate?: string
 ): Promise<number> => {
   const params = new URLSearchParams();
-  if (startDate) params.append("startDate", startDate);
-  if (endDate) params.append("endDate", endDate);
-
+  if (startDate) {
+    // 시작일은 해당 날짜의 00:00:00으로 설정
+    params.append("startDate", `${startDate}T00:00:00`);
+  }
+  if (endDate) {
+    // 종료일은 해당 날짜의 23:59:59로 설정
+    params.append("endDate", `${endDate}T23:59:59`);
+  }
   return await apiClient<number>(`/finance/net-agency?${params.toString()}`, {
     method: "GET",
   });

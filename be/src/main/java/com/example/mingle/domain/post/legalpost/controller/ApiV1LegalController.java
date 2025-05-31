@@ -77,14 +77,15 @@ public class ApiV1LegalController {
 
     // 계약서 서명 (종이 방식 - 외부 계약자용)
     @PostMapping("/{id}/sign-offline")
-    @Operation(summary = "외부 계약서 종이 서명 처리")
     public ResponseEntity<?> signOfflineAsAdmin(
             @PathVariable Long id,
-            @RequestBody OfflineSignRequest request // signerName + memo 포함
+            @RequestParam ContractCategory category,
+            @RequestBody OfflineSignRequest request
     ) {
-        contractService.signOfflineAsAdmin(id, request.getSignerName(), request.getMemo());
+        contractService.signOfflineAsAdmin(id, category, request.getSignerName(), request.getMemo());
         return ResponseEntity.ok("오프라인 서명 완료");
     }
+
 
 
     // 특정 유저 계약서 리스트 조회

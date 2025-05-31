@@ -15,6 +15,7 @@ import {
   getFilteredContracts,
   getAllContracts,
   searchUsers,
+  getExpiringContracts,
 } from "@/features/department/finance-legal/contracts/services/contractService";
 
 interface PagedResponse {
@@ -56,11 +57,12 @@ export default function ContractsPage() {
   );
   const [selectedParticipant, setSelectedParticipant] =
     useState<UserSearchDto | null>(null);
-
   // 정렬 상태
   const [sortField, setSortField] = useState("createdAt");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
-  // 카테고리 변경 핸들러
+
+  // 만료 예정 계약 수 상태
+  const [expiringCount, setExpiringCount] = useState(0); // 카테고리 변경 핸들러
   const handleCategoryChange = (newCategory: ContractCategory) => {
     setCategory(newCategory);
     setTempCondition({
@@ -68,6 +70,7 @@ export default function ContractsPage() {
       contractCategory: newCategory,
     });
     fetchContracts(0, { ...searchCondition, contractCategory: newCategory });
+    fetchExpiringContracts(newCategory);
   };
   // 참여자 이름으로 검색
   const handleParticipantSearch = async () => {
@@ -180,10 +183,22 @@ export default function ContractsPage() {
     }
   };
 
+  // 만료 예정 계약 수 조회
+  const fetchExpiringContracts = async (category: ContractCategory) => {
+    try {
+      const expiringContracts = await getExpiringContracts(category);
+      setExpiringCount(expiringContracts.length);
+    } catch (err) {
+      console.error("만료 예정 계약 조회 실패:", err);
+      setExpiringCount(0);
+    }
+  };
+
   // 초기 로드
   useEffect(() => {
     fetchContracts();
-  }, [sortField, sortDirection]); // 검색 실행
+    fetchExpiringContracts(category);
+  }, [sortField, sortDirection, category]); // 검색 실행
   const handleSearch = () => {
     // 날짜 형식을 YYYY-MM-DD로 변환하여 백엔드 호환성 확보
     const normalizedCondition = {
@@ -428,15 +443,12 @@ export default function ContractsPage() {
                   }
                 </span>
                 <p className="text-xs text-yellow-600">진행 중</p>
-              </div>
+              </div>{" "}
               <div className="bg-red-50 rounded-lg p-3 text-center min-w-[120px]">
                 <span className="text-lg font-semibold text-red-700">
-                  {
-                    contracts.filter((c) => c.status === ContractStatus.EXPIRED)
-                      .length
-                  }
+                  {expiringCount}
                 </span>
-                <p className="text-xs text-red-600">만료 계약</p>
+                <p className="text-xs text-red-600">만료 예정</p>
               </div>
             </div>
           </div>
@@ -507,6 +519,7 @@ export default function ContractsPage() {
               </label>{" "}
               <div className="flex items-center gap-2">
                 <div className="relative flex-grow">
+                  {" "}
                   <input
                     type="text"
                     value={participantName}

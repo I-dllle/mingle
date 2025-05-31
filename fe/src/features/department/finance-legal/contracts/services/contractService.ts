@@ -130,10 +130,11 @@ export const changeContractStatus = async (
 // 오프라인 서명 처리 (외부 계약자용)
 export const signOfflineAsAdmin = async (
   id: number,
-  request: OfflineSignRequest
+  request: OfflineSignRequest,
+  category: ContractCategory
 ): Promise<void> => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}${API_BASE_URL}/${id}/sign-offline`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}${API_BASE_URL}/${id}/sign-offline?category=${category}`,
     {
       method: "POST",
       headers: {
@@ -505,11 +506,20 @@ export const getFilteredContracts = async (
 };
 
 // 사용자 이름으로 검색
-export const searchUsers = async (name: string): Promise<UserSearchDto[]> => {
+export const searchUsers = async (
+  name: string,
+  category?: ContractCategory
+): Promise<UserSearchDto[]> => {
   try {
     const params = new URLSearchParams({
       name: name,
     });
+
+    // category가 제공된 경우에만 추가
+    if (category) {
+      params.append("category", category);
+    }
+
     return await apiClient<UserSearchDto[]>(
       `${API_BASE_URL}/search?${params}`,
       {
