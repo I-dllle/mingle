@@ -229,7 +229,7 @@ public class ReservationService {
     public List<ReservationResponseDto> getAllReservationsByMonth(YearMonth month) {
         LocalDate start = month.atDay(1);
         LocalDate end = month.atEndOfMonth();
-        return reservationRepository.findAllByDateBetween(start, end).stream()
+        return reservationRepository.findAllByDateBetweenAndReservationStatusNot(start, end,ReservationStatus.CANCELED).stream()
                 .map(this::toResponseDto)
                 .toList();
     }

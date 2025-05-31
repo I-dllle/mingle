@@ -126,7 +126,7 @@ public class ApiV1ReservationController {
     }
 
     // 예약 강제 취소
-    @DeleteMapping("/admin/{id}")
+    @PatchMapping("/admin/{id}")
     public ResponseEntity<Void> adminCancelReservation(@PathVariable(name = "id") Long reservationId) {
         if (!UserRole.ADMIN.equals(rq.getActor().getRole())) {
             throw new ApiException(ErrorCode.ACCESS_DENIED);

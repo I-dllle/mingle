@@ -45,5 +45,10 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     );
 
     // 날짜 사이 모든 예약 조회
-    List<Reservation> findAllByDateBetween(LocalDate start, LocalDate end);
+    // 변경: CANCELED 상태가 아닌 것만 조회
+    List<Reservation> findAllByDateBetweenAndReservationStatusNot(
+            LocalDate start,
+            LocalDate end,
+            ReservationStatus status
+    );
 }
