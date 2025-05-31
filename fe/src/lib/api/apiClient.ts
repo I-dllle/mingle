@@ -1,4 +1,3 @@
-// lib/apiClient.ts
 export async function apiClient<T>(
   url: string,
   options: RequestInit = {}
@@ -9,8 +8,8 @@ export async function apiClient<T>(
       'Content-Type': 'application/json',
       ...(options.headers || {}),
     },
-    credentials: 'include', // 중요! 쿠키 자동 포함
-    cache: 'no-store', // 매번 fresh 하게
+    credentials: 'include', // 쿠키 자동 포함
+    cache: 'no-store', // 항상 fresh
   });
 
   if (!res.ok) {

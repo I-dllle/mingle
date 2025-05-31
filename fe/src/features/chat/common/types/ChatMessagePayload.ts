@@ -1,10 +1,11 @@
 import { ChatRoomType } from './ChatRoomType';
-import { ChatScope } from './ChatScope';
 import { MessageFormat } from './MessageFormat';
 export interface ChatMessagePayload {
   roomId: number;
-  chatType: ChatRoomType; // 'dm' | 'group'
+  senderId: number; // 보낸 사람의 아이디
+  receiverId?: number; // 받는 사람의 아이디 - DM일 때만 사용
   content: string;
   format: MessageFormat; // TEXT, ARCHIVE, etc
-  scope?: ChatScope; // (group 채팅방일 때만 사용)
+  chatType: ChatRoomType; // 'dm' | 'group'
+  createdAt: string; //
 }

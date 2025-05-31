@@ -6,5 +6,4 @@ export interface GroupChatRoomCreateRequest {
   roomType: RoomType;
   scope: ChatScope;
   teamId: number;
-  projectEndDate: string | null;
 }

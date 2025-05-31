@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { apiClient } from '@/lib/api/apiClient';
 import { GroupChatRoomSummary } from '@/features/chat/group/types/GroupChatRoomSummary';
 import { ChatScope } from '@/features/chat/common/types/ChatScope';
+import { fetchGroupChatRoomSummaries } from './fetchGroupChatRoomSummaries';
 
 interface UseGroupChatRoomListOptions {
-  scope: ChatScope; // scope를 동적으로 받을 수 있도록 수정
+  scope: ChatScope; // scope를 동적으로 받음음
 }
 
 export function useGroupChatRoomList({ scope }: UseGroupChatRoomListOptions) {
@@ -18,9 +18,7 @@ export function useGroupChatRoomList({ scope }: UseGroupChatRoomListOptions) {
     const fetchRooms = async () => {
       try {
         // GET /api/v1/group-chats/rooms 호출
-        const res = await apiClient<GroupChatRoomSummary[]>(
-          '/api/v1/group-chats/rooms?scope=${scope}'
-        );
+        const res = await fetchGroupChatRoomSummaries(scope);
         console.log('그룹 채팅방 요약 목록:', res);
 
         // 성공적으로 응답 받았을 경우 상태 업데이트
