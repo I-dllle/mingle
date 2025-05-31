@@ -19,7 +19,7 @@ export default function ArtistReportPage() {
   const { name: userDepartment } = useDepartment();
   const menus = departmentMenus[userDepartment] || departmentMenus.default;
   const currentMenu = menus.find((menu) => menu.path === "/artist-report");
-  const boardName = currentMenu?.name || "아티스트 보고서";
+  const boardName = currentMenu?.name || "활동보고서";
 
   // 디버깅용
   console.log("User Department:", userDepartment);
@@ -35,14 +35,34 @@ export default function ArtistReportPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [navigating, setNavigating] = useState(false);
   const postsPerPage = 10;
   const router = useRouter();
+
+  // 게시글 클릭 핸들러 (상세 보기로 이동)
+  const handlePostClick = async (postId: number) => {
+    console.log("게시글 클릭됨, postId:", postId);
+
+    try {
+      setNavigating(true);
+      const targetUrl = `/artist-report/${postId}`;
+      console.log("이동할 URL:", targetUrl);
+
+      router.push(targetUrl);
+      console.log("router.push 호출 완료");
+    } catch (error) {
+      console.error("라우팅 오류:", error);
+    } finally {
+      setTimeout(() => setNavigating(false), 1000); // 1초 후 로딩 해제
+    }
+  };
+
   // 게시글 데이터 로드
   const loadPosts = async (page: number = 1) => {
     setLoading(true);
     try {
       const deptId = getDepartmentIdByName(userDepartment);
-      // 메뉴 ID를 26으로 하드코딩하여 부서별 게시글 조회
+      // 메뉴 ID를 26으로 설정하여 부서별 게시글 조회
       const response = await postService.getPostsByMenu(deptId, 25);
       setPosts(response);
       // 새로운 API는 페이지네이션이 없으므로 전체를 한 번에 가져옴
@@ -53,10 +73,13 @@ export default function ArtistReportPage() {
     } finally {
       setLoading(false);
     }
-  }; // 컴포넌트 마운트 시 데이터 로드
+  };
+
+  // 컴포넌트 마운트 시 데이터 로드
   useEffect(() => {
     loadPosts(currentPage);
   }, [userDepartment]); // currentPage 의존성 제거 (페이지네이션 없음)
+
   // 검색 필터링 및 페이지네이션 처리
   const filteredBySearch = searchQuery.trim()
     ? posts.filter(
@@ -193,9 +216,12 @@ export default function ArtistReportPage() {
       </div>
 
       {/* 로딩 상태 */}
-      {loading && (
+      {(loading || navigating) && (
         <div className="flex justify-center items-center py-8">
-          <div className="text-gray-500">로딩 중...</div>
+          <div className="flex items-center space-x-2 text-gray-500">
+            <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-blue-600"></div>
+            <span>{navigating ? "페이지 이동 중..." : "로딩 중..."}</span>
+          </div>
         </div>
       )}
 
@@ -230,11 +256,34 @@ export default function ArtistReportPage() {
                 paginatedPosts.map((post) => (
                   <tr
                     key={post.postId}
-                    className="hover:bg-gray-50 cursor-pointer"
+                    className="hover:bg-gray-50 cursor-pointer transition-colors duration-150"
+                    onClick={(e) => {
+                      console.log("테이블 행 클릭됨");
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handlePostClick(post.postId);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        console.log("키보드 이벤트 발생");
+                        e.preventDefault();
+                        handlePostClick(post.postId);
+                      }
+                    }}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`${post.title} 상세보기`}
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex gap-2 items-center">
-                        <span className="text-gray-900">{post.title}</span>
+                        <span className="text-gray-900 hover:text-blue-600 font-medium">
+                          {post.title}
+                        </span>
+                        {post.imageUrl && post.imageUrl.length > 0 && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                            📷 {post.imageUrl.length}
+                          </span>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-gray-700">

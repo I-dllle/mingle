@@ -199,7 +199,7 @@ public class PostService {
     // 게시글 상세보기
     @Transactional(readOnly = true)
     public PostResponseDto getPostById(Long postId){
-        Post post = postRepository.findById(postId)
+        Post post = postRepository.findWithImageUrlById(postId)
                 .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new ApiException(ErrorCode.POST_NOT_FOUND));
         return PostResponseDto.fromEntity(post);
@@ -208,7 +208,7 @@ public class PostService {
     //게시글 UPDATE
     @Transactional
     public PostResponseDto updatePost(Long postId, Long userId, PostRequestDto requestDto, MultipartFile[] postImage) throws IOException, java.io.IOException {
-        Post post = postRepository.findById(postId)
+        Post post = postRepository.findWithImageUrlById(postId)
                 .orElseThrow(() -> new ApiException(ErrorCode.POST_NOT_FOUND));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(USER_NOT_FOUND));

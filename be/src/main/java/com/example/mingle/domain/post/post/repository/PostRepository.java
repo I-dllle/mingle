@@ -41,4 +41,11 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     List<Post> findByCreatedAtAfterAndNoticeTypeInOrderByCreatedAtDesc(LocalDateTime time, List<NoticeType> noticeTypes);
 
+    @Query("""
+    SELECT p FROM Post p
+    LEFT JOIN FETCH p.imageUrl
+    WHERE p.id = :postId AND p.isDeleted = false
+""")
+    Optional<Post> findWithImageUrlById(@Param("postId") Long postId);
+
 }

@@ -86,28 +86,107 @@ export const postService = {
       `/posts?${params.toString()}`
     );
   },
-
   // 게시글 상세 조회
-  getPost: async (id: number): Promise<Post> => {
-    return await apiClient<Post>(`/posts/${id}`);
-  },
+  getPost: async (postId: number): Promise<PostResponseDto> => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/posts/${postId}`,
+        {
+          method: "GET",
+          credentials: "include", // 쿠키 포함하여 인증 처리
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-  // 게시글 수정
-  updatePost: async (id: number, data: Partial<Post>) => {
-    const postData = data.tags
-      ? { ...data, title: addTagsToTitle(data.title || "", data.tags) }
-      : data;
-    return await apiClient<Post>(`/posts/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(postData),
-    });
-  },
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `HTTP ${response.status}: ${response.statusText}`
+        );
+      }
 
+      return await response.json();
+    } catch (error) {
+      console.error("게시글 상세 조회 API 오류:", error);
+      throw error;
+    }
+  },
+  // 게시글 수정 (multipart/form-data 사용)
+  updatePost: async (
+    postId: number,
+    userId: number,
+    postRequestDto: {
+      title: string;
+      content: string;
+      postTypeId?: number;
+      businessDocumentCategory?: string;
+      noticeType?: string;
+    },
+    postImage?: File[]
+  ): Promise<PostResponseDto> => {
+    try {
+      const formData = new FormData();
+
+      // 게시글 데이터를 JSON으로 직렬화하여 postRequestDto 파트로 추가
+      const blob = new Blob([JSON.stringify(postRequestDto)], {
+        type: "application/json",
+      });
+      formData.append("postRequestDto", blob);
+
+      // 이미지 파일들을 postImage 파트로 추가 (선택사항)
+      if (postImage && postImage.length > 0) {
+        postImage.forEach((image) => {
+          formData.append("postImage", image);
+        });
+      }
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/posts/${postId}`,
+        {
+          method: "PUT",
+          credentials: "include", // 쿠키 포함
+          body: formData, // FormData 사용 (Content-Type 헤더 자동 설정)
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `HTTP ${response.status}: ${response.statusText}`
+        );
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("게시글 수정 API 오류:", error);
+      throw error;
+    }
+  },
   // 게시글 삭제
-  deletePost: async (id: number): Promise<void> => {
-    await apiClient(`/posts/${id}`, {
-      method: "DELETE",
-    });
+  deletePost: async (postId: number): Promise<void> => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/posts/${postId}`,
+        {
+          method: "DELETE",
+          credentials: "include", // 쿠키 포함하여 인증 처리
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `HTTP ${response.status}: ${response.statusText}`
+        );
+      }
+
+      // 204 No Content 응답이므로 별도 반환값 없음
+    } catch (error) {
+      console.error("게시글 삭제 API 오류:", error);
+      throw error;
+    }
   },
 
   // 게시글 검색

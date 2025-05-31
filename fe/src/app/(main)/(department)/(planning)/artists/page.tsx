@@ -35,8 +35,26 @@ export default function ArtistsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [navigating, setNavigating] = useState(false);
   const postsPerPage = 10;
   const router = useRouter();
+
+  // 게시글 클릭 핸들러 (상세 보기로 이동)
+  const handlePostClick = async (postId: number) => {
+    console.log("게시글 클릭됨, postId:", postId);
+
+    try {
+      setNavigating(true);
+      const targetUrl = `/artists/${postId}`;
+      console.log("이동할 URL:", targetUrl);
+
+      router.push(targetUrl);
+    } catch (error) {
+      console.error("페이지 이동 실패:", error);
+    } finally {
+      setNavigating(false);
+    }
+  };
 
   // 게시글 데이터 로드
   const loadPosts = async (page: number = 1) => {
@@ -235,6 +253,7 @@ export default function ArtistsPage() {
                   <tr
                     key={post.postId}
                     className="hover:bg-gray-50 cursor-pointer"
+                    onClick={() => handlePostClick(post.postId)} // 게시글 클릭 시 핸들러 호출
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex gap-2 items-center">
