@@ -1,3 +1,4 @@
+// 전체 정보 반환
 package com.example.mingle.domain.user.user.dto;
 
 import com.example.mingle.domain.user.user.entity.User;
