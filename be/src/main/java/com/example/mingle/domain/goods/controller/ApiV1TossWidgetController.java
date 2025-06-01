@@ -87,11 +87,8 @@ public class ApiV1TossWidgetController {
         String userJson = objectMapper.writeValueAsString(user);
 
         // 모델에 데이터 추가
-//        model.addAttribute("goods", goods);
-//        model.addAttribute("user", user);
-//        model.addAttribute("orderId", orderId);
-        model.addAttribute("goodsJson", goodsJson);
-        model.addAttribute("userJson", userJson);
+        model.addAttribute("goods", goodsJson);
+        model.addAttribute("user", userJson);
         model.addAttribute("orderId", orderId);
             
         return "checkout"; // checkout.html 템플릿을 렌더링
@@ -113,13 +110,23 @@ public class ApiV1TossWidgetController {
             @Parameter(description = "사용자 ID", required = true)
             @AuthenticationPrincipal SecurityUser user
     ) {
-        User orderUser = userRepository.findById(user.getId())
-                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
-        Goods goods = goodsRepository.findById(requestDto.getGoods().getId())
-                .orElseThrow(() -> new ApiException(ErrorCode.GOODS_NOT_FOUND));
+        try {
+            User orderUser = userRepository.findById(user.getId())
+                    .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
+            Goods goods = goodsRepository.findById(requestDto.getGoods().getId())
+                    .orElseThrow(() -> new ApiException(ErrorCode.GOODS_NOT_FOUND));
 
-        GoodsOrderResponseDto responseDto = orderService.createOrder(requestDto, orderUser, goods);
-        return ResponseEntity.ok(responseDto);
+            // 주문 ID가 없으면 생성
+            if (requestDto.getOrderId() == null || requestDto.getOrderId().isEmpty()) {
+                requestDto.setOrderId(UUID.randomUUID().toString());
+            }
+
+            GoodsOrderResponseDto responseDto = orderService.createOrder(requestDto, orderUser, goods);
+            return ResponseEntity.ok(responseDto);
+        } catch (Exception e) {
+            logger.error("주문 생성 실패: ", e);
+            throw new ApiException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Operation(
