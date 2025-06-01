@@ -10,6 +10,12 @@ export const departmentMenus: Record<
 > = {
   "Creative Studio": [
     {
+      id: 4, // 백엔드 PostType 테이블의 실제 ID 사용 (menu_id=12, department_id=1)
+      name: "공지사항",
+      icon: "document",
+      path: "/creative-notices",
+    },
+    {
       id: 8,
       name: "음원/영상",
       icon: "document",
@@ -29,6 +35,12 @@ export const departmentMenus: Record<
     },
   ],
   "Planning & A&R": [
+    {
+      id: 4, // 백엔드 PostType 테이블의 실제 ID 사용 (menu_id=12, department_id=1)
+      name: "공지사항",
+      icon: "document",
+      path: "/planning-notices",
+    },
     {
       id: 11,
       name: "팀/유닛 구성",
@@ -50,6 +62,12 @@ export const departmentMenus: Record<
   ],
   "Marketing & PR": [
     {
+      id: 4, // 백엔드 PostType 테이블의 실제 ID 사용 (menu_id=12, department_id=1)
+      name: "공지사항",
+      icon: "document",
+      path: "/marketing-notices",
+    },
+    {
       id: 14,
       name: "SNS컨텐츠",
       icon: "document",
@@ -63,6 +81,12 @@ export const departmentMenus: Record<
     },
   ],
   "Finance & Legal": [
+    {
+      id: 4, // 백엔드 PostType 테이블의 실제 ID 사용 (menu_id=12, department_id=1)
+      name: "공지사항",
+      icon: "document",
+      path: "/finance-notices",
+    },
     {
       id: 17,
       name: "계약서관리",
@@ -139,12 +163,6 @@ export const departmentMenus: Record<
       name: "활동보고서",
       icon: "document",
       path: "/artist-report",
-    },
-    {
-      id: 29, // 적절한 PostType ID로 변경 필요
-      name: "연습실 예약",
-      icon: "calendar",
-      path: "/studio-reservation",
     },
     {
       id: 27, // 적절한 PostType ID로 변경 필요

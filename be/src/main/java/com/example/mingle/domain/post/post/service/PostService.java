@@ -53,7 +53,7 @@ public class PostService {
             throws IOException, java.io.IOException {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(USER_NOT_FOUND));
-        
+
         PostType postType = postTypeRepository.findById(postTypeId)
                 .orElseThrow(() -> new ApiException(ErrorCode.POST_MENU_NOT_FOUND));
         PostMenu menu = postType.getMenu();
@@ -70,14 +70,20 @@ public class PostService {
             }
         }
 
-        //사용자가 소속된 부서에만 글을 작성할 수 있도록 권한 제한
-        if (!menu.getName().equals("공지사항")) {
+        // 사용자가 소속된 부서에만 글을 작성할 수 있도록 권한 제한
+        // PostType의 Department가 null이 아닌 경우에만 부서 매칭 검사
+        if (!menu.getName().equals("공지사항") && postType.getDepartment() != null) {
             if (!user.getDepartment().equals(postType.getDepartment())) {
                 log.error("Access denied: User department doesn't match postType department");
                 log.error("User Department: {}", user.getDepartment().getDepartmentName());
                 log.error("PostType Department: {}", postType.getDepartment().getDepartmentName());
                 throw new ApiException(ErrorCode.ACCESS_DENIED);
             }
+        }
+
+        // PostType의 Department가 null인 경우 로그 출력 (선택사항)
+        if (postType.getDepartment() == null) {
+            log.warn("PostType {} has no department assigned, allowing post creation without department restriction", postTypeId);
         }
 
         List<String> uploadedUrls = new ArrayList<>();
@@ -106,7 +112,6 @@ public class PostService {
         postRepository.save(post);
         return PostResponseDto.fromEntity(post);
     }
-
     //게시글 READ
     // 전체 공지사항 조회
     public List<PostResponseDto> getGlobalNotices(){

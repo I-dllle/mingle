@@ -106,19 +106,15 @@ const BusinessDocuments: React.FC = () => {
   // 게시글 클릭 핸들러
   const handlePostClick = (postId: number) => {
     window.location.href = `/board/common/businessDocuments/${postId}`;
-  };
-
-  // 게시글 작성 버튼 클릭
+  }; // 게시글 작성 버튼 클릭
   const handleCreatePost = () => {
     const deptId = getDepartmentId();
-    const currentTab = tabs.find((tab) => tab.id === selectedTab);
-    const category = currentTab?.category;
 
-    const params = new URLSearchParams();
-    if (deptId) params.append("deptId", deptId.toString());
-    if (category) params.append("category", category);
-
-    window.location.href = `/board/common/businessDocuments/create?${params.toString()}`;
+    if (deptId) {
+      window.location.href = `/board/postWrite?deptId=${deptId}&postTypeId=2`;
+    } else {
+      setError("부서 정보를 찾을 수 없습니다.");
+    }
   };
 
   // 로딩 상태
@@ -147,49 +143,50 @@ const BusinessDocuments: React.FC = () => {
             회의록과 업무문서를 확인하고 관리할 수 있습니다.
           </p>
         </div>
-
         {/* 오류 메시지 */}
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-red-600">{error}</p>
           </div>
-        )}
-
+        )}{" "}
         {/* 탭 메뉴 */}
         <div className="bg-white rounded-lg shadow-sm mb-6">
           <div className="border-b border-gray-200">
-            <div className="flex space-x-8">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setSelectedTab(tab.id)}
-                  className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors ${
-                    selectedTab === tab.id
-                      ? "border-blue-500 text-blue-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
+            <div className="flex justify-between items-center">
+              <div className="flex space-x-8">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setSelectedTab(tab.id)}
+                    className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors ${
+                      selectedTab === tab.id
+                        ? "border-blue-500 text-blue-600"
+                        : "border-transparent text-gray-500 hover:text-gray-700"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* 글 작성 버튼 */}
+              <button
+                onClick={handleCreatePost}
+                className="mr-6 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                글 작성
+              </button>
             </div>
           </div>
-        </div>
-
+        </div>{" "}
         {/* 게시글 목록 */}
         <div className="bg-white rounded-lg shadow-sm">
           <div className="p-6">
-            {/* 게시글 작성 버튼 */}
-            <div className="flex justify-between items-center mb-6">
+            {/* 섹션 제목 */}
+            <div className="mb-6">
               <h2 className="text-xl font-semibold text-gray-900">
                 {tabs.find((tab) => tab.id === selectedTab)?.label}
               </h2>
-              <button
-                onClick={handleCreatePost}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                글쓰기
-              </button>
             </div>
 
             {/* 게시글 리스트 */}
