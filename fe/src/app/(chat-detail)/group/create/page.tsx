@@ -2,8 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/features/auth/AuthProvider';
-import { Role, DepartmentRole, ProjectRole } from '@/features/auth/types/roles';
+import { useAuth } from '@/features/user/auth/AuthProvider';
+import {
+  Role,
+  DepartmentRole,
+  ProjectRole,
+} from '@/features/user/auth/types/roles';
 import { ChatScope } from '@/features/chat/common/types/ChatScope';
 import { createGroupChatRoom } from '@/features/chat/group/services/createGroupChatRoom';
 import { getDepartments } from '@/features/user/team/services/getDepartments';
