@@ -57,7 +57,7 @@ export default function ArtistReportPage() {
     try {
       const deptId = getDepartmentIdByName(userDepartment);
       // 메뉴 ID를 26으로 설정하여 부서별 게시글 조회
-      const response = await postService.getPostsByMenu(deptId, 25);
+      const response = await postService.getPostsByMenu(deptId, 26);
       setPosts(response);
       // 새로운 API는 페이지네이션이 없으므로 전체를 한 번에 가져옴
       setTotalPages(1);

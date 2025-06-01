@@ -114,26 +114,26 @@ export const departmentMenus: Record<
   ],
   "System Operations": [
     {
-      id: 14,
+      id: 20,
       name: "대시보드",
       icon: "chart",
       path: "/dashboard",
       isActive: true,
     },
     {
-      id: 15,
+      id: 22,
       name: "사용자 관리",
       icon: "user",
       path: "/panel/users",
     },
     {
-      id: 16,
+      id: 23,
       name: "근태관리",
       icon: "clock",
       path: "/panel/attendance",
     },
     {
-      id: 17,
+      id: 24,
       name: "수익/정산관리",
       icon: "money",
       path: "/panel/revenue",
@@ -159,13 +159,13 @@ export const departmentMenus: Record<
       path: "/artist-notices",
     },
     {
-      id: 26, // 백엔드 PostType 테이블의 실제 ID 사용 (menu_id=12, department_id=1)
+      id: 27, // 백엔드 PostType 테이블의 실제 ID 사용 (menu_id=12, department_id=1)
       name: "활동보고서",
       icon: "document",
       path: "/artist-report",
     },
     {
-      id: 27, // 적절한 PostType ID로 변경 필요
+      id: 30, // 적절한 PostType ID로 변경 필요
       name: "SNS컨텐츠",
       icon: "text",
       path: "/sns-contents",
