@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { fetchCurrentUser } from '../services/authService';
-import { userService } from '../../profile/services/userService';
-import { User } from '@/features/user/profile/types/user';
+import { useEffect, useState } from "react";
+import { fetchCurrentUser } from "../services/authService";
+import { userService } from "../../profile/services/userService";
+import { User } from "@/features/user/profile/types/user";
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -20,7 +20,7 @@ export function useAuth() {
           setUser(profile);
         }
       } catch (e) {
-        console.error('사용자 정보 로드 실패', e);
+        console.error("사용자 정보 로드 실패", e);
         setUser(null);
       } finally {
         setIsLoading(false);

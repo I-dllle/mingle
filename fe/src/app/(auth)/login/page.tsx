@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import LoginForm from '@/features/auth/components/LoginForm';
+import React from "react";
+import LoginForm from "@/features/user/auth/components/LoginForm";
 
 export default function LoginPage() {
   return (

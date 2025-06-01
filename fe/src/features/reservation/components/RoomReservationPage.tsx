@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useAuth } from "@/features/auth/hooks/useAuth";
+import { useAuth } from "@/features/user/auth/hooks/useAuth";
 import { RoomAvailabilityCalendar } from "./RoomAvailabilityCalendar";
 import { ReservationDetail } from "./ReservationDetail";
 import { ReservationForm } from "./ReservationForm";
