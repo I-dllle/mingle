@@ -1,6 +1,7 @@
 package com.example.mingle.domain.chat.archive.service;
 
 import com.example.mingle.domain.chat.archive.dto.ArchiveUploadRequest;
+import com.example.mingle.domain.chat.archive.dto.ArchiveItemResponse;
 import com.example.mingle.domain.chat.archive.entity.ArchiveItem;
 import com.example.mingle.domain.chat.archive.entity.ArchiveTag;
 import com.example.mingle.domain.chat.archive.repository.ArchiveItemRepository;
@@ -31,7 +32,7 @@ public class ArchiveUploadServiceImpl implements ArchiveUploadService {
     private final AwsS3Uploader awsS3Uploader;
 
     @Override
-    public void upload(ArchiveUploadRequest request) throws IOException {
+    public ArchiveItemResponse upload(ArchiveUploadRequest request) throws IOException {
 
         // 1. S3에 업로드
         String fileUrl = awsS3Uploader.upload(request.file(), "archive_files");
@@ -76,6 +77,8 @@ public class ArchiveUploadServiceImpl implements ArchiveUploadService {
 
         // 5. 저장
         archiveItemRepository.save(archiveItem);
+
+        return ArchiveItemResponse.from(archiveItem); // 저장된 결과를 응답 객체로 변환하여 반환
     }
 
 
