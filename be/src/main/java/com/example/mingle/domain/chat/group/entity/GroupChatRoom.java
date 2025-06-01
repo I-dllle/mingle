@@ -24,6 +24,7 @@ public class GroupChatRoom extends BaseEntity {
     private Long teamId;
 
     @Enumerated(EnumType.STRING)
+    @Column(length = 20)
     private RoomType roomType;      // 채팅방인지 자료방인지
 
     @Enumerated(EnumType.STRING)
