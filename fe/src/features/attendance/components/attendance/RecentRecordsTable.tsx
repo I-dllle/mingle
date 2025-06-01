@@ -1,94 +1,174 @@
+// 파일 경로 예시:
+// features/attendance/components/attendance/RecentRecordsTable.tsx
+
 "use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { AttendanceRecord } from "@/features/attendance/types/attendance";
+import type {
+  AttendanceRecord,
+  AttendanceAdminRecord,
+} from "@/features/attendance/types/attendance";
 import attendanceService from "@/features/attendance/services/attendanceService";
-import { AttendanceStatusBadge } from "./StatusBadge";
+import { AttendanceStatusBadge } from "./StatusBadge"; // 상태 배지 컴포넌트 경로 확인
 
+/**
+ * props 인터페이스:
+ * - isAdmin?: boolean                   // (기본값 false) 관리자용 전체 조회 모드인지 여부
+ * - yearMonth?: string                  // (선택) YYYY-MM 형태. 관리자가 월별로 필터링할 때 사용
+ * - keyword?: string                    // (선택) 검색 키워드
+ * - statusFilter?: string               // (선택) 상태 필터 (예: "PRESENT", "LATE" 등)
+ * - departmentId?: number | null        // (선택) 관리자 전용: 부서 ID
+ * - userIdFilter?: number | null        // (선택) 관리자 전용: 특정 사용자 ID
+ *
+ * - initialPage?: number                // (선택) 초기 페이지; 없으면 1
+ * - recordsPerPage?: number             // (선택) 페이지당 개수; 없으면 5
+ * - onPageChange?: (newPage: number) => void  // (선택) 페이지가 바뀔 때 호출할 콜백
+ */
 interface RecentRecordsTableProps {
+  isAdmin?: boolean;
+  yearMonth?: string;
+  keyword?: string;
+  statusFilter?: string;
+  departmentId?: number | null;
+  userIdFilter?: number | null;
+
   initialPage?: number;
   recordsPerPage?: number;
+  onPageChange?: (newPage: number) => void;
 }
 
 export default function RecentRecordsTable({
+  isAdmin = false,
+  yearMonth,
+  keyword,
+  statusFilter,
+  departmentId,
+  userIdFilter,
+
   initialPage = 1,
   recordsPerPage = 5,
+  onPageChange,
 }: RecentRecordsTableProps) {
-  const [records, setRecords] = useState<AttendanceRecord[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState<number>(initialPage);
-  const [totalPages, setTotalPages] = useState<number>(1);
   const router = useRouter();
 
-  // 포맷 함수
-  const formatTime = (timeString: string | null): string => {
-    if (!timeString) return "-";
-    // HH:MM 포맷으로 변환 (시간만 필요)
-    const date = new Date(timeString);
-    return date.toLocaleTimeString("ko-KR", {
+  /** 현재 페이지 상태: initialPage prop이 있으면 그 값을, 없으면 1 */
+  const [currentPage, setCurrentPage] = useState<number>(initialPage);
+
+  /** 페이지당 표시할 레코드 수: recordsPerPage prop이 있으면 그 값을, 없으면 5 */
+  const [perPage] = useState<number>(recordsPerPage);
+
+  /** 실제로 테이블에 뿌릴 레코드 배열:
+   *  - 일반 사용자는 `AttendanceRecord[]`
+   *  - 관리자는 `AttendanceAdminRecord[]`
+   *  둘 중 하나가 될 수 있다. */
+  const [records, setRecords] = useState<
+    AttendanceRecord[] | AttendanceAdminRecord[]
+  >([]);
+
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  /** 총 페이지 수 (페이징 UI 그리기 위함) */
+  const [totalPages, setTotalPages] = useState<number>(1);
+
+  /** 서버에서 데이터 가져오는 함수 */
+  const fetchRecords = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      if (isAdmin) {
+        // ---------- 관리자 모드: 전체 사용자 근태 기록 조회 ----------
+        // 서버에서 AttendanceAdminRecord[] 만 반환한다고 가정
+        const data: AttendanceAdminRecord[] =
+          await attendanceService.getAllAttendanceRecordsForAdmin(
+            yearMonth ?? "",
+            departmentId || undefined,
+            userIdFilter || undefined,
+            keyword || undefined,
+            statusFilter as any, // 예: "PRESENT" 등
+            currentPage,
+            perPage
+          );
+
+        // 정확한 타입으로 setRecords
+        setRecords(data);
+        // (만약 백엔드가 pagination 정보를 별도 제공한다면, 아래 처럼 써야 합니다)
+        // setRecords(data.content);
+        // setTotalPages(data.totalPages);
+      } else {
+        // ---------- 일반 사용자 모드: 본인의 최근 근태 조회 ----------
+        // 서버에서 AttendancePageResponse 형태 반환: { content: AttendanceRecord[], totalPages: number, ... }
+        const response = await attendanceService.getRecentRecords(
+          currentPage,
+          perPage
+        );
+
+        setRecords(response.content);
+        setTotalPages(response.totalPages);
+      }
+    } catch (err: any) {
+      setError(err.message || "데이터를 불러오는 중 오류가 발생했습니다.");
+      console.error("AttendanceTable fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /** currentPage 또는 perPage 등이 바뀔 때마다 재호출 */
+  useEffect(() => {
+    fetchRecords();
+  }, [
+    isAdmin,
+    yearMonth,
+    keyword,
+    statusFilter,
+    departmentId,
+    userIdFilter,
+    currentPage,
+    perPage,
+  ]);
+
+  /** 날짜를 “MM/DD” 형태 문자열로 포맷팅 */
+  const formatDateShort = (dateString: string) => {
+    const d = new Date(dateString);
+    return `${d.getMonth() + 1}/${d.getDate()}`;
+  };
+
+  /** ISO 문자열을 “HH:mm” 형태로 포맷팅 (없으면 “-” 반환) */
+  const formatTime = (isoString: string | null) => {
+    if (!isoString) return "-";
+    const d = new Date(isoString);
+    return d.toLocaleTimeString("ko-KR", {
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
     });
   };
 
-  // 근태 기록 불러오기
-  const fetchRecords = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await attendanceService.getRecentRecords(
-        currentPage,
-        recordsPerPage
-      );
-      setRecords(response.content);
-      setTotalPages(response.totalPages);
-    } catch (err: any) {
-      setError(err.message || "근태 기록을 불러오는데 실패했습니다.");
-      console.error("Error fetching records:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 페이지가 변경될 때마다 데이터 가져오기
-  useEffect(() => {
-    fetchRecords();
-  }, [currentPage, recordsPerPage]);
-
-  // 근무 시간 포맷 (소수점 1자리까지)
-  const formatHours = (hours: number): string => {
-    return hours.toFixed(1) + "시간";
-  };
-
-  // 날짜 포맷 (MM/DD 형식)
-  const formatDateShort = (dateString: string): string => {
-    const date = new Date(dateString);
-    return `${date.getMonth() + 1}/${date.getDate()}`;
-  };
-
-  if (loading && !records.length) {
+  // 로딩 중일 때
+  if (loading) {
     return (
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">
-          최근 근태 기록
+        <h2 className="text-lg font-semibold mb-4">
+          {isAdmin ? "전체 근태 기록" : "최근 근태 기록"}
         </h2>
-        <div className="animate-pulse">
-          {[...Array(recordsPerPage)].map((_, idx) => (
-            <div key={idx} className="h-12 bg-gray-100 mb-2 rounded"></div>
+        <div className="animate-pulse space-y-2">
+          {Array.from({ length: perPage }).map((_, idx) => (
+            <div key={idx} className="h-10 bg-gray-100 rounded-md" />
           ))}
         </div>
       </div>
     );
   }
 
+  // 에러가 있을 때
   if (error) {
     return (
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">
-          최근 근태 기록
+        <h2 className="text-lg font-semibold mb-4">
+          {isAdmin ? "전체 근태 기록" : "최근 근태 기록"}
         </h2>
         <div className="text-red-500">{error}</div>
       </div>
@@ -97,8 +177,8 @@ export default function RecentRecordsTable({
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">
-        최근 근태 기록
+      <h2 className="text-lg font-semibold mb-4">
+        {isAdmin ? "전체 근태 기록" : "최근 근태 기록"}
       </h2>
 
       <div className="overflow-x-auto">
@@ -109,10 +189,10 @@ export default function RecentRecordsTable({
                 날짜
               </th>
               <th className="px-4 py-3 text-left font-medium text-gray-500">
-                출근시간
+                출근
               </th>
               <th className="px-4 py-3 text-left font-medium text-gray-500">
-                퇴근시간
+                퇴근
               </th>
               <th className="px-4 py-3 text-left font-medium text-gray-500">
                 근무시간
@@ -120,52 +200,91 @@ export default function RecentRecordsTable({
               <th className="px-4 py-3 text-left font-medium text-gray-500">
                 상태
               </th>
+              {isAdmin && (
+                <th className="px-4 py-3 text-left font-medium text-gray-500">
+                  관리
+                </th>
+              )}
             </tr>
           </thead>
+
           <tbody className="divide-y divide-gray-200">
             {records.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-4 text-center text-gray-500">
-                  근태 기록이 없습니다.
+                <td
+                  colSpan={isAdmin ? 6 : 5}
+                  className="px-4 py-4 text-center text-gray-500"
+                >
+                  {isAdmin
+                    ? "조회된 기록이 없습니다."
+                    : "근태 기록이 없습니다."}
                 </td>
               </tr>
             ) : (
-              records.map((record, idx) => (
-                <tr
-                  key={`${record.date}-${idx}`}
-                  className="hover:bg-gray-50 cursor-pointer"
-                  onClick={() =>
-                    router.push(`/attendance/detail/${record.date}`)
-                  }
-                >
-                  <td className="px-4 py-3 text-gray-900">
-                    {formatDateShort(record.date)}
-                  </td>
-                  <td className="px-4 py-3 text-gray-900">
-                    {formatTime(record.checkInTime)}
-                  </td>
-                  <td className="px-4 py-3 text-gray-900">
-                    {formatTime(record.checkOutTime)}
-                  </td>
-                  <td className="px-4 py-3 text-gray-900">
-                    {formatHours(record.workingHours)}
-                  </td>
-                  <td className="px-4 py-3">
-                    <AttendanceStatusBadge status={record.attendanceStatus} />
-                  </td>
-                </tr>
-              ))
+              records.map((rec: any, idx) => {
+                // rec는 AttendanceRecord 또는 AttendanceAdminRecord
+                const date = rec.date as string;
+                const checkIn = rec.checkInTime as string | null;
+                const checkOut = rec.checkOutTime as string | null;
+
+                // AttendanceRecord 에는 workingHours 필드가 있고,
+                // AttendanceAdminRecord 에는 내부 도메인마다 추가 필드가 있을 수 있지만
+                // 양쪽 다 `attendanceStatus` 와 `id` (혹은 `userId`)가 있다고 가정
+                const workingHours =
+                  (rec as AttendanceRecord).workingHours ?? 0;
+                const status = rec.attendanceStatus as string;
+
+                return (
+                  <tr
+                    key={`${date}-${idx}`}
+                    className="hover:bg-gray-50 cursor-pointer"
+                    onClick={() => {
+                      if (isAdmin) {
+                        router.push(`/admin/panel/attendance/${rec.id}`);
+                      } else {
+                        router.push(`/attendance/detail/${date}`);
+                      }
+                    }}
+                  >
+                    <td className="px-4 py-3 text-gray-900">
+                      {formatDateShort(date)}
+                    </td>
+                    <td className="px-4 py-3 text-gray-900">
+                      {formatTime(checkIn)}
+                    </td>
+                    <td className="px-4 py-3 text-gray-900">
+                      {formatTime(checkOut)}
+                    </td>
+                    <td className="px-4 py-3 text-gray-900">
+                      {`${workingHours.toFixed(1)}시간`}
+                    </td>
+                    <td className="px-4 py-3">
+                      <AttendanceStatusBadge status={status as any} />
+                    </td>
+                    {isAdmin && (
+                      <td className="px-4 py-3 text-purple-600 hover:underline">
+                        수정
+                      </td>
+                    )}
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
       </div>
 
-      {/* 페이지네이션 */}
+      {/* 페이지네이션 (관리자와 일반 사용자가 동일 UI 사용) */}
       {totalPages > 1 && (
         <div className="flex justify-center mt-6">
           <nav className="inline-flex rounded-md">
+            {/* 이전 버튼 */}
             <button
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              onClick={() => {
+                const prev = Math.max(currentPage - 1, 1);
+                setCurrentPage(prev);
+                if (onPageChange) onPageChange(prev);
+              }}
               disabled={currentPage === 1}
               className={`px-3 py-1 rounded-l-md ${
                 currentPage === 1
@@ -176,39 +295,38 @@ export default function RecentRecordsTable({
               &lt;
             </button>
 
+            {/* 페이지 번호들: 최대 5개 */}
             {Array.from({ length: Math.min(5, totalPages) }).map((_, i) => {
-              // 항상 현재 페이지 주변의 5개 페이지를 표시
               let pageNum = currentPage - 2 + i;
-
-              // 앞쪽 범위를 벗어나면 조정
               if (pageNum < 1) pageNum = i + 1;
-
-              // 뒤쪽 범위를 벗어나면 조정
               if (pageNum > totalPages) pageNum = totalPages - (4 - i);
+              if (pageNum < 1 || pageNum > totalPages) return null;
 
-              // 유효한 페이지 번호인 경우에만 버튼 렌더링
-              if (pageNum >= 1 && pageNum <= totalPages) {
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => setCurrentPage(pageNum)}
-                    className={`px-3 py-1 ${
-                      currentPage === pageNum
-                        ? "bg-purple-600 text-white"
-                        : "bg-purple-100 text-purple-700 hover:bg-purple-200"
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              }
-              return null;
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => {
+                    setCurrentPage(pageNum);
+                    if (onPageChange) onPageChange(pageNum);
+                  }}
+                  className={`px-3 py-1 ${
+                    currentPage === pageNum
+                      ? "bg-purple-600 text-white"
+                      : "bg-purple-100 text-purple-700 hover:bg-purple-200"
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              );
             })}
 
+            {/* 다음 버튼 */}
             <button
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
+              onClick={() => {
+                const next = Math.min(currentPage + 1, totalPages);
+                setCurrentPage(next);
+                if (onPageChange) onPageChange(next);
+              }}
               disabled={currentPage === totalPages}
               className={`px-3 py-1 rounded-r-md ${
                 currentPage === totalPages

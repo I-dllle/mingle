@@ -9,6 +9,7 @@ import {
 import attendanceRequestService from "@/features/attendance/services/attendanceRequestService";
 import { leaveTypeLabels } from "@/features/attendance/utils/attendanceLabels";
 import { ApprovalStatusBadge } from "@/features/attendance/components/attendance/StatusBadge";
+import ConfirmModal from "./ConfirmModal";
 
 interface RequestDetailProps {
   requestId: number | string;
@@ -29,8 +30,11 @@ export default function RequestDetail({
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [processingAction, setProcessingAction] = useState<boolean>(false);
-  const [rejectReason, setRejectReason] = useState<string>("");
-  const [showRejectDialog, setShowRejectDialog] = useState<boolean>(false);
+
+  // 모달 상태 관리
+  const [showApproveModal, setShowApproveModal] = useState<boolean>(false);
+  const [showRejectModal, setShowRejectModal] = useState<boolean>(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState<boolean>(false);
 
   // 요청 데이터 로딩
   useEffect(() => {
@@ -58,12 +62,12 @@ export default function RequestDetail({
       fetchRequest();
     }
   }, [requestId, isAdmin]);
-
   // 승인 처리
-  const handleApprove = async () => {
+  const handleApprove = async (comment: string = "") => {
     try {
       setProcessingAction(true);
-      await attendanceRequestService.approveRequest(Number(requestId));
+      await attendanceRequestService.approveRequest(Number(requestId), comment);
+      setShowApproveModal(false);
 
       if (onApprove) {
         onApprove();
@@ -82,22 +86,18 @@ export default function RequestDetail({
       setProcessingAction(false);
     }
   };
-
   // 거부 처리
-  const handleReject = async () => {
-    if (!rejectReason.trim()) {
+  const handleReject = async (comment?: string) => {
+    // comment가 undefined이거나 빈 문자열이면 오류 처리
+    if (!comment || !comment.trim()) {
       setError("거부 사유를 입력해주세요.");
       return;
     }
 
     try {
       setProcessingAction(true);
-      await attendanceRequestService.rejectRequest(
-        Number(requestId),
-        rejectReason
-      );
-
-      setShowRejectDialog(false);
+      await attendanceRequestService.rejectRequest(Number(requestId), comment);
+      setShowRejectModal(false);
 
       if (onReject) {
         onReject();
@@ -116,16 +116,12 @@ export default function RequestDetail({
       setProcessingAction(false);
     }
   };
-
   // 요청 취소(삭제)
   const handleCancel = async () => {
-    if (!window.confirm("정말로 이 요청을 취소하시겠습니까?")) {
-      return;
-    }
-
     try {
       setProcessingAction(true);
       await attendanceRequestService.deleteRequest(Number(requestId));
+      setShowCancelConfirm(false);
 
       alert("요청이 취소되었습니다.");
       router.push("/attendance/requests");
@@ -349,7 +345,7 @@ export default function RequestDetail({
               ))}
             </div>
           </div>
-        )}
+        )}{" "}
         {/* 버튼 그룹 */}
         <div className="border-t border-gray-200 pt-6 flex justify-end space-x-3">
           <button
@@ -376,7 +372,7 @@ export default function RequestDetail({
           {isRequestCancelable && (
             <button
               type="button"
-              onClick={handleCancel}
+              onClick={() => setShowCancelConfirm(true)}
               className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
               disabled={processingAction}
             >
@@ -388,7 +384,7 @@ export default function RequestDetail({
             <>
               <button
                 type="button"
-                onClick={() => setShowRejectDialog(true)}
+                onClick={() => setShowRejectModal(true)}
                 className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
                 disabled={processingAction}
               >
@@ -397,7 +393,7 @@ export default function RequestDetail({
 
               <button
                 type="button"
-                onClick={handleApprove}
+                onClick={() => setShowApproveModal(true)}
                 className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
                 disabled={processingAction}
               >
@@ -406,49 +402,45 @@ export default function RequestDetail({
             </>
           )}
         </div>
-      </div>
-      {/* 거부 사유 입력 다이얼로그 */}
-      {showRejectDialog && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
-            <h3 className="text-lg font-medium text-gray-800 mb-4">
-              거부 사유 입력
-            </h3>
-
-            <textarea
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[100px]"
-              placeholder="거부 사유를 입력하세요"
-            />
-
-            {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-
-            <div className="mt-4 flex justify-end space-x-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowRejectDialog(false);
-                  setRejectReason("");
-                  setError(null);
-                }}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-              >
-                취소
-              </button>
-
-              <button
-                type="button"
-                onClick={handleReject}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-                disabled={processingAction}
-              >
-                {processingAction ? "처리중..." : "거부 확인"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      </div>{" "}
+      {/* 모달 컴포넌트들 */}
+      <ConfirmModal
+        isOpen={showCancelConfirm}
+        onClose={() => setShowCancelConfirm(false)}
+        onConfirm={handleCancel}
+        title="요청 취소"
+        message="정말로 이 요청을 취소하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        confirmText="취소하기"
+        cancelText="닫기"
+        confirmButtonColor="bg-red-600 hover:bg-red-700"
+        type="simple"
+      />
+      <ConfirmModal
+        isOpen={showApproveModal}
+        onClose={() => setShowApproveModal(false)}
+        onConfirm={handleApprove}
+        title="승인 의견"
+        message="승인 관련 코멘트를 남길 수 있습니다."
+        showCommentInput={true}
+        commentRequired={false}
+        commentPlaceholder="승인과 함께 남길 코멘트가 있다면 입력해주세요 (선택사항)"
+        confirmText="승인"
+        cancelText="취소"
+        type="approve"
+      />
+      <ConfirmModal
+        isOpen={showRejectModal}
+        onClose={() => setShowRejectModal(false)}
+        onConfirm={handleReject}
+        title="반려 사유"
+        message="반려 사유를 입력해주세요."
+        showCommentInput={true}
+        commentRequired={true}
+        commentPlaceholder="반려 사유를 자세히 작성해주세요 (필수)"
+        confirmText="반려"
+        cancelText="취소"
+        type="reject"
+      />
     </div>
   );
 }

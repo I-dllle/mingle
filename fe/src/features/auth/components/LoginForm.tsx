@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { apiClient } from '@/lib/api/apiClient'; // lib에서 불러오기
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import apiClient from "@/lib/api/apiClient"; // lib에서 불러오기
 
 export default function LoginForm() {
-  const [loginId, setLoginId] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [loginId, setLoginId] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -15,17 +15,16 @@ export default function LoginForm() {
 
     try {
       // 로그인 요청
-      await apiClient('/users/login', {
-        method: 'POST',
-        body: JSON.stringify({ loginId, password }),
+      await apiClient("/users/login", {
+        method: "POST",
       });
 
       // 성공 시 메인 페이지로 이동
-      router.replace('/schedule');
+      router.replace("/schedule");
     } catch (error) {
       // 실패 시 에러 메시지 설정
-      console.error('로그인 에러:', error);
-      setError('로그인에 실패했습니다. 아이디 또는 비밀번호를 확인하세요.');
+      console.error("로그인 에러:", error);
+      setError("로그인에 실패했습니다. 아이디 또는 비밀번호를 확인하세요.");
     }
   };
 

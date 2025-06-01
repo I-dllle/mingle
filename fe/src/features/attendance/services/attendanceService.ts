@@ -51,6 +51,16 @@ export const getDailyAttendance = async (
   return response.data;
 };
 
+// 특정 근태 ID로 상세 조회
+export const getAttendanceById = async (
+  attendanceId: number
+): Promise<AttendanceDetail> => {
+  const response = await apiClient.get<AttendanceDetail>(
+    `${BASE_URL}/${attendanceId}`
+  );
+  return response.data;
+};
+
 // 최근 근태 기록 목록 조회 (페이지네이션)
 export const getRecentRecords = async (
   page: number = 1,
@@ -221,6 +231,7 @@ export default {
   checkOut,
   reportOvertime,
   getDailyAttendance,
+  getAttendanceById,
   getRecentRecords,
   getChartData,
   getMonthlyStatistics,

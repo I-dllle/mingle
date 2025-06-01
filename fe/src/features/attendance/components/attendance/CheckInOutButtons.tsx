@@ -38,10 +38,10 @@ export default function CheckInOutButtons({
     try {
       setIsLoading(true);
       setError(null);
-      const result = await attendanceService.checkIn();
-
-      // 지각 여부 검사
-      const isLate = isLateCheckIn(result.checkInTime);
+      const result = await attendanceService.checkIn(); // 지각 여부 검사
+      const isLate = result.checkInTime
+        ? isLateCheckIn(result.checkInTime)
+        : false;
 
       // 토스트 메시지 또는 알림 표시
       if (isLate) {
@@ -68,10 +68,10 @@ export default function CheckInOutButtons({
     try {
       setIsLoading(true);
       setError(null);
-      const result = await attendanceService.checkOut();
-
-      // 조퇴 여부 검사
-      const isEarly = isEarlyCheckOut(result.checkOutTime);
+      const result = await attendanceService.checkOut(); // 조퇴 여부 검사
+      const isEarly = result.checkOutTime
+        ? isEarlyCheckOut(result.checkOutTime)
+        : false;
 
       // 토스트 메시지 또는 알림 표시
       if (isEarly) {
