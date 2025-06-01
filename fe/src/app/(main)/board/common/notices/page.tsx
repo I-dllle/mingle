@@ -17,9 +17,16 @@ export default function CommonBoardPage() {
     departmentTabs[0]
   ); // 첫 번째 부서를 기본값으로
 
-  return (    <div className="p-6 space-y-6">
-      <div>
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <h1 className="text-2xl font-bold">공지사항</h1>
+        <button
+          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-150"
+          onClick={() => router.push("/board/postWrite")}
+        >
+          공지 작성
+        </button>
       </div>
       {/* 중요 공지사항 */}
       <div>
