@@ -13,9 +13,8 @@ export default function LoginForm() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    try {
-      // 로그인 요청
-      await apiClient('/users/login', {
+    try {      // 로그인 요청
+      await apiClient('/test/login', {
         method: 'POST',
         body: JSON.stringify({ loginId, password }),
       });
