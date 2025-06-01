@@ -43,10 +43,15 @@ public class GoodsService {
         }
 
         List<String> imgUrls = new ArrayList<>();
-        for (MultipartFile file : imageFiles) {
-            String uploadedUrl = awsS3Uploader.upload(file, "goods_images");
-            imgUrls.add(uploadedUrl);
+        if (imageFiles != null) {
+            for (MultipartFile file : imageFiles) {
+                if (file != null && !file.isEmpty()) {
+                    String uploadedUrl = awsS3Uploader.upload(file, "goods_images");
+                    imgUrls.add(uploadedUrl);
+                }
+            }
         }
+
         Goods goods = Goods.builder()
                 .itemName(dto.getItemName())
                 .description(dto.getDescription())
