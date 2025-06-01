@@ -1,79 +1,77 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useGroupChat } from '@/features/chat/group/services/useGroupChat';
 import { ChatMessagePayload } from '@/features/chat/common/types/ChatMessagePayload';
-import { fetchGroupChatMessages } from '@/features/chat/group/services/fetchGroupChatMessages';
-
+import styles from './GroupChatMessageList.module.css';
 interface GroupChatMessageListProps {
   roomId: number;
 }
 
-// 시간 포맷팅 함수 분리
-const formatTimestamp = (timestamp: string | undefined): string => {
-  if (!timestamp) return '시간 없음';
-  return new Date(timestamp).toLocaleString('ko-KR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
+// 날짜 문자열 추출 유틸
+const getDateString = (dateStr: string) => dateStr.split('T')[0];
+
+// 시각 포맷 유틸
+const getTimeString = (dateStr: string) =>
+  new Date(dateStr).toLocaleTimeString('ko-KR', {
     hour: '2-digit',
     minute: '2-digit',
   });
-};
 
 export default function GroupChatMessageList({
   roomId,
 }: GroupChatMessageListProps) {
-  const [initialMessages, setInitialMessages] = useState<ChatMessagePayload[]>(
-    []
-  );
-  const { messages: liveMessages } = useGroupChat(roomId);
+  const { messages } = useGroupChat(roomId); // 초기 + 실시간 메시지 통합
+  const currentUserId = Number(localStorage.getItem('userId')); // 나와 상대방 구분
+  const bottomRef = useRef<HTMLDivElement | null>(null); // 자동 스크롤
 
-  // 최초 진입 시 메시지 불러오기
+  // 메시지 새로 추가될 때마다 자동 스크롤
   useEffect(() => {
-    if (!roomId || isNaN(roomId)) return;
-
-    const loadMessages = async () => {
-      try {
-        const data = await fetchGroupChatMessages(roomId);
-        setInitialMessages(data);
-      } catch (err) {
-        console.error('채팅 메시지 불러오기 실패:', err);
-      }
-    };
-    loadMessages();
-  }, [roomId]);
-
-  // 초기 메시지 + 실시간 메시지 합치기
-  const allMessages = [...initialMessages, ...liveMessages];
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   return (
-    <div
-      style={{
-        padding: '12px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '8px',
-      }}
-    >
-      {allMessages.map((msg: ChatMessagePayload, idx: number) => (
-        <div
-          key={`${msg.createdAt}-${msg.senderId}-${idx}`} // 고유 key 생성
-          style={{
-            background: '#f0f0f0',
-            padding: '8px',
-            borderRadius: '6px',
-          }}
-        >
-          <div style={{ fontSize: '14px', color: '#888' }}>
-            From: {msg.senderId ?? '알 수 없음'}
+    <div className={styles.chatList}>
+      {messages.map((msg: ChatMessagePayload, idx: number) => {
+        const isMe = msg.senderId === currentUserId;
+        const dateStr = getDateString(msg.createdAt);
+        const showDateDivider =
+          idx === 0 || dateStr !== getDateString(messages[idx - 1].createdAt); // 🔧 [수정] allMessages → messages
+
+        return (
+          <div key={`${msg.createdAt}-${msg.senderId}-${idx}`}>
+            {/* 날짜 구분선 */}
+            {showDateDivider && (
+              <div className={styles.dateSeparator}>
+                {new Date(msg.createdAt).toLocaleDateString('ko-KR', {
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit',
+                  weekday: 'short',
+                })}
+              </div>
+            )}
+
+            {/* 메시지 박스 */}
+            <div
+              className={`${styles.chatBubble} ${
+                isMe ? styles.mine : styles.opponent
+              }`}
+            >
+              <div className={styles.senderLabel}>
+                {isMe ? '나' : `사용자 ${msg.senderId}`}
+              </div>
+              <div className={styles.messageText}>{msg.content}</div>
+              <div className={styles.timeStamp}>
+                {getTimeString(msg.createdAt)}
+              </div>
+            </div>
           </div>
-          <div>{msg.content}</div>
-          <div style={{ fontSize: '12px', color: '#aaa' }}>
-            {msg.format} · {formatTimestamp(msg.createdAt)}
-          </div>
-        </div>
-      ))}
+        );
+      })}
+
+      {/* 자동 스크롤 타겟 */}
+      <div ref={bottomRef} />
     </div>
   );
 }
