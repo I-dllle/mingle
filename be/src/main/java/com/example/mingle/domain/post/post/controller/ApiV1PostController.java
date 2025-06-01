@@ -43,7 +43,7 @@ public class ApiV1PostController {
                     @ApiResponse(responseCode = "404", description = "해당 게시판 없음")
             }
     )
-    @PostMapping(value = "/create", consumes = "multipart/form-data")
+    @PostMapping(value = "/create/image", consumes = "multipart/form-data")
     public ResponseEntity<PostResponseDto> createPost(
             @RequestPart("requestDto") @Valid PostRequestDto requestDto,
             @RequestPart(value = "postImage", required = false) MultipartFile[] postImage,
@@ -87,12 +87,12 @@ public class ApiV1PostController {
                     @ApiResponse(responseCode = "404", description = "해당 카테고리를 찾을 수 없습니다")
             }
     )
-    @GetMapping("/menu/{postMenuId}/posts")
+    @GetMapping("/menu/{depId}/posts")
     public ResponseEntity<List<PostResponseDto>> getBusinessDocuments(
-            @Parameter(description = "게시판 ID", required = true) @PathVariable Long postMenuId,
+            @Parameter(description = "게시판 ID", required = true) @PathVariable Long depId,
             @RequestParam(required = false) BusinessDocumentCategory category
     ){
-        List<PostResponseDto> posts = postService.getBusinessDocuments(postMenuId, category);
+        List<PostResponseDto> posts = postService.getBusinessDocuments(depId, category);
         return ResponseEntity.ok(posts);
     }
 
@@ -238,6 +238,15 @@ public class ApiV1PostController {
         } else {
             posts = postService.getAllPostsPageable(page, size, sortField, direction);
         }
+        return ResponseEntity.ok(posts);
+    }
+
+    @GetMapping("/business-documents")
+    public ResponseEntity<List<PostResponseDto>> getBusinessDocumentsByDepartment(
+            @RequestParam Long departmentId,
+            @RequestParam(required = false) BusinessDocumentCategory category
+    ) {
+        List<PostResponseDto> posts = postService.getBusinessDocuments(departmentId, category);
         return ResponseEntity.ok(posts);
     }
 }

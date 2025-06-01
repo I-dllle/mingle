@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { reservationService } from "@/features/reservation/services/reservationService";
 import { ReservationDetail } from "@/features/reservation/components/ReservationDetail";
-import { Reservation } from "@/features/reservation/types/reservation";
+import { Reservation } from "@/features/reservation/types/Reservation";
 // Modal 컴포넌트를 직접 사용하는 대신 인라인으로 모달 레이아웃 구현
 
 export default function ReservationDetailPage({

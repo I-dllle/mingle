@@ -26,7 +26,16 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByMenuAndCategory(PostMenu postMenu, BusinessDocumentCategory businessDocumentCategory);
 
     //공지사항 찾기
-    List<Post>  findByMenuAndNoticeType(PostMenu postMenu, NoticeType noticeType);
+    @Query("""
+    SELECT p FROM Post p
+    LEFT JOIN FETCH p.imageUrl
+    WHERE p.menu = :menu AND p.noticeType = :noticeType AND p.isDeleted = false
+""")
+    List<Post> findWithImageUrlByMenuAndNoticeType(
+            @Param("menu") PostMenu menu,
+            @Param("noticeType") NoticeType noticeType
+    );
+
 
     //소프트 삭제(isDeleted)
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.imageUrl WHERE p.menu = :menu AND p.isDeleted = false")
@@ -47,5 +56,18 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     WHERE p.id = :postId AND p.isDeleted = false
 """)
     Optional<Post> findWithImageUrlById(@Param("postId") Long postId);
+
+
+    @Query("""
+    SELECT DISTINCT p FROM Post p
+    LEFT JOIN FETCH p.imageUrl
+    WHERE p.menu.department.id = :depId
+      AND p.category = :category
+      AND p.isDeleted = false
+""")
+    List<Post> findWithImageUrlByDepartmentIdAndCategory(
+            @Param("depId") Long depId,
+            @Param("category") BusinessDocumentCategory category
+    );
 
 }

@@ -15,19 +15,17 @@ const sortOptions = [
   { value: "asc", label: "오래된순" },
 ];
 
-export default function AdminPostsPage() {
+export default function ArtistNoticesPage() {
   const { name: userDepartment } = useDepartment();
   const menus = departmentMenus[userDepartment] || departmentMenus.default;
-  const currentMenu =
-    menus.find((menu) => menu.path === "/panel/posts") ||
-    menus.find((menu) => menu.id === 21);
-  const boardName = currentMenu?.name || "전체 게시글 관리";
+  const currentMenu = menus.find((menu) => menu.path === "/artist-notices");
+  const boardName = currentMenu?.name || "공지사항";
 
   // 디버깅용
   console.log("User Department:", userDepartment);
   console.log("Available menus:", menus);
   console.log("Current menu:", currentMenu);
-  console.log("Looking for path:", "/panel/posts");
+  console.log("Looking for path:", "/artist-notices");
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchInput, setSearchInput] = useState("");
@@ -46,17 +44,19 @@ export default function AdminPostsPage() {
 
     try {
       setNavigating(true);
-      const targetUrl = `/panel/posts/${postId}`;
+      const targetUrl = `/artist-notices/${postId}`;
       window.location.href = targetUrl;
     } catch (error) {
       setNavigating(false);
     }
-  }; // 게시글 데이터 로드
+  };
+
+  // 게시글 데이터 로드
   const loadPosts = async (page: number = 1) => {
     setLoading(true);
     try {
       const deptId = getDepartmentIdByName(userDepartment);
-      // 메뉴 ID를 25으로 설정하여 부서별 게시글 조회
+      // 메뉴 ID를 26으로 설정하여 부서별 게시글 조회
       const response = await postService.getPostsByMenu(deptId, 4);
       setPosts(response);
       // 새로운 API는 페이지네이션이 없으므로 전체를 한 번에 가져옴
@@ -73,13 +73,13 @@ export default function AdminPostsPage() {
   useEffect(() => {
     loadPosts(currentPage);
   }, [userDepartment]); // currentPage 의존성 제거 (페이지네이션 없음)
+
   // 검색 필터링 및 페이지네이션 처리
   const filteredBySearch = searchQuery.trim()
     ? posts.filter(
         (post) =>
           post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          post.writerName.toLowerCase().includes(searchQuery.toLowerCase())
+          post.content.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : posts;
 
@@ -153,29 +153,9 @@ export default function AdminPostsPage() {
       day: "2-digit",
     });
   };
-
-  // 게시글 삭제 핸들러
-  const handleDeletePost = async (postId: number, e: React.MouseEvent) => {
-    e.stopPropagation(); // 클릭 이벤트 전파 방지
-
-    if (!confirm("정말로 이 게시글을 삭제하시겠습니까?")) {
-      return;
-    }
-
-    try {
-      await postService.deletePost(postId);
-      alert("게시글이 삭제되었습니다.");
-      loadPosts(currentPage); // 목록 새로고침
-    } catch (error) {
-      console.error("게시글 삭제 실패:", error);
-      alert("게시글 삭제에 실패했습니다.");
-    }
-  };
-
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold mb-6">{boardName}</h1>
-
       {/* 검색 바 + 정렬 드롭다운 */}
       <div className="flex items-center justify-between mb-4">
         <form onSubmit={handleSearch} className="flex items-center gap-2">
@@ -187,7 +167,7 @@ export default function AdminPostsPage() {
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="제목, 내용, 작성자로 검색"
+              placeholder="검색어를 입력하세요"
               className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -226,7 +206,6 @@ export default function AdminPostsPage() {
           )}
         </div>
       </div>
-
       {/* 로딩 상태 */}
       {(loading || navigating) && (
         <div className="flex justify-center items-center py-8">
@@ -236,7 +215,6 @@ export default function AdminPostsPage() {
           </div>
         </div>
       )}
-
       {/* 글 목록 (테이블 스타일) */}
       {!loading && (
         <div className="overflow-x-auto relative">
@@ -250,13 +228,7 @@ export default function AdminPostsPage() {
                   작성자
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  부서
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   작성일
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  관리
                 </th>
               </tr>
             </thead>
@@ -264,7 +236,7 @@ export default function AdminPostsPage() {
               {paginatedPosts.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={3}
                     className="px-6 py-4 text-center text-gray-500"
                   >
                     게시글이 없습니다.
@@ -302,32 +274,13 @@ export default function AdminPostsPage() {
                             📷 {post.imageUrl.length}
                           </span>
                         )}
-                        {post.noticeType && (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
-                            {post.noticeType === "GENERAL_NOTICE" && "전체공지"}
-                            {post.noticeType === "DEPARTMENT_NOTICE" &&
-                              "부서공지"}
-                            {post.noticeType === "COMPANY_NEWS" && "회사소식"}
-                          </span>
-                        )}{" "}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-gray-700">
                       {post.writerName}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-700">
-                      {post.departmentName || "-"}
-                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-gray-500">
                       {formatDate(post.createdAt)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <button
-                        onClick={(e) => handleDeletePost(post.postId, e)}
-                        className="text-red-600 hover:text-red-800 text-sm font-medium"
-                      >
-                        삭제
-                      </button>
                     </td>
                   </tr>
                 ))
@@ -335,10 +288,10 @@ export default function AdminPostsPage() {
             </tbody>
           </table>
         </div>
-      )}
-
+      )}{" "}
       {/* 글쓰기 버튼: 테이블 아래, 페이지네이션 위에 flow로 배치 */}
       <div className="flex justify-end my-4">
+        {" "}
         <button
           className="px-6 py-3 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600"
           onClick={(e) => {
@@ -386,7 +339,6 @@ export default function AdminPostsPage() {
           글쓰기
         </button>
       </div>
-
       {/* 페이지네이션: 하단 중앙 */}
       {totalPages > 1 && (
         <div className="flex justify-center mt-6 items-center gap-1">

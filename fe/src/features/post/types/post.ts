@@ -103,6 +103,8 @@ export interface PostEditorProps {
     content: string;
     tags: string[];
     images?: File[];
+    noticeType?: NoticeType;
+    businessDocumentCategory?: BusinessDocumentCategory;
   }) => void;
 }
 

@@ -38,7 +38,6 @@ export default function ArtistReportPage() {
   const [navigating, setNavigating] = useState(false);
   const postsPerPage = 10;
   const router = useRouter();
-
   // 게시글 클릭 핸들러 (상세 보기로 이동)
   const handlePostClick = async (postId: number) => {
     console.log("게시글 클릭됨, postId:", postId);
@@ -46,14 +45,9 @@ export default function ArtistReportPage() {
     try {
       setNavigating(true);
       const targetUrl = `/artist-report/${postId}`;
-      console.log("이동할 URL:", targetUrl);
-
-      router.push(targetUrl);
-      console.log("router.push 호출 완료");
+      window.location.href = targetUrl;
     } catch (error) {
-      console.error("라우팅 오류:", error);
-    } finally {
-      setTimeout(() => setNavigating(false), 1000); // 1초 후 로딩 해제
+      setNavigating(false);
     }
   };
 
@@ -163,7 +157,6 @@ export default function ArtistReportPage() {
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold mb-6">{boardName}</h1>
-
       {/* 검색 바 + 정렬 드롭다운 */}
       <div className="flex items-center justify-between mb-4">
         <form onSubmit={handleSearch} className="flex items-center gap-2">
@@ -214,7 +207,6 @@ export default function ArtistReportPage() {
           )}
         </div>
       </div>
-
       {/* 로딩 상태 */}
       {(loading || navigating) && (
         <div className="flex justify-center items-center py-8">
@@ -224,7 +216,6 @@ export default function ArtistReportPage() {
           </div>
         </div>
       )}
-
       {/* 글 목록 (테이블 스타일) */}
       {!loading && (
         <div className="overflow-x-auto relative">
@@ -298,36 +289,57 @@ export default function ArtistReportPage() {
             </tbody>
           </table>
         </div>
-      )}
-
+      )}{" "}
       {/* 글쓰기 버튼: 테이블 아래, 페이지네이션 위에 flow로 배치 */}
       <div className="flex justify-end my-4">
+        {" "}
         <button
           className="px-6 py-3 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600"
-          onClick={() => {
-            const deptId = getDepartmentIdByName(userDepartment);
-            const currentMenuId = currentMenu?.id;
-            const currentPath = window.location.pathname;
+          onClick={(e) => {
+            try {
+              console.log("=== 글쓰기 버튼 클릭 시작 ===");
+              e.preventDefault();
+              e.stopPropagation();
 
-            // 디버깅 로그 추가
-            console.log("=== 글쓰기 버튼 클릭 ===");
-            console.log("deptId:", deptId);
-            console.log("currentMenuId:", currentMenuId);
-            console.log("currentMenu:", currentMenu);
-            console.log("userDepartment:", userDepartment);
+              const deptId = getDepartmentIdByName(userDepartment);
+              const currentMenuId = currentMenu?.id;
+              const currentPath = window.location.pathname;
 
-            const url = `/board/postWrite?deptId=${deptId}&postTypeId=${currentMenuId}&redirect=${encodeURIComponent(
-              currentPath
-            )}`;
-            console.log("Generated URL:", url);
+              // 디버깅 로그
+              console.log("Button clicked!");
+              console.log("deptId:", deptId);
+              console.log("currentMenuId:", currentMenuId);
+              console.log("userDepartment:", userDepartment);
 
-            router.push(url);
+              // 필수 값 검증
+              if (!deptId || !currentMenuId) {
+                console.error("필수 값이 누락되었습니다:", {
+                  deptId,
+                  currentMenuId,
+                });
+                alert(
+                  "부서 정보 또는 메뉴 정보가 없습니다. 페이지를 새로고침해보세요."
+                );
+                return;
+              }
+
+              const url = `/board/postWrite?deptId=${deptId}&postTypeId=${currentMenuId}&redirect=${encodeURIComponent(
+                currentPath
+              )}`;
+              console.log("Generated URL:", url);
+
+              // RSC 오류를 우회하기 위해 브라우저 네이티브 네비게이션 사용
+              console.log("브라우저 네이티브 네비게이션 사용");
+              window.location.href = url;
+            } catch (error) {
+              console.error("글쓰기 버튼 클릭 중 오류:", error);
+              alert("페이지 이동 중 오류가 발생했습니다.");
+            }
           }}
         >
           글쓰기
         </button>
       </div>
-
       {/* 페이지네이션: 하단 중앙 */}
       {totalPages > 1 && (
         <div className="flex justify-center mt-6 items-center gap-1">

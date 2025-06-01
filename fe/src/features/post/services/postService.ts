@@ -5,6 +5,8 @@ import type {
   CreatePostDto,
   UpdatePostDto,
   Page,
+  NoticeType,
+  BusinessDocumentCategory,
 } from "../types/post";
 import { addTagsToTitle } from "./tagService";
 
@@ -29,9 +31,8 @@ export const postService = {
           formData.append("postImage", image);
         });
       }
-
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/posts/create`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/posts/create/image`,
         {
           method: "POST",
           credentials: "include", // 쿠키 포함
@@ -55,9 +56,7 @@ export const postService = {
   // 게시글 목록 조회 (기존 방식 - 필요시 유지)
   getPosts: async (): Promise<Post[]> => {
     return await apiClient<Post[]>("/posts");
-  },
-
-  // 부서별 메뉴의 게시글 조회 (새로운 API)
+  }, // 부서별 메뉴의 게시글 조회 (새로운 API)
   getPostsByMenu: async (
     deptId: number,
     postMenuId: number
@@ -65,6 +64,163 @@ export const postService = {
     return await apiClient<PostResponseDto[]>(
       `/posts/departments/${deptId}/menus/${postMenuId}/posts`
     );
+  }, // 업무자료 게시판 게시글 조회 (category : 회의록/업무문서)
+  getBusinessDocuments: async (
+    deptId: number,
+    category?: BusinessDocumentCategory
+  ): Promise<PostResponseDto[]> => {
+    try {
+      const params = new URLSearchParams();
+      if (category) {
+        params.append("category", category);
+      }
+
+      // 부서 ID를 파라미터로 전달하는 방식으로 변경
+      params.append("departmentId", deptId.toString());
+
+      // API 엔드포인트를 부서별 조회로 수정
+      const url = `${
+        process.env.NEXT_PUBLIC_API_BASE_URL
+      }/posts/business-documents?${params.toString()}`;
+
+      console.log("=== 업무자료 게시판 API 호출 (수정된 엔드포인트) ===");
+      console.log("deptId:", deptId);
+      console.log("category:", category);
+      console.log("전체 URL:", url);
+      console.log("쿼리 파라미터:", params.toString());
+      console.log("현재 시각:", new Date().toISOString());
+      const response = await fetch(url, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("=== API 응답 상태 ===");
+      console.log("응답 상태:", response.status);
+      console.log("응답 상태 텍스트:", response.statusText);
+      console.log("응답 헤더들:");
+      for (let [key, value] of response.headers.entries()) {
+        console.log(`  ${key}: ${value}`);
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("API 오류 응답:", errorData);
+        throw new Error(
+          errorData.message || `HTTP ${response.status}: ${response.statusText}`
+        );
+      }
+
+      // 응답 텍스트를 먼저 가져와서 파싱 전에 확인
+      const responseText = await response.text();
+      console.log("=== 응답 원본 데이터 ===");
+      console.log("응답 원본 텍스트:", responseText);
+      console.log("응답 텍스트 길이:", responseText.length);
+
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error("JSON 파싱 오류:", parseError);
+        console.error("파싱 실패한 텍스트:", responseText);
+        throw new Error("응답 JSON 파싱 실패");
+      }
+
+      console.log("=== 파싱된 응답 데이터 ===");
+      console.log("파싱된 응답 데이터:", result);
+      console.log("응답 데이터 타입:", typeof result);
+      console.log("응답이 배열인가?", Array.isArray(result));
+      if (Array.isArray(result)) {
+        console.log("배열 길이:", result.length);
+        result.forEach((item, index) => {
+          console.log(`아이템 ${index}:`, item);
+        });
+      }
+      return result;
+    } catch (error) {
+      console.error("업무자료 게시판 조회 API 오류:", error);
+      throw error;
+    }
+  },
+
+  // 공지사항 유형별 조회
+  getNoticesByType: async (
+    noticeType: NoticeType,
+    departmentId?: number
+  ): Promise<PostResponseDto[]> => {
+    try {
+      const params = new URLSearchParams({
+        noticeType: noticeType.toString(),
+      });
+
+      if (departmentId) {
+        params.append("departmentId", departmentId.toString());
+      }
+      const url = `${
+        process.env.NEXT_PUBLIC_API_BASE_URL
+      }/posts/notices?${params.toString()}`;
+      console.log("=== 공지사항 API 호출 ===");
+      console.log("전체 URL:", url);
+      console.log("API Base URL:", process.env.NEXT_PUBLIC_API_BASE_URL);
+      console.log("파라미터:", params.toString());
+      console.log("noticeType:", noticeType);
+      console.log("departmentId:", departmentId);
+      console.log("현재 시각:", new Date().toISOString());
+
+      const response = await fetch(url, {
+        method: "GET",
+        credentials: "include", // 쿠키 포함하여 인증 처리
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("응답 상태:", response.status);
+      console.log("응답 상태 텍스트:", response.statusText);
+      console.log("응답 헤더들:");
+      for (let [key, value] of response.headers.entries()) {
+        console.log(`  ${key}: ${value}`);
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("API 오류 응답:", errorData);
+        throw new Error(
+          errorData.message || `HTTP ${response.status}: ${response.statusText}`
+        );
+      }
+
+      // 응답 텍스트를 먼저 가져와서 파싱 전에 확인
+      const responseText = await response.text();
+      console.log("응답 원본 텍스트:", responseText);
+      console.log("응답 텍스트 길이:", responseText.length);
+
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error("JSON 파싱 오류:", parseError);
+        console.error("파싱 실패한 텍스트:", responseText);
+        throw new Error("응답 JSON 파싱 실패");
+      }
+
+      console.log("파싱된 응답 데이터:", result);
+      console.log("응답 데이터 타입:", typeof result);
+      console.log("응답이 배열인가?", Array.isArray(result));
+      if (Array.isArray(result)) {
+        console.log("배열 길이:", result.length);
+      }
+      return result;
+    } catch (error) {
+      console.error("공지사항 조회 API 오류:", error);
+      throw error;
+    }
+  }, // 전체 공지사항 조회 (기존 getNoticesByType 메서드 활용)
+  getGlobalNotices: async (): Promise<PostResponseDto[]> => {
+    console.log("=== 전체 공지사항 API 호출 (getNoticesByType 사용) ===");
+    return await postService.getNoticesByType("GENERAL_NOTICE" as NoticeType);
   },
 
   // 페이지네이션을 지원하는 게시글 목록 조회 (기존 방식이 여전히 필요하다면 유지)

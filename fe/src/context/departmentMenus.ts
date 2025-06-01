@@ -120,8 +120,20 @@ export const departmentMenus: Record<
       icon: "document",
       path: "/panel/contracts",
     },
+    {
+      id: 4,
+      name: "공지사항 관리",
+      icon: "document",
+      path: "/panel/posts",
+    },
   ],
   "Artist & Manager": [
+    {
+      id: 4, // 백엔드 PostType 테이블의 실제 ID 사용 (menu_id=12, department_id=1)
+      name: "공지사항",
+      icon: "document",
+      path: "/artist-notices",
+    },
     {
       id: 26, // 백엔드 PostType 테이블의 실제 ID 사용 (menu_id=12, department_id=1)
       name: "활동보고서",
