@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { scheduleService } from "../../services/scheduleService";
+import { scheduleService } from "../../services/scheduleService.ts";
 import { ScheduleResponse } from "../../types/Schedule";
 import Modal from "@/features/schedule/components/ui/Modal";
 

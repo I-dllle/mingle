@@ -1,9 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useAuth } from "@/features/auth/hooks/useAuth";
+import { useAuth } from "@/features/user/auth/hooks/useAuth";
 import { Schedule, ScheduleFormData } from "../../types/Schedule";
 import { ScheduleType, ScheduleStatus } from "../../types/Enums";
-import { scheduleService } from "../../services/scheduleService";
+import { scheduleService } from "../../services/scheduleService.ts";
 import { formatDate } from "@/features/schedule/utils/calendarUtils";
 import Modal from "@/features/schedule/components/ui/Modal";
 import { scheduleStatusLabels } from "../../types/scheduleLabels";

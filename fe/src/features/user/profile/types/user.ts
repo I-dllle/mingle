@@ -1,6 +1,6 @@
 import { Department } from "../../auth/types/user";
 
-export type User = {
+export type CurrentUser = {
   id: number;
   name: string;
   nickname: string;

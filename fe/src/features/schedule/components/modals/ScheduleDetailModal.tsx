@@ -6,14 +6,14 @@ import Modal from "@/features/schedule/components/ui/Modal";
 import { Schedule } from "../../types/Schedule";
 import { formatDate } from "@/features/schedule/utils/calendarUtils";
 import StatusBadge from "../ui/StatusBadge";
-import { scheduleService } from "../../services/scheduleService";
+import { scheduleService } from "../../services/scheduleService.ts";
 import { ScheduleFormModal } from "./ScheduleFormModal";
 import { scheduleTypeLabels } from "../../types/scheduleLabels";
 
 // 추가: user 불러오는 함수와 타입
-import { fetchCurrentUser } from "@/features/auth/services/authService";
-import { userService } from "@/features/auth/services/userService";
-import type { User } from "@/features/auth/types/user";
+import { fetchCurrentUser } from "@/features/user/auth/services/authService";
+import { userService } from "@/features/user/profile/services/userService";
+import type { CurrentUser } from "@/features/user/auth/types/user";
 import { ScheduleType } from "@/features/schedule/types/Enums";
 
 interface ScheduleDetailModalProps {
@@ -30,7 +30,7 @@ export default function ScheduleDetailModal({
   const router = useRouter();
 
   // 유저 로딩
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<CurrentUser | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
   // 일정 로딩
