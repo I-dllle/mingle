@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { fetchCurrentUser } from '@/features/auth/services/authService';
-import type { CurrentUser } from '@/features/auth/types/user';
+import { fetchCurrentUser } from '@/features/user/auth/services/authService';
+import type { CurrentUser } from '@/features/user/auth/types/user';
 import { useRouter } from 'next/navigation';
 import ClientDepartmentProvider from './ClientDepartmentProvider';
 import LeftSidebar from '@/components/ui/LeftSidebar';

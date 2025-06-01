@@ -1,5 +1,5 @@
 import './globals.css';
-import { AuthProvider } from '@/features/auth/AuthProvider';
+import { AuthProvider } from '@/features/user/auth/AuthProvider';
 
 export const metadata = {
   title: 'Mingle',

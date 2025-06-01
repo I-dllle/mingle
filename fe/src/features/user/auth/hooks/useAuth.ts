@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
-import { fetchCurrentUser } from "../services/authService";
-import { userService } from "../services/userService";
-import { User } from "../types/user";
+import { useEffect, useState } from 'react';
+import { fetchCurrentUser } from '../services/authService';
+import { userService } from '../../profile/services/userService';
+import { User } from '@/features/user/profile/types/user';
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  //const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -20,7 +20,7 @@ export function useAuth() {
           setUser(profile);
         }
       } catch (e) {
-        console.error("사용자 정보 로드 실패", e);
+        console.error('사용자 정보 로드 실패', e);
         setUser(null);
       } finally {
         setIsLoading(false);
@@ -31,7 +31,7 @@ export function useAuth() {
   return {
     user,
     isLoading,
-    error,
+    // error,
     isAuthenticated: !!user,
   };
 }
