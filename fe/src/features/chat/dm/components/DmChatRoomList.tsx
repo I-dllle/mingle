@@ -1,43 +1,49 @@
 'use client';
 
 import { useDmChatRoomList } from '@/features/chat/dm/services/useDmChatRoomList';
-import { DmChatRoomSummary } from '@/features/chat/dm/types/DmChatRoomSummary';
 import { useRouter } from 'next/navigation';
+import styles from './DmChatRoomList.module.css';
+
+// 시간 포맷 함수 분리
+function formatTime(isoString: string) {
+  if (!isoString) return '';
+  return new Date(isoString).toLocaleString('ko-KR', {
+    year: '2-digit',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
 
 export default function DmChatRoomList() {
   const { rooms } = useDmChatRoomList();
   const router = useRouter();
 
   return (
-    <div style={{ padding: '16px' }}>
-      <h2>DM 채팅방 목록</h2>
+    <div className={styles.container}>
+      {' '}
+      {/* 인라인 → className */}
+      <h2 className={styles.title}>DM 채팅방 목록</h2>
       {rooms.length === 0 ? (
-        <div>채팅방이 없습니다.</div>
+        <div className={styles.empty}>채팅방이 없습니다.</div>
       ) : (
-        <ul style={{ listStyle: 'none', padding: 0 }}>
-          {rooms.map((room: DmChatRoomSummary, idx: number) => (
+        <ul className={styles.list}>
+          {rooms.map((room) => (
             <li
-              key={idx}
-              onClick={() => router.push(`/chat-detail/dm/${room.roomId}`)} // router.push 사용으로 이동
-              style={{
-                padding: '12px',
-                marginBottom: '12px',
-                border: '1px solid #ccc',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                background: room.unreadCount > 0 ? '#fff7e6' : '#f9f9f9', // 안 읽은 메시지 색상 강조
-              }}
+              key={room.roomId} // idx 대신 고유 ID 사용
+              onClick={() => router.push(`/chat-detail/dm/${room.roomId}`)}
+              className={`${styles.item} ${
+                room.unreadCount > 0 ? styles.unread : styles.read
+              }`} // 읽음 여부에 따라 동적 클래스 적용
             >
-              <div style={{ fontWeight: 'bold' }}>{room.opponentNickname}</div>
-              <div>
-                {/* 메시지 형식 구분 */}
-                {room.format === 'ARCHIVE' ? '[자료]' : room.previewMessage}
-                {' | '}
-                {room.sentAt?.slice(0, 16).replace('T', ' ')}
+              <div className={styles.nickname}>{room.opponentNickname}</div>
+              <div className={styles.message}>
+                {room.format === 'ARCHIVE' ? '[자료]' : room.previewMessage} |{' '}
+                {formatTime(room.sentAt)}
               </div>
-              {/* 안 읽은 메시지 수 강조 */}
               {room.unreadCount > 0 && (
-                <div style={{ color: 'red' }}>
+                <div className={styles.unreadCount}>
                   안 읽은 메시지 {room.unreadCount}개
                 </div>
               )}
