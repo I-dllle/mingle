@@ -245,6 +245,7 @@ export default function ContractTable({
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
+                      {" "}
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
                           contract.status
@@ -262,7 +263,7 @@ export default function ContractTable({
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center gap-2">
                         <Link
-                          href={`/panel/contracts/${contract.id}?category=${category}`}
+                          href={`/adminContracts/${contract.id}?category=${category}`}
                           className="flex items-center gap-1 px-3 py-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded transition-colors"
                         >
                           <Eye className="h-4 w-4" />
@@ -287,7 +288,7 @@ export default function ContractTable({
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <span className="text-gray-500">-</span>
-                    </td>
+                    </td>{" "}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
                         {contract.category}
@@ -302,7 +303,7 @@ export default function ContractTable({
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center gap-2">
                         <Link
-                          href={`/panel/contracts/${contract.id}?category=${category}`}
+                          href={`/adminContracts/${contract.id}?category=${category}`}
                           className="flex items-center gap-1 px-3 py-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded transition-colors"
                         >
                           <Eye className="h-4 w-4" />

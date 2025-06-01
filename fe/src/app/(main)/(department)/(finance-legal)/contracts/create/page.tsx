@@ -648,7 +648,6 @@ export default function CreateContractPage() {
                                 newSearches[index].searchName =
                                   e.currentTarget.value;
                                 setTargetUserSearches(newSearches);
-
                                 const value = e.currentTarget.value;
                                 if (value.trim().length >= 2) {
                                   if (searchItem.searchTimer) {
@@ -670,8 +669,11 @@ export default function CreateContractPage() {
                                   clearTimeout(searchItem.searchTimer);
                                 }
 
-                                // 한글 입력 중일 때는 검색하지 않음
-                                if (searchItem.isComposing) {
+                                // 한글 입력 중이거나 이미 사용자가 선택된 상태일 때는 검색하지 않음
+                                if (
+                                  searchItem.isComposing ||
+                                  searchItem.selectedUser
+                                ) {
                                   setTargetUserSearches(newSearches);
                                   return;
                                 }
@@ -681,13 +683,11 @@ export default function CreateContractPage() {
                                     handleTargetUserSearch(index);
                                   }, 500); // 한글 입력을 위해 딜레이 증가
                                   newSearches[index].searchTimer = timer;
+                                  setTargetUserSearches(newSearches);
                                 } else if (value.trim().length === 0) {
                                   newSearches[index].results = [];
-                                  if (searchItem.selectedUser) {
-                                    handleClearTargetUser(index);
-                                  }
+                                  setTargetUserSearches(newSearches);
                                 }
-                                setTargetUserSearches(newSearches);
                               }}
                               onKeyDown={(e) => {
                                 if (e.key === "Enter") {
@@ -810,7 +810,8 @@ export default function CreateContractPage() {
                           clearTimeout(contractPartySearchTimer);
                         }
 
-                        if (isContractPartyComposing) {
+                        // 한글 입력 중이거나 이미 계약 당사자가 선택된 상태일 때는 검색하지 않음
+                        if (isContractPartyComposing || selectedContractParty) {
                           return;
                         }
 
@@ -821,9 +822,6 @@ export default function CreateContractPage() {
                           setContractPartySearchTimer(timer);
                         } else if (value.trim().length === 0) {
                           setContractPartyResults([]);
-                          if (selectedContractParty) {
-                            handleClearContractParty();
-                          }
                         }
                       }}
                       onKeyDown={(e) => {

@@ -1065,7 +1065,7 @@ export default function SettlementsPage() {
         <h3 className="text-lg font-medium text-gray-700 mb-4">관련 페이지</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Link
-            href="../dashboard"
+            href="/revenue/dashboard"
             className="flex items-center justify-center bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors group"
           >
             <svg
@@ -1091,7 +1091,7 @@ export default function SettlementsPage() {
             대시보드
           </Link>
           <Link
-            href="../analytics"
+            href="/revenue/analytics"
             className="flex items-center justify-center bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors group"
           >
             <svg
@@ -1111,7 +1111,7 @@ export default function SettlementsPage() {
             수익 분석
           </Link>
           <Link
-            href="../contracts"
+            href="/revenue/contracts"
             className="flex items-center justify-center bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors group"
           >
             <svg
