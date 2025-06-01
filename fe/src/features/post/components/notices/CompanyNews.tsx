@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { boardService } from "../../services/boardService";
 import type { PostResponseDto } from "../../types/post";
 
@@ -79,8 +80,9 @@ export default function CompanyNews({
           </div>
         ) : (
           apiNews.map((news) => (
-            <div
+            <Link
               key={news.postId}
+              href={`/board/common/notices/${news.postId}`}
               className="bg-white rounded-lg shadow overflow-hidden flex flex-col cursor-pointer hover:shadow-lg transition-shadow"
             >
               {news.imageUrl && news.imageUrl.length > 0 ? (
@@ -108,7 +110,7 @@ export default function CompanyNews({
                   <span>{formatDate(news.createdAt)}</span>
                 </div>
               </div>
-            </div>
+            </Link>
           ))
         )}
       </div>

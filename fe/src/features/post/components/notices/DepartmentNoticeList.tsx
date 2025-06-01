@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { boardService } from "../../services/boardService";
 import { getDepartmentIdByName } from "@/utils/departmentUtils";
 import type { PostResponseDto } from "../../types/post";
@@ -95,14 +96,16 @@ export default function DepartmentNoticeList({
               </li>
             ) : (
               apiNotices.map((notice) => (
-                <li
-                  key={notice.postId}
-                  className="py-2 flex justify-between items-center cursor-pointer hover:bg-gray-50"
-                >
-                  <span className="text-base">{notice.title}</span>
-                  <span className="text-xs text-gray-400">
-                    {formatDate(notice.createdAt)}
-                  </span>
+                <li key={notice.postId}>
+                  <Link
+                    href={`/board/common/notices/${notice.postId}`}
+                    className="py-2 flex justify-between items-center cursor-pointer hover:bg-gray-50 block w-full"
+                  >
+                    <span className="text-base">{notice.title}</span>
+                    <span className="text-xs text-gray-400">
+                      {formatDate(notice.createdAt)}
+                    </span>
+                  </Link>
                 </li>
               ))
             )

@@ -89,13 +89,13 @@ export const departmentMenus: Record<
     },
     {
       id: 17,
-      name: "계약서관리",
+      name: "계약서 관리",
       icon: "document",
       path: "/contracts",
     },
     {
       id: 16,
-      name: "수익분석",
+      name: "정산 관리",
       icon: "chart",
       path: "/revenue",
     },
