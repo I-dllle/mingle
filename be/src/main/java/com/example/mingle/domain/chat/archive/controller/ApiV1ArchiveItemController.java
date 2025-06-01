@@ -24,9 +24,9 @@ public class ApiV1ArchiveItemController {
 
     // 1. 자료 업로드
     @PostMapping
-    public ResponseEntity<String> upload(@ModelAttribute ArchiveUploadRequest request) throws IOException {
-        archiveUploadService.upload(request);
-        return ResponseEntity.ok("업로드 완료");
+    public ResponseEntity<ArchiveItemResponse> upload(@ModelAttribute ArchiveUploadRequest request) throws IOException {
+        ArchiveItemResponse response = archiveUploadService.upload(request); // 서비스 리턴 타입 수정
+        return ResponseEntity.ok(response);
     }
 
     // 2. 채팅방 ID 기준 전체 자료 조회

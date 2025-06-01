@@ -3,20 +3,15 @@
 import { useEffect, useRef } from 'react';
 import { useGroupChat } from '@/features/chat/group/services/useGroupChat';
 import { ChatMessagePayload } from '@/features/chat/common/types/ChatMessagePayload';
+import { MessageFormat } from '@/features/chat/common/types/MessageFormat';
+import {
+  getDateString,
+  getTimeString,
+} from '@/features/chat/common/utils/dateUtils';
 import styles from './GroupChatMessageList.module.css';
 interface GroupChatMessageListProps {
   roomId: number;
 }
-
-// 날짜 문자열 추출 유틸
-const getDateString = (dateStr: string) => dateStr.split('T')[0];
-
-// 시각 포맷 유틸
-const getTimeString = (dateStr: string) =>
-  new Date(dateStr).toLocaleTimeString('ko-KR', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
 
 export default function GroupChatMessageList({
   roomId,
@@ -36,7 +31,7 @@ export default function GroupChatMessageList({
         const isMe = msg.senderId === currentUserId;
         const dateStr = getDateString(msg.createdAt);
         const showDateDivider =
-          idx === 0 || dateStr !== getDateString(messages[idx - 1].createdAt); // 🔧 [수정] allMessages → messages
+          idx === 0 || dateStr !== getDateString(messages[idx - 1].createdAt);
 
         return (
           <div key={`${msg.createdAt}-${msg.senderId}-${idx}`}>
@@ -61,7 +56,43 @@ export default function GroupChatMessageList({
               <div className={styles.senderLabel}>
                 {isMe ? '나' : `사용자 ${msg.senderId}`}
               </div>
-              <div className={styles.messageText}>{msg.content}</div>
+
+              {/* 메시지 포맷 분기 처리 */}
+              <div className={styles.messageText}>
+                {msg.format === MessageFormat.ARCHIVE ? (
+                  <>
+                    {/* 파일명만 출력 */}
+                    <a
+                      href={msg.content}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: '#1890ff', textDecoration: 'underline' }}
+                    >
+                      📎 {msg.content.split('/').pop()} {/* 파일명만 출력 */}
+                    </a>
+
+                    {/* 태그 정보 표시 */}
+                    {!!msg.tagNames && msg.tagNames.length > 0 && (
+                      <div
+                        style={{
+                          marginTop: '4px',
+                          fontSize: '12px',
+                          color: '#999',
+                        }}
+                      >
+                        {msg.tagNames.map((tag) => (
+                          <span key={tag} style={{ marginRight: '6px' }}>
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  msg.content
+                )}
+              </div>
+
               <div className={styles.timeStamp}>
                 {getTimeString(msg.createdAt)}
               </div>
@@ -69,8 +100,6 @@ export default function GroupChatMessageList({
           </div>
         );
       })}
-
-      {/* 자동 스크롤 타겟 */}
       <div ref={bottomRef} />
     </div>
   );

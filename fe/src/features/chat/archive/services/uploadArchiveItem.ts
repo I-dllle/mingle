@@ -3,6 +3,7 @@
 import { uploadClient } from '@/lib/api/uploadClient'; // 새로 만든 업로드 전용 client
 import { ChatRoomType } from '@/features/chat/common/types/ChatRoomType';
 import { MessageFormat } from '@/features/chat/common/types/MessageFormat';
+import type { ArchiveItemResponse } from '@/features/chat/archive/types/ArchiveItemResponse';
 
 interface UploadArchiveParams {
   roomId: number;
@@ -16,7 +17,7 @@ export async function uploadArchiveItem({
   file,
   uploaderId,
   chatType,
-}: UploadArchiveParams) {
+}: UploadArchiveParams): Promise<ArchiveItemResponse> {
   const formData = new FormData();
 
   formData.append('file', file);
