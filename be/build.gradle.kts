@@ -36,7 +36,8 @@ dependencies {
 	testImplementation("org.springframework.security:spring-security-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
-	implementation("org.springframework.boot:spring-boot-starter-actuator")
+//	implementation("org.springframework.boot:spring-boot-starter-actuator")
+	implementation ("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
 	// 더미 데이터 생성을 위한 라이브러리
 	implementation("net.datafaker:datafaker:2.1.0")

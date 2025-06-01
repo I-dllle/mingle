@@ -2,17 +2,22 @@ package com.example.mingle.domain.chat.group.controller;
 
 import com.example.mingle.domain.chat.group.dto.GroupChatRoomCreateRequest;
 import com.example.mingle.domain.chat.group.dto.GroupChatRoomResponse;
+import com.example.mingle.domain.chat.group.dto.GroupChatRoomSummaryResponse;
 import com.example.mingle.domain.chat.group.dto.GroupChatMessageResponse;
 import com.example.mingle.domain.chat.common.enums.ChatScope;
 import com.example.mingle.domain.chat.group.service.GroupChatRoomService;
 import com.example.mingle.domain.chat.group.service.GroupChatMessageService;
 import com.example.mingle.global.security.auth.SecurityUser;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+
+import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -26,14 +31,18 @@ public class ApiV1GroupChatController {
 
     /**
      * POST
-     * 채팅방 생성 (Team Chat / Project Chat 공통)
+     * 그룹 채팅방 생성 API(Team Chat / Project Chat 공통)
+     * - 요청 body: GroupChatRoomCreateRequest
+     * - 인증된 사용자(@AuthenticationPrincipal) 기준 creatorId 전달
      */
+    @Operation(summary = "그룹 채팅방 생성")
     @PostMapping
-    public GroupChatRoomResponse createGroupChatRoom(
-            @RequestBody GroupChatRoomCreateRequest request,
+    public ResponseEntity<GroupChatRoomResponse> createGroupChatRoom(
+            @RequestBody @Valid GroupChatRoomCreateRequest request,
             @AuthenticationPrincipal SecurityUser loginUser
     ) {
-        return groupChatRoomService.createRoom(request, loginUser.getId());
+        GroupChatRoomResponse response = groupChatRoomService.createRoom(request, loginUser.getId());
+        return ResponseEntity.ok(response);
     }
 
 
@@ -50,6 +59,22 @@ public class ApiV1GroupChatController {
             @AuthenticationPrincipal SecurityUser loginUser
     ) {
         return groupChatRoomService.findMyRooms(loginUser.getId(), scope);
+    }
+
+
+
+    /**
+     * GET
+     * 채팅방 요약 목록 조회 (자료방/채팅방 구분된 요약 UI용)
+     * - 프론트: 사이드바에서 채팅방 리스트 간략히 띄우는 용도
+     * - 반환 형태: GroupChatRoomSummaryResponse (roomId, name, previewMessage 등)
+     */
+    @GetMapping("/summaries")
+    public List<GroupChatRoomSummaryResponse> getGroupChatRoomSummaries(
+            @RequestParam ChatScope scope,
+            @AuthenticationPrincipal SecurityUser loginUser
+    ) {
+        return groupChatRoomService.getGroupChatRoomSummaries(loginUser.getId(), scope);
     }
 
 

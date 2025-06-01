@@ -6,6 +6,7 @@ import com.example.mingle.domain.chat.group.dto.GroupChatMessageResponse;
 import com.example.mingle.domain.chat.group.entity.GroupChatMessage;
 import com.example.mingle.domain.chat.group.repository.GroupChatMessageRepository;
 import com.example.mingle.global.websocket.WebSocketSessionManager;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,8 @@ public class GroupChatMessageServiceImpl implements GroupChatMessageService {
 
     private final GroupChatMessageRepository groupChatMessageRepository;
     private final WebSocketSessionManager sessionManager;
+    private final ObjectMapper objectMapper;
+
 
     @Override
     public void saveAndBroadcast(ChatMessagePayload payload) {
@@ -32,12 +35,15 @@ public class GroupChatMessageServiceImpl implements GroupChatMessageService {
                 .content(payload.getContent())
                 .format(payload.getFormat())
                 .senderId(payload.getSenderId())
+                .createdAt(LocalDateTime.now())
                 .build();
         groupChatMessageRepository.save(message);
 
         // 2. 동일 채팅방 사용자에게 메시지 전송
         for (WebSocketSession session : sessionManager.getAllUserSessions().values()) {
             try {
+                // content만 보내는 대신 payload 전체를 JSON으로 변환
+                String json = objectMapper.writeValueAsString(payload);
                 session.sendMessage(new TextMessage(payload.getContent()));
             } catch (Exception e) {
                 log.warn("메시지 전송 실패", e);
@@ -50,16 +56,16 @@ public class GroupChatMessageServiceImpl implements GroupChatMessageService {
     // 채팅방 메시지 페이징 조회
     @Override
     public List<GroupChatMessageResponse> getMessagesByRoomIdBefore(Long roomId, LocalDateTime cursor) {
-        // ✅ cursor가 null이면 현재 시각을 기준으로 조회 (최초 로딩 시)
+        // cursor가 null이면 현재 시각을 기준으로 조회 (최초 로딩 시)
         if (cursor == null) {
             cursor = LocalDateTime.now();
         }
 
-        // ✅ Repository에서 메시지 조회
+        // Repository에서 메시지 조회
         List<GroupChatMessage> messages = groupChatMessageRepository
                 .findTop20ByChatRoomIdAndCreatedAtBeforeOrderByCreatedAtDesc(roomId, cursor);
 
-        // ✅ DTO 변환 후 반환
+        // DTO 변환 후 반환
         return messages.stream()
                 .map(GroupChatMessageResponse::from)
                 .toList();

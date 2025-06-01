@@ -1,261 +1,244 @@
 "use client";
 
-import { useState } from "react";
-import PostList from "@/features/post/components/PostList";
-import PostSearch from "@/features/post/components/PostSearch";
-import type { Post } from "@/features/post/types/post";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { postService } from "@/features/post/services/postService";
+import {
+  PostResponseDto,
+  BusinessDocumentCategory,
+} from "@/features/post/types/post";
 import { useDepartment } from "@/context/DepartmentContext";
-import { departmentMenus } from "@/constants/PostMenu";
-import { FiSearch } from "react-icons/fi";
-import { IoChevronDown } from "react-icons/io5";
+import { getDepartmentIdByName } from "@/utils/departmentUtils";
 
-const mockPosts: Post[] = [
-  {
-    id: 1,
-    title: "[태그:팀소개] 우리 팀을 소개합니다",
-    content: "팀의 주요 역할과 멤버를 소개합니다.",
-    author: "홍길동",
-    createdAt: "2024-03-10",
-    tags: ["팀소개"],
-  },
-  {
-    id: 2,
-    title: "[태그:공지] 회의 일정 안내",
-    content: "다음 주 회의 일정 공지입니다.",
-    author: "김철수",
-    createdAt: "2024-03-12",
-    tags: ["공지"],
-  },
-];
+const BusinessDocuments: React.FC = () => {
+  const searchParams = useSearchParams();
+  const { name: departmentName } = useDepartment();
 
-const sortOptions = [
-  { value: "desc", label: "최신순" },
-  { value: "asc", label: "오래된순" },
-];
+  // URL에서 deptId 파라미터 가져오기
+  const urlDeptId = searchParams.get("deptId");
 
-export default function TeamBoardPage() {
-  const { name: userDepartment } = useDepartment();
-  const menus = departmentMenus[userDepartment] || departmentMenus.default;
-  const currentMenu = menus.find((menu) => menu.path === "/team-composition");
-  const boardName = currentMenu?.name || "게시판이름";
-
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchInput, setSearchInput] = useState("");
-  const [posts, setPosts] = useState<Post[]>(mockPosts);
-  const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
-  const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const postsPerPage = 10;
-  const router = useRouter();
-
-  // 검색 필터링
-  const filteredBySearch = searchQuery.trim()
-    ? posts.filter(
-        (post) =>
-          post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          post.content.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : posts;
-
-  // 정렬
-  const sortedPosts = [...filteredBySearch].sort((a, b) => {
-    if (sortOrder === "desc") {
-      return b.createdAt.localeCompare(a.createdAt);
-    } else {
-      return a.createdAt.localeCompare(b.createdAt);
-    }
-  });
-
-  // 페이지네이션
-  const totalPages = 5; // 더미로 5페이지
-  const paginatedPosts = sortedPosts.slice(
-    (currentPage - 1) * postsPerPage,
-    currentPage * postsPerPage
+  const [selectedTab, setSelectedTab] = useState<"meeting" | "resource">(
+    "meeting"
   );
+  const [posts, setPosts] = useState<PostResponseDto[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // 검색 버튼 클릭 시에만 검색 실행
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSearchQuery(searchInput);
-    setCurrentPage(1);
-  };
+  // 탭 설정
+  const tabs = [
+    {
+      id: "meeting" as const,
+      label: "회의록",
+      category: BusinessDocumentCategory.MEETING_MINUTES,
+    },
+    {
+      id: "resource" as const,
+      label: "업무문서",
+      category: BusinessDocumentCategory.RESOURCE,
+    },
+  ];
 
-  // 정렬 드롭다운 토글
-  const handleSortDropdown = () => {
-    setSortDropdownOpen((prev) => !prev);
-  };
-
-  // 정렬 옵션 선택
-  const handleSortSelect = (value: "desc" | "asc") => {
-    setSortOrder(value);
-    setSortDropdownOpen(false);
-  };
-
-  // 페이지 이동
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  // 페이지네이션 범위 계산 (현재 페이지 기준 ±2)
-  const getPageNumbers = () => {
-    const range = 2;
-    let start = Math.max(1, currentPage - range);
-    let end = Math.min(totalPages, currentPage + range);
-    if (end - start < range * 2) {
-      if (start === 1) end = Math.min(totalPages, start + range * 2);
-      if (end === totalPages) start = Math.max(1, end - range * 2);
+  // 부서 ID 결정 (URL 파라미터 우선, 없으면 사용자 컨텍스트에서)
+  const getDepartmentId = (): number | null => {
+    if (urlDeptId) {
+      const deptId = parseInt(urlDeptId, 10);
+      if (!isNaN(deptId)) {
+        console.log("URL에서 부서 ID 사용:", deptId);
+        return deptId;
+      }
     }
-    const pages = [];
-    for (let i = start; i <= end; i++) pages.push(i);
-    return pages;
+
+    if (departmentName) {
+      const deptId = getDepartmentIdByName(departmentName);
+      console.log("사용자 컨텍스트에서 부서 ID 사용:", {
+        departmentName,
+        deptId,
+      });
+      return deptId;
+    }
+
+    console.log("부서 ID를 찾을 수 없습니다");
+    return null;
   };
+
+  // 게시글 로드 함수
+  const loadPosts = async () => {
+    const deptId = getDepartmentId();
+
+    if (!deptId) {
+      setError("부서 정보를 찾을 수 없습니다.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const currentTab = tabs.find((tab) => tab.id === selectedTab);
+      const category = currentTab?.category;
+
+      console.log("업무자료 게시글 로드 시작:", {
+        deptId,
+        category,
+        selectedTab,
+      });
+
+      const result = await postService.getBusinessDocuments(deptId, category);
+      console.log("업무자료 게시글 로드 완료:", result);
+
+      setPosts(result || []);
+    } catch (err) {
+      console.error("업무자료 게시글 로드 오류:", err);
+      setError(
+        err instanceof Error ? err.message : "게시글을 불러오는데 실패했습니다."
+      );
+      setPosts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 탭 변경 시 게시글 다시 로드
+  useEffect(() => {
+    loadPosts();
+  }, [selectedTab, urlDeptId, departmentName]);
+
+  // 게시글 클릭 핸들러
+  const handlePostClick = (postId: number) => {
+    window.location.href = `/board/common/businessDocuments/${postId}`;
+  }; // 게시글 작성 버튼 클릭
+  const handleCreatePost = () => {
+    const deptId = getDepartmentId();
+
+    if (deptId) {
+      window.location.href = `/board/postWrite?deptId=${deptId}&postTypeId=2`;
+    } else {
+      setError("부서 정보를 찾을 수 없습니다.");
+    }
+  };
+
+  // 로딩 상태
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span className="ml-2 text-gray-600">게시글을 불러오는 중...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold mb-6">{boardName}</h1>
-      {/* 검색 바 + 정렬 드롭다운 */}
-      <div className="flex items-center justify-between mb-4">
-        <form onSubmit={handleSearch} className="flex items-center gap-2">
-          <div className="relative w-80">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              <FiSearch />
-            </span>
-            <input
-              type="text"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="검색어를 입력하세요"
-              className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-6xl mx-auto">
+        {/* 헤더 */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            업무자료 게시판
+          </h1>
+          <p className="text-gray-600">
+            회의록과 업무문서를 확인하고 관리할 수 있습니다.
+          </p>
+        </div>
+        {/* 오류 메시지 */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-600">{error}</p>
           </div>
-          <button
-            type="submit"
-            className="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600"
-          >
-            검색
-          </button>
-        </form>
-        {/* 정렬 드롭다운 */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={handleSortDropdown}
-            className="flex items-center px-4 py-2 border rounded-lg bg-white text-gray-700 font-medium shadow-sm hover:bg-gray-50 focus:outline-none"
-          >
-            {sortOptions.find((opt) => opt.value === sortOrder)?.label}
-            <IoChevronDown className="ml-2 text-gray-400" />
-          </button>
-          {sortDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-32 bg-white border rounded-lg shadow-lg z-20">
-              {sortOptions.map((opt) => (
-                <button
-                  key={opt.value}
-                  onClick={() => handleSortSelect(opt.value as "desc" | "asc")}
-                  className={`w-full text-left px-4 py-2 hover:bg-gray-100 ${
-                    sortOrder === opt.value ? "text-blue-600" : ""
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
+        )}{" "}
+        {/* 탭 메뉴 */}
+        <div className="bg-white rounded-lg shadow-sm mb-6">
+          <div className="border-b border-gray-200">
+            <div className="flex justify-between items-center">
+              <div className="flex space-x-8">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setSelectedTab(tab.id)}
+                    className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors ${
+                      selectedTab === tab.id
+                        ? "border-blue-500 text-blue-600"
+                        : "border-transparent text-gray-500 hover:text-gray-700"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* 글 작성 버튼 */}
+              <button
+                onClick={handleCreatePost}
+                className="mr-6 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                글 작성
+              </button>
             </div>
-          )}
-        </div>
-      </div>
-      {/* 글 목록 (테이블 스타일) */}
-      <div className="overflow-x-auto relative">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                제목
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                작성자
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                작성일
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {paginatedPosts.map((post) => (
-              <tr key={post.id}>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {/* 태그가 있으면 pill 형태로 예쁘게 표시 */}
-                  <div className="flex gap-2 items-center">
-                    {post.tags && post.tags.length > 0 && (
-                      <div className="flex gap-1">
-                        {post.tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className={`px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600`}
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    <span>{post.title.replace(/\[태그:.*?\]\s*/, "")}</span>
+          </div>
+        </div>{" "}
+        {/* 게시글 목록 */}
+        <div className="bg-white rounded-lg shadow-sm">
+          <div className="p-6">
+            {/* 섹션 제목 */}
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">
+                {tabs.find((tab) => tab.id === selectedTab)?.label}
+              </h2>
+            </div>
+
+            {/* 게시글 리스트 */}
+            {posts.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-gray-400 mb-2">
+                  <svg
+                    className="w-12 h-12 mx-auto"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 0v12h8V4H6z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <p className="text-gray-500">
+                  {tabs.find((tab) => tab.id === selectedTab)?.label} 게시글이
+                  없습니다.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {posts.map((post) => (
+                  <div
+                    key={post.postId}
+                    onClick={() => handlePostClick(post.postId)}
+                    className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="text-lg font-medium text-gray-900 hover:text-blue-600">
+                        {post.title}
+                      </h3>
+                      <span className="text-sm text-gray-500 ml-4">
+                        {new Date(post.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm text-gray-600">
+                      <span>작성자: {post.writerName}</span>
+                      <span>{post.departmentName}</span>
+                    </div>
                   </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">{post.author}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {post.createdAt}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {/* 페이지네이션: 하단 중앙 */}
-        <div className="flex justify-center mt-6 items-center gap-1">
-          <button
-            onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-            disabled={currentPage === 1}
-            className={`px-2 py-1 rounded-full border text-sm font-medium ${
-              currentPage === 1
-                ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
-                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-            }`}
-          >
-            &#x2039;
-          </button>
-          {getPageNumbers().map((page) => (
-            <button
-              key={page}
-              onClick={() => handlePageChange(page)}
-              className={`mx-1 px-3 py-1 rounded-full border text-sm font-medium ${
-                currentPage === page
-                  ? "bg-indigo-500 text-white border-indigo-500"
-                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-              }`}
-            >
-              {page}
-            </button>
-          ))}
-          <button
-            onClick={() =>
-              handlePageChange(Math.min(totalPages, currentPage + 1))
-            }
-            disabled={currentPage === totalPages}
-            className={`px-2 py-1 rounded-full border text-sm font-medium ${
-              currentPage === totalPages
-                ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
-                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-            }`}
-          >
-            &#x203A;
-          </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-      {/* 글쓰기 버튼: 오른쪽 하단 고정 */}
-      <button
-        className="fixed bottom-10 right-10 px-6 py-3 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 z-50"
-        onClick={() => router.push("/board/team/write")}
-      >
-        글쓰기
-      </button>
     </div>
   );
-}
+};
+
+export default BusinessDocuments;

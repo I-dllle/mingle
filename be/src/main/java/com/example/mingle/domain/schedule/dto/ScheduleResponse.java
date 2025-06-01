@@ -26,6 +26,5 @@ public class ScheduleResponse {
     @Schema(description = "메모", example = "회의 자료 준비") private String memo;
     @Schema(description = "일정 타입", example = "DEPARTMENT") private ScheduleType scheduleType;
     @Schema(description = "일정 상태", example = "중요회의") private ScheduleStatus scheduleStatus;
-    @Schema(description = "부서 이름", example = "마케팅") private String departmentName;
-    @Schema(description = "부서 Id", example = "1") private Long departmentId;
+    @Schema(description = "부서 ID", example = "1") private Long departmentId;
 }

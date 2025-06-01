@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 /**
  * WebSocket으로 주고받는 채팅 메시지의 구조를 정의한 DTO
  * - 그룹/DM 공용
@@ -38,12 +40,16 @@ public class ChatMessagePayload {
     @NotNull(message = "채팅방 타입(chatType)은 필수입니다.")
     private ChatRoomType roomType;      // GROUP, DIRECT
 
-    public ChatMessagePayload(Long roomId, Long senderId, Long receiverId, String content, MessageFormat format, ChatRoomType roomType) {
+    @NotNull(message = "메시지 생성 시각은 필수입니다.")
+    private LocalDateTime createdAt; // 메시지 생성 시각 (프론트 or 서버 기준)
+
+    public ChatMessagePayload(Long roomId, Long senderId, Long receiverId, String content, MessageFormat format, ChatRoomType roomType, LocalDateTime createdAt) {
         this.roomId = roomId;
         this.senderId = senderId;
         this.receiverId = receiverId;
         this.content = content;
         this.format = format;
         this.roomType = roomType;
+        this.createdAt = createdAt;
     }
 }

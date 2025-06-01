@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from "react";
 import { RoomSelector } from "@/features/room/components/common/RoomSelector";
 import { formatDate, formatTime } from "@/lib/date";
-import type { ReservationFormInput } from "@/features/reservation/types/reservation";
+import type { ReservationFormInput } from "@/features/reservation/types/Reservation";
 import * as reservationDateUtils from "@/features/reservation/utils/reservationDateUtils";
 
 interface Props {

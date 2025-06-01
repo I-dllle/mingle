@@ -1,62 +1,80 @@
 "use client";
 
-import { useState } from "react";
-import PostList from "@/features/post/components/PostList";
-import PostSearch from "@/features/post/components/PostSearch";
-import type { Post } from "@/features/post/types/post";
+import { useState, useEffect } from "react";
+import type { Post, PostResponseDto } from "@/features/post/types/post";
 import { useRouter } from "next/navigation";
 import { useDepartment } from "@/context/DepartmentContext";
-import { departmentMenus } from "@/constants/PostMenu";
+import { departmentMenus } from "@/context/departmentMenus";
+import { getDepartmentIdByName } from "@/utils/departmentUtils";
+import { postService } from "@/features/post/services/postService";
 import { FiSearch } from "react-icons/fi";
 import { IoChevronDown } from "react-icons/io5";
-
-const mockPosts: Post[] = [
-  {
-    id: 1,
-    title: "[태그:팀소개] 우리 팀을 소개합니다",
-    content: "팀의 주요 역할과 멤버를 소개합니다.",
-    author: "홍길동",
-    createdAt: "2024-03-10",
-    tags: ["팀소개"],
-  },
-  {
-    id: 2,
-    title: "[태그:공지] 회의 일정 안내",
-    content: "다음 주 회의 일정 공지입니다.",
-    author: "김철수",
-    createdAt: "2024-03-12",
-    tags: ["공지"],
-  },
-];
 
 const sortOptions = [
   { value: "desc", label: "최신순" },
   { value: "asc", label: "오래된순" },
 ];
 
-export default function TeamBoardPage() {
+export default function ArtistReportPage() {
   const { name: userDepartment } = useDepartment();
   const menus = departmentMenus[userDepartment] || departmentMenus.default;
   const currentMenu = menus.find((menu) => menu.path === "/artist-report");
-  const boardName = currentMenu?.name || "게시판이름";
+  const boardName = currentMenu?.name || "활동보고서";
 
-  const isCurrentDepartment = !!userDepartment;
-  const currentDepartmentMenu = isCurrentDepartment
-    ? departmentMenus[userDepartment].find(
-        (menu) => String(menu.id) === "artist-report"
-      )
-    : null;
+  // 디버깅용
+  console.log("User Department:", userDepartment);
+  console.log("Available menus:", menus);
+  console.log("Current menu:", currentMenu);
+  console.log("Looking for path:", "/artist-report");
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchInput, setSearchInput] = useState("");
-  const [posts, setPosts] = useState<Post[]>(mockPosts);
+  const [posts, setPosts] = useState<PostResponseDto[]>([]);
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [navigating, setNavigating] = useState(false);
   const postsPerPage = 10;
   const router = useRouter();
+  // 게시글 클릭 핸들러 (상세 보기로 이동)
+  const handlePostClick = async (postId: number) => {
+    console.log("게시글 클릭됨, postId:", postId);
 
-  // 검색 필터링
+    try {
+      setNavigating(true);
+      const targetUrl = `/artist-report/${postId}`;
+      window.location.href = targetUrl;
+    } catch (error) {
+      setNavigating(false);
+    }
+  };
+
+  // 게시글 데이터 로드
+  const loadPosts = async (page: number = 1) => {
+    setLoading(true);
+    try {
+      const deptId = getDepartmentIdByName(userDepartment);
+      // 메뉴 ID를 26으로 설정하여 부서별 게시글 조회
+      const response = await postService.getPostsByMenu(deptId, 25);
+      setPosts(response);
+      // 새로운 API는 페이지네이션이 없으므로 전체를 한 번에 가져옴
+      setTotalPages(1);
+    } catch (error) {
+      console.error("게시글 로드 실패:", error);
+      setPosts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 컴포넌트 마운트 시 데이터 로드
+  useEffect(() => {
+    loadPosts(currentPage);
+  }, [userDepartment]); // currentPage 의존성 제거 (페이지네이션 없음)
+
+  // 검색 필터링 및 페이지네이션 처리
   const filteredBySearch = searchQuery.trim()
     ? posts.filter(
         (post) =>
@@ -68,18 +86,26 @@ export default function TeamBoardPage() {
   // 정렬
   const sortedPosts = [...filteredBySearch].sort((a, b) => {
     if (sortOrder === "desc") {
-      return b.createdAt.localeCompare(a.createdAt);
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     } else {
-      return a.createdAt.localeCompare(b.createdAt);
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
     }
   });
 
-  // 페이지네이션
-  const totalPages = 5; // 더미로 5페이지
-  const paginatedPosts = sortedPosts.slice(
-    (currentPage - 1) * postsPerPage,
-    currentPage * postsPerPage
-  );
+  // 클라이언트 사이드 페이지네이션
+  const totalFilteredPosts = sortedPosts.length;
+  const calculatedTotalPages = Math.ceil(totalFilteredPosts / postsPerPage);
+  const startIndex = (currentPage - 1) * postsPerPage;
+  const endIndex = startIndex + postsPerPage;
+  const paginatedPosts = sortedPosts.slice(startIndex, endIndex);
+
+  // totalPages 업데이트
+  useEffect(() => {
+    setTotalPages(calculatedTotalPages);
+    if (currentPage > calculatedTotalPages && calculatedTotalPages > 0) {
+      setCurrentPage(1);
+    }
+  }, [calculatedTotalPages, currentPage]);
 
   // 검색 버튼 클릭 시에만 검색 실행
   const handleSearch = (e: React.FormEvent) => {
@@ -118,6 +144,16 @@ export default function TeamBoardPage() {
     return pages;
   };
 
+  // 날짜 포맷팅 함수
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("ko-KR", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+  };
+
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold mb-6">{boardName}</h1>
@@ -143,6 +179,7 @@ export default function TeamBoardPage() {
             검색
           </button>
         </form>
+
         {/* 정렬 드롭다운 */}
         <div className="relative">
           <button
@@ -170,101 +207,181 @@ export default function TeamBoardPage() {
           )}
         </div>
       </div>
+      {/* 로딩 상태 */}
+      {(loading || navigating) && (
+        <div className="flex justify-center items-center py-8">
+          <div className="flex items-center space-x-2 text-gray-500">
+            <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-blue-600"></div>
+            <span>{navigating ? "페이지 이동 중..." : "로딩 중..."}</span>
+          </div>
+        </div>
+      )}
       {/* 글 목록 (테이블 스타일) */}
-      <div className="overflow-x-auto relative">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                제목
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                작성자
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                작성일
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {paginatedPosts.map((post) => (
-              <tr key={post.id}>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {/* 태그가 있으면 pill 형태로 예쁘게 표시 */}
-                  <div className="flex gap-2 items-center">
-                    {post.tags && post.tags.length > 0 && (
-                      <div className="flex gap-1">
-                        {post.tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className={`px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600`}
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    <span>{post.title.replace(/\[태그:.*?\]\s*/, "")}</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">{post.author}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {post.createdAt}
-                </td>
+      {!loading && (
+        <div className="overflow-x-auto relative">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  제목
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  작성자
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  작성일
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {paginatedPosts.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={3}
+                    className="px-6 py-4 text-center text-gray-500"
+                  >
+                    게시글이 없습니다.
+                  </td>
+                </tr>
+              ) : (
+                paginatedPosts.map((post) => (
+                  <tr
+                    key={post.postId}
+                    className="hover:bg-gray-50 cursor-pointer transition-colors duration-150"
+                    onClick={(e) => {
+                      console.log("테이블 행 클릭됨");
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handlePostClick(post.postId);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        console.log("키보드 이벤트 발생");
+                        e.preventDefault();
+                        handlePostClick(post.postId);
+                      }
+                    }}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`${post.title} 상세보기`}
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex gap-2 items-center">
+                        <span className="text-gray-900 hover:text-blue-600 font-medium">
+                          {post.title}
+                        </span>
+                        {post.imageUrl && post.imageUrl.length > 0 && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                            📷 {post.imageUrl.length}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-700">
+                      {post.writerName}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-500">
+                      {formatDate(post.createdAt)}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}{" "}
       {/* 글쓰기 버튼: 테이블 아래, 페이지네이션 위에 flow로 배치 */}
       <div className="flex justify-end my-4">
+        {" "}
         <button
           className="px-6 py-3 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600"
-          onClick={() => router.push("/board/postWrite")}
+          onClick={(e) => {
+            try {
+              console.log("=== 글쓰기 버튼 클릭 시작 ===");
+              e.preventDefault();
+              e.stopPropagation();
+
+              const deptId = getDepartmentIdByName(userDepartment);
+              const currentMenuId = currentMenu?.id;
+              const currentPath = window.location.pathname;
+
+              // 디버깅 로그
+              console.log("Button clicked!");
+              console.log("deptId:", deptId);
+              console.log("currentMenuId:", currentMenuId);
+              console.log("userDepartment:", userDepartment);
+
+              // 필수 값 검증
+              if (!deptId || !currentMenuId) {
+                console.error("필수 값이 누락되었습니다:", {
+                  deptId,
+                  currentMenuId,
+                });
+                alert(
+                  "부서 정보 또는 메뉴 정보가 없습니다. 페이지를 새로고침해보세요."
+                );
+                return;
+              }
+
+              const url = `/board/postWrite?deptId=${deptId}&postTypeId=${currentMenuId}&redirect=${encodeURIComponent(
+                currentPath
+              )}`;
+              console.log("Generated URL:", url);
+
+              // RSC 오류를 우회하기 위해 브라우저 네이티브 네비게이션 사용
+              console.log("브라우저 네이티브 네비게이션 사용");
+              window.location.href = url;
+            } catch (error) {
+              console.error("글쓰기 버튼 클릭 중 오류:", error);
+              alert("페이지 이동 중 오류가 발생했습니다.");
+            }
+          }}
         >
           글쓰기
         </button>
       </div>
       {/* 페이지네이션: 하단 중앙 */}
-      <div className="flex justify-center mt-6 items-center gap-1">
-        <button
-          onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-          disabled={currentPage === 1}
-          className={`px-2 py-1 rounded-full border text-sm font-medium ${
-            currentPage === 1
-              ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
-              : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-          }`}
-        >
-          &#x2039;
-        </button>
-        {getPageNumbers().map((page) => (
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-6 items-center gap-1">
           <button
-            key={page}
-            onClick={() => handlePageChange(page)}
-            className={`mx-1 px-3 py-1 rounded-full border text-sm font-medium ${
-              currentPage === page
-                ? "bg-indigo-500 text-white border-indigo-500"
+            onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
+            className={`px-2 py-1 rounded-full border text-sm font-medium ${
+              currentPage === 1
+                ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
                 : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
             }`}
           >
-            {page}
+            &#x2039;
           </button>
-        ))}
-        <button
-          onClick={() =>
-            handlePageChange(Math.min(totalPages, currentPage + 1))
-          }
-          disabled={currentPage === totalPages}
-          className={`px-2 py-1 rounded-full border text-sm font-medium ${
-            currentPage === totalPages
-              ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
-              : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-          }`}
-        >
-          &#x203A;
-        </button>
-      </div>
+          {getPageNumbers().map((page) => (
+            <button
+              key={page}
+              onClick={() => handlePageChange(page)}
+              className={`mx-1 px-3 py-1 rounded-full border text-sm font-medium ${
+                currentPage === page
+                  ? "bg-indigo-500 text-white border-indigo-500"
+                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+              }`}
+            >
+              {page}
+            </button>
+          ))}
+          <button
+            onClick={() =>
+              handlePageChange(Math.min(totalPages, currentPage + 1))
+            }
+            disabled={currentPage === totalPages}
+            className={`px-2 py-1 rounded-full border text-sm font-medium ${
+              currentPage === totalPages
+                ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+            }`}
+          >
+            &#x203A;
+          </button>
+        </div>
+      )}
     </div>
   );
 }

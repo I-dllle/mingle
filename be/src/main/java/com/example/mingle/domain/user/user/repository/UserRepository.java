@@ -30,6 +30,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     //부서명으로 사용자 목록 찾기
     List<User> findByDepartment_DepartmentName(String departmentName);
 
+    List<User> findByNicknameContaining(String keyword);
+
     //사용자를 이름으로 찾기
     Optional<User> findByName(String name);
 

@@ -2,6 +2,8 @@
 
 import styles from "./Sidebar.module.css";
 import { FiCalendar, FiClock, FiBell, FiFileText, FiBox } from "react-icons/fi";
+import { useDepartment } from "@/context/DepartmentContext";
+import { getDepartmentIdByName } from "@/utils/departmentUtils";
 
 const iconMenus = [
   {
@@ -31,6 +33,7 @@ const iconMenus = [
   {
     id: "documents",
     title: "업무자료",
+    name: "업무자료",
     icon: <FiFileText className="w-5 h-5" />,
     path: "/board/common/businessDocuments",
   },
@@ -67,13 +70,28 @@ const iconMenus = [
 interface IconMenuItem {
   id: string;
   title: string;
+  name?: string;
   icon: React.ReactNode;
   path: string;
 }
 
 export default function LeftSidebar() {
+  const { name: departmentName } = useDepartment();
+
   // 아이콘 클릭 핸들러 (라우팅 등)
   const handleIconMenuClick = (item: IconMenuItem) => {
+    // 업무자료 메뉴인 경우 부서 ID를 동적으로 추가
+    if (item.name === "업무자료") {
+      if (departmentName) {
+        const departmentId = getDepartmentIdByName(departmentName);
+        if (departmentId) {
+          window.location.href = `${item.path}?deptId=${departmentId}`;
+          return;
+        }
+      }
+      console.error("부서 정보를 찾을 수 없습니다:", { departmentName });
+    }
+
     window.location.href = item.path;
   };
 

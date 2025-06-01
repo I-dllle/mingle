@@ -1,10 +1,7 @@
 "use client";
 
 import { useDepartment } from "@/context/DepartmentContext";
-import {
-  departmentMenus,
-  MenuItem as PostMenuItem,
-} from "@/constants/PostMenu";
+import { departmentMenus } from "@/context/departmentMenus";
 import styles from "./Sidebar.module.css";
 import Link from "next/link";
 

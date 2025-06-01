@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { reservationService } from "@/features/reservation/services/reservationService";
 import { ReservationForm } from "@/features/reservation/components/ReservationForm";
-import { Reservation } from "@/features/reservation/types/reservation";
+import { Reservation } from "@/features/reservation/types/Reservation";
 
 export default function EditReservationPage({
   params,

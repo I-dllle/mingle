@@ -1,3 +1,4 @@
+// 전체 정보 반환
 package com.example.mingle.domain.user.user.dto;
 
 import com.example.mingle.domain.user.user.entity.User;
@@ -18,6 +19,7 @@ public class UserResponseDto {
     private String imageUrl;
     private UserRole role;
     private UserStatus status;
+    private Long departmentId;
     private String departmentName;
 
     public static UserResponseDto fromEntity(User user) {
@@ -30,6 +32,9 @@ public class UserResponseDto {
                 .imageUrl(user.getImageUrl())
                 .role(user.getRole())
                 .status(user.getStatus())
+                .departmentId(
+                        user.getDepartment() != null ? user.getDepartment().getId() : null
+                )
                 .departmentName(
                         user.getDepartment() != null ? user.getDepartment().getDepartmentName() : null
                 )

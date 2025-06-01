@@ -9,10 +9,10 @@ import { ReservationForm } from "./ReservationForm";
 import { reservationService } from "../services/reservationService";
 import { RoomStatusBadge } from "@/features/room/components/common/RoomStatusBadge";
 import { formatDate } from "@/lib/date";
-import type { Reservation, ReservationFormInput } from "../types/reservation";
+import type { Reservation, ReservationFormInput } from "../types/Reservation";
 import { RoomType } from "@/features/room/types/room";
 import type { RoomWithReservations } from "../types/roomWithReservations";
-import { ReservationStatus } from "../types/reservationStatus";
+import { ReservationStatus } from "../types/ReservationStatus";
 import { RoomLayoutDiagram } from "@/features/room/components/common/RoomLayoutDiagram";
 
 export default function RoomReservationPage() {
@@ -20,7 +20,6 @@ export default function RoomReservationPage() {
   // 1) 사용자 정보
   // ───────────────────────────────────────────
   const { user, isLoading: authLoading } = useAuth();
-
   // ───────────────────────────────────────────
   // 2) 날짜(date) 상태 (부모가 관리)
   // ───────────────────────────────────────────

@@ -1,6 +1,6 @@
 // features/reservation/types/reservation.ts
 
-import { ReservationStatus } from "./reservationStatus";
+import { ReservationStatus } from "./ReservationStatus";
 
 export interface Reservation {
   id: number;
