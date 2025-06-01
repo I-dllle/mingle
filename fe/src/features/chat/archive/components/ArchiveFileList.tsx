@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useArchive } from '@/features/chat/archive/services/useArchive';
 import ArchiveTagFilter from './ArchiveTagFilter';
+import ArchiveUploadForm from './ArchiveUploadForm';
 import styles from './ArchiveFileList.module.css';
 
 export default function ArchiveFileList({ roomId }: { roomId: number }) {
@@ -33,6 +34,9 @@ export default function ArchiveFileList({ roomId }: { roomId: number }) {
         selectedTag={selectedTag}
         onSelect={setSelectedTag}
       />
+
+      {/* 업로드 폼 */}
+      <ArchiveUploadForm roomId={roomId} />
 
       {filteredItems.length === 0 ? (
         <p className={styles.empty}>등록된 자료가 없습니다.</p>
