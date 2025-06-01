@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useGroupChat } from '@/features/chat/group/services/useGroupChat';
 import styles from './GroupChatInput.module.css';
 
@@ -13,9 +13,14 @@ export default function GroupChatInput({ roomId }: GroupChatInputProps) {
   const [content, setContent] = useState('');
   // [2] 중복 전송 방지용 상태
   const [isSending, setIsSending] = useState(false);
-
   // [3] 그룹 채팅 메시지 WebSocket 전송 함수
   const { sendGroupMessage } = useGroupChat(roomId);
+  // 입력창 포커싱용 ref
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus(); // 마운트 시 자동 포커싱
+  }, []);
 
   // [4] 전송 처리 함수
   const handleSubmit = async (e: React.FormEvent | React.KeyboardEvent) => {
@@ -42,6 +47,7 @@ export default function GroupChatInput({ roomId }: GroupChatInputProps) {
     <form onSubmit={handleSubmit} className={styles.inputContainer}>
       {/* [5] 입력창 */}
       <input
+        ref={inputRef} // 입력창 포커싱 연결
         type="text"
         placeholder="메시지를 입력하세요"
         value={content}
@@ -51,6 +57,7 @@ export default function GroupChatInput({ roomId }: GroupChatInputProps) {
           if (e.key === 'Enter' && !e.shiftKey) handleSubmit(e);
         }}
         disabled={isSending} // 전송 중 입력 비활성화
+        className={styles.textInput}
       />
       {/* 전송 버튼 구성 */}
       <button
