@@ -15,6 +15,8 @@ import com.example.mingle.domain.post.legalpost.repository.SettlementRatioReposi
 import com.example.mingle.domain.post.legalpost.repository.SettlementRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +39,7 @@ public class SettlementService {
     private final SettlementRepository settlementRepository;
     private final SettlementDetailRepository settlementDetailRepository;
 
-    public void createSettlement(Long contractId, BigDecimal totalRevenue)
+    public void createSettlement(Long contractId)
     {
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new EntityNotFoundException("계약을 찾을 수 없습니다."));
@@ -46,7 +48,7 @@ public class SettlementService {
             throw new IllegalStateException("확정된 계약만 정산할 수 있습니다.");
         }
 
-
+        BigDecimal totalRevenue = contract.getContractAmount();
         // 1. 수익 단위 Settlement 생성
         Settlement settlement = Settlement.builder()
                 .contract(contract)
@@ -151,10 +153,9 @@ public class SettlementService {
         return new SettlementSummaryDto(totalAmount, settlements.size());
     }
 
-    public List<SettlementDto> getAllSettlements() {
-        return settlementRepository.findAllExcludingStatus(SettlementStatus.DELETED).stream()
-                .map(SettlementDto::from)
-                .toList();
+    public Page<SettlementDto> getAllSettlements(Pageable pageable) {
+        return settlementRepository.findAllExcludingStatus(SettlementStatus.DELETED, pageable)
+                .map(SettlementDto::from);
     }
 
 

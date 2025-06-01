@@ -6,6 +6,7 @@ import com.example.mingle.domain.user.user.dto.LoginRequestDto;
 import com.example.mingle.domain.user.user.dto.TokenResponseDto;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.domain.user.user.entity.UserRole;
+import com.example.mingle.domain.user.user.entity.UserStatus;
 import com.example.mingle.domain.user.user.repository.UserRepository;
 import com.example.mingle.global.exception.ApiException;
 import com.example.mingle.global.exception.ErrorCode;
@@ -46,6 +47,10 @@ public class AuthLoginService {
         // 사용자 정보가 없으면 예외 발생
         User user = userOptional
                 .orElseThrow(() -> new IllegalArgumentException("아이디 또는 비밀번호가 올바르지 않습니다."));
+
+        if (user.getStatus() == UserStatus.INACTIVE) {
+            throw new ApiException(ErrorCode.ACCOUNT_SUSPENDED); // 적절한 에러코드 사용
+        }
 
         // 비밀번호 일치 여부 확인
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {

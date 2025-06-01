@@ -1,0 +1,197 @@
+.calendarContainer {
+  position: relative;
+  max-height: calc(
+    100vh - 320px
+  ); /* 예: 상단+하단 패널을 제외한 영역 높이만 차지하게끔 */
+  overflow-x: auto;
+  overflow-y: hidden; /* 세로 스크롤은 없애고, 가로 스크롤만 허용 */
+  white-space: nowrap;
+  border-radius: 12px;
+  transition: all 0.2s;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  max-height: 400px; /* 캘린더 영역의 최대 높이 지정 */
+}
+
+.calendarHeader {
+  display: flex;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+}
+
+.roomRow {
+  display: flex;
+  border-bottom: 1px solid #f1f1f4;
+  height: 4rem;
+  position: relative;
+}
+
+.cell {
+  border: 1px solid #f1f1f4;
+  flex-shrink: 0;
+}
+
+.roomNameCell {
+  width: 10rem;
+  flex-shrink: 0;
+  background: white;
+  font-weight: 500;
+  position: sticky;
+  left: 0;
+  z-index: 7;
+  border-right: 1px solid rgba(226, 232, 240, 0.6);
+  box-shadow: 4px 0 12px -6px rgba(0, 0, 0, 0.03);
+}
+
+.calendarGrid {
+  display: grid;
+  position: relative;
+}
+
+.timeHeader {
+  height: 60px;
+  background-color: rgba(248, 247, 255, 0.8); /* 더 밝은 보라색 배경 */
+  border-bottom: 1px solid rgba(241, 241, 244, 0.7);
+  border-right: 1px solid rgba(241, 241, 244, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(8px);
+  font-size: 0.875rem;
+  color: #7c3aed; /* 약간 밝은 보라색 - violet-600 */
+  font-weight: 600;
+  position: relative;
+}
+
+.timeSlot {
+  height: 4em;
+  border-right: 1px solid rgba(241, 241, 244, 0.7);
+  border-bottom: 1px solid rgba(241, 241, 244, 0.7);
+  transition: all 0.15s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.timeSlot:hover {
+  background-color: #f8f7ff; /* 더 밝은 보라색 배경 */
+  transform: scale(1.01);
+  z-index: 2;
+}
+
+.evenTimeSlot {
+  background-color: #ffffff;
+}
+
+.oddTimeSlot {
+  background-color: rgba(249, 250, 251, 0.5); /* 더 밝은 회색 배경 */
+}
+
+.reservation {
+  height: calc(100% - 6px);
+  margin: 3px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.reservation:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.myReservation {
+  border-left: 4px solid #8b5cf6; /* violet-500 */
+  background-color: #ede9fe; /* 더 밝은 violet-100 */
+}
+
+.otherReservation {
+  border-left: 4px solid #c084fc; /* purple-400 */
+  background-color: #f3e8ff; /* 더 밝은 purple-100 */
+}
+
+/* 과거 시간 슬롯 스타일 */
+.pastTimeSlot {
+  background-color: #d8dde2 !important; /* 더 밝은 gray-50 */
+  cursor: not-allowed !important;
+  position: relative;
+}
+
+.pastTimeSlot::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(249, 250, 251, 0.7); /* 더 투명한 오버레이 */
+  pointer-events: none;
+  z-index: 1;
+}
+
+.pastTimeSlot:hover {
+  background-color: #f9fafb !important; /* gray-50 */
+  transform: none;
+}
+
+.pastReservation {
+  border-left: 4px solid #d1d5db; /* gray-300 */
+  background-color: #f3f4f6; /* gray-100 */
+  opacity: 0.7;
+}
+
+.currentTimeIndicator {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1.5px;
+  background: linear-gradient(
+    to bottom,
+    rgba(244, 63, 94, 0.8),
+    rgba(244, 63, 94, 0.9),
+    rgba(244, 63, 94, 0.8)
+  );
+  z-index: 10;
+  box-shadow: 0 0 10px rgba(244, 63, 94, 0.3); /* 섬세한 빛 효과 */
+  animation: pulseGlow 4s infinite alternate ease-in-out;
+}
+
+@keyframes pulseGlow {
+  0% {
+    box-shadow: 0 0 6px rgba(244, 63, 94, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 12px rgba(244, 63, 94, 0.5);
+  }
+}
+
+.currentTimeDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #f43f5e; /* rose-500 */
+  position: absolute;
+  left: -3.25px;
+  top: 0;
+  box-shadow: 0 0 8px rgba(244, 63, 94, 0.4); /* 빛나는 효과 */
+}
+
+body > div > main {
+  margin-left: 0 !important; /* 좌측 사이드바와의 간격 */
+  margin-right: 245px !important;
+  flex: 1 !important;
+  height: calc(100% - 48px) !important;
+  overflow-x: auto !important;
+  overflow-y: auto !important;
+  padding: 0 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03) !important; /* 더 부드러운 그림자 */
+  background-color: #ffffff !important;
+  transition: all 0.3s ease !important;
+}

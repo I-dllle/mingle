@@ -6,7 +6,7 @@ import { departmentMenus } from './departmentMenus';
 export interface DepartmentMenu {
   icon: string;
   name: string;
-  id: string;
+  id: number;
   path: string;
   isActive?: boolean;
 }

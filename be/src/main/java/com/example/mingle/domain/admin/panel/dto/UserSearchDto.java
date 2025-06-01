@@ -9,13 +9,13 @@ import lombok.Getter;
 @AllArgsConstructor
 public class UserSearchDto {
     private Long id;
-    private String name;
+    private String nickname;
     private String email;
 
     public static UserSearchDto from(User user) {
         return new UserSearchDto(
                 user.getId(),
-                user.getName(),
+                user.getNickname(),
                 user.getEmail()
         );
     }

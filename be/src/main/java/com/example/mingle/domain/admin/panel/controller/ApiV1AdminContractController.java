@@ -3,6 +3,7 @@ package com.example.mingle.domain.admin.panel.controller;
 import com.example.mingle.domain.admin.panel.dto.ContractSearchCondition;
 import com.example.mingle.domain.admin.panel.dto.ContractResponse;
 import com.example.mingle.domain.admin.panel.dto.ContractConditionResponse;
+import com.example.mingle.domain.admin.panel.dto.InternalSearchCondition;
 import com.example.mingle.domain.post.legalpost.enums.ContractCategory;
 import com.example.mingle.domain.post.legalpost.service.ContractService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,10 +31,12 @@ public class ApiV1AdminContractController {
     @GetMapping
     @Operation(summary = "계약서 목록 필터+페이징 조회")
     public ResponseEntity<Page<ContractResponse>> getFilteredContracts(
+
+            InternalSearchCondition searchCondition,
             ContractSearchCondition condition,
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        Page<ContractResponse> contracts = contractService.getContractsByFilter(condition, pageable);
+        Page<ContractResponse> contracts = contractService.getContractsByFilter(condition, searchCondition, pageable);
         return ResponseEntity.ok(contracts);
     }
 

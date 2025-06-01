@@ -11,7 +11,9 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -50,41 +52,43 @@ public class DocusignAuthService {
             String jwt = Jwts.builder()
                     .setIssuer(clientId)
                     .setSubject(userId)
-                    .setAudience("account-d.docusign.com")
+                    .setAudience("account-d.docusign.com") // 테스트 계정용
                     .setExpiration(Date.from(Instant.now().plusSeconds(3600)))
                     .setIssuedAt(new Date())
-                    .claim("scope", "signature impersonation") // impersonation 스코프 추가 필요할 수 있음
+                    .claim("scope", "signature impersonation")
                     .signWith(privateKey, SignatureAlgorithm.RS256)
                     .compact();
-
+            System.out.println("JWT 생성 완료:\n" + jwt); // 👈 확인
             MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
             formData.add("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer");
             formData.add("assertion", jwt);
 
             WebClient client = webClientBuilder.build();
 
-            // 한 번만 요청하고 raw JSON 받아서 파싱
             String responseBody = client.post()
                     .uri(authUrl)
                     .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                    .bodyValue(formData)
+                    .body(BodyInserters.fromFormData(formData))
                     .retrieve()
                     .bodyToMono(String.class)
                     .block();
 
-            System.out.println("DocuSign Token Response: " + responseBody);
+            System.out.println("✔ DocuSign Token Response: " + responseBody);
 
             Map<String, Object> response = new ObjectMapper()
                     .readValue(responseBody, new TypeReference<>() {});
 
             return response.get("access_token").toString();
 
+        } catch (WebClientResponseException e) {
+            // 🔥 DocuSign 서버 응답 바디 로그 추가
+            System.err.println("❌ DocuSign Error Response Body: " + e.getResponseBodyAsString());
+            throw new RuntimeException("DocuSign access token 발급 실패", e);
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("DocuSign access token 발급 실패", e);
         }
     }
-
 
     private PrivateKey loadPrivateKeyFromPem() throws Exception {
         InputStream is = new ClassPathResource(privateKeyPath.replace("classpath:", "")).getInputStream();
@@ -93,10 +97,11 @@ public class DocusignAuthService {
         String privateKeyContent = pem
                 .replace("-----BEGIN PRIVATE KEY-----", "")
                 .replace("-----END PRIVATE KEY-----", "")
-                .replaceAll("\\s+", ""); // 🔥 줄바꿈, 공백 전부 제거
+                .replaceAll("\\s+", "");
 
         byte[] keyBytes = Base64.getDecoder().decode(privateKeyContent);
         PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
         return KeyFactory.getInstance("RSA").generatePrivate(keySpec);
     }
 }
+

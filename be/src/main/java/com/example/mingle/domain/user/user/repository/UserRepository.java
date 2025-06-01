@@ -62,5 +62,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
 """)
     Optional<User> findByIdWithRelations(@Param("id") Long id);
 
-    List<User> findByNameContainingIgnoreCase(String name);
+    List<User> findByNicknameContainingIgnoreCase(String nickname);
 }

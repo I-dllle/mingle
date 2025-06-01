@@ -12,6 +12,21 @@
   --font-mono: var(--font-geist-mono);
 }
 
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
