@@ -139,7 +139,7 @@ export const departmentMenus: Record<
       path: "/panel/revenue",
     },
     {
-      id: 18,
+      id: 26,
       name: "계약서 관리",
       icon: "document",
       path: "/panel/contracts",
@@ -165,13 +165,13 @@ export const departmentMenus: Record<
       path: "/artist-report",
     },
     {
-      id: 30, // 적절한 PostType ID로 변경 필요
+      id: 28, // 적절한 PostType ID로 변경 필요
       name: "SNS컨텐츠",
       icon: "text",
       path: "/sns-contents",
     },
     {
-      id: 28, // 적절한 PostType ID로 변경 필요
+      id: 29, // 적절한 PostType ID로 변경 필요
       name: "이벤트",
       icon: "calendar",
       path: "/artist-event",

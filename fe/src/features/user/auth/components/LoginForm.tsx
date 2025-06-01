@@ -14,7 +14,7 @@ export default function LoginForm() {
     e.preventDefault();
 
     try {      // 로그인 요청
-      await apiClient('/test/login', {
+      await apiClient('/users/login', {
         method: 'POST',
         body: JSON.stringify({ loginId, password }),
       });
