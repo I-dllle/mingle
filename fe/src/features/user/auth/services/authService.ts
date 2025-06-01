@@ -1,7 +1,7 @@
 // 인증 관련 API 함수 정의
 
 import { apiClient } from '@/lib/api/apiClient';
-import type { CurrentUser } from '@/features/auth/types/user';
+import type { CurrentUser } from '@/features/user/auth/types/user';
 
 // 현재 로그인한 유저 정보 조회
 export async function fetchCurrentUser(): Promise<CurrentUser | null> {
