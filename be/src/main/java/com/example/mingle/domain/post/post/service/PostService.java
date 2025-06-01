@@ -53,7 +53,7 @@ public class PostService {
             throws IOException, java.io.IOException {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(USER_NOT_FOUND));
-        
+
         PostType postType = postTypeRepository.findById(postTypeId)
                 .orElseThrow(() -> new ApiException(ErrorCode.POST_MENU_NOT_FOUND));
         PostMenu menu = postType.getMenu();
@@ -64,24 +64,26 @@ public class PostService {
             if (requestDto.getNoticeType() == NoticeType.GENERAL_NOTICE && user.getRole() != UserRole.ADMIN) {
                 throw new ApiException(ErrorCode.ACCESS_DENIED);
             }
-            //부서별 공지사항은 해당 부서 사람만 작성가능
-            if (requestDto.getNoticeType() == NoticeType.DEPARTMENT_NOTICE &&
-                    !user.getDepartment().equals(postType.getDepartment())) {
-                throw new ApiException(ErrorCode.ACCESS_DENIED);
-            }
+
             if (requestDto.getNoticeType() == NoticeType.COMPANY_NEWS && user.getRole() != UserRole.ADMIN) {
                 throw new ApiException(ErrorCode.ACCESS_DENIED);
             }
         }
 
-        //사용자가 소속된 부서에만 글을 작성할 수 있도록 권한 제한
-        if (!menu.getName().equals("공지사항")) {
+        // 사용자가 소속된 부서에만 글을 작성할 수 있도록 권한 제한
+        // PostType의 Department가 null이 아닌 경우에만 부서 매칭 검사
+        if (!menu.getName().equals("공지사항") && postType.getDepartment() != null) {
             if (!user.getDepartment().equals(postType.getDepartment())) {
                 log.error("Access denied: User department doesn't match postType department");
                 log.error("User Department: {}", user.getDepartment().getDepartmentName());
                 log.error("PostType Department: {}", postType.getDepartment().getDepartmentName());
                 throw new ApiException(ErrorCode.ACCESS_DENIED);
             }
+        }
+
+        // PostType의 Department가 null인 경우 로그 출력 (선택사항)
+        if (postType.getDepartment() == null) {
+            log.warn("PostType {} has no department assigned, allowing post creation without department restriction", postTypeId);
         }
 
         List<String> uploadedUrls = new ArrayList<>();
@@ -110,14 +112,13 @@ public class PostService {
         postRepository.save(post);
         return PostResponseDto.fromEntity(post);
     }
-
     //게시글 READ
     // 전체 공지사항 조회
     public List<PostResponseDto> getGlobalNotices(){
         PostMenu menu = menuRepository.findByCode("NOTICE")
                 .orElseThrow(() -> new ApiException(ErrorCode.POST_MENU_NOT_FOUND));
 
-        return postRepository.findByMenuAndNoticeType(menu, NoticeType.GENERAL_NOTICE).stream()
+        return postRepository.findWithImageUrlByMenuAndNoticeType(menu, NoticeType.GENERAL_NOTICE).stream()
                 .filter(post -> !post.isDeleted())
                 .map(PostResponseDto::fromEntity)
                 .collect(Collectors.toList());
@@ -128,7 +129,7 @@ public class PostService {
         PostMenu menu = menuRepository.findByCode("NOTICE")
                 .orElseThrow(() -> new ApiException(ErrorCode.POST_MENU_NOT_FOUND));
 
-        return postRepository.findByMenuAndNoticeType(menu, NoticeType.DEPARTMENT_NOTICE).stream()
+        return postRepository.findWithImageUrlByMenuAndNoticeType(menu, NoticeType.DEPARTMENT_NOTICE).stream()
                 .filter(post -> !post.isDeleted())
                 .filter(post -> post.getDepartment().getId() == departmentId)
                 .map(PostResponseDto::fromEntity)
@@ -140,7 +141,7 @@ public class PostService {
         PostMenu menu = menuRepository.findByCode("NOTICE")
                 .orElseThrow(() -> new ApiException(ErrorCode.POST_MENU_NOT_FOUND));
 
-        return postRepository.findByMenuAndNoticeType(menu, NoticeType.COMPANY_NEWS).stream()
+        return postRepository.findWithImageUrlByMenuAndNoticeType(menu, NoticeType.COMPANY_NEWS).stream()
                 .filter(post -> !post.isDeleted())
                 .map(PostResponseDto::fromEntity)
                 .collect(Collectors.toList());
@@ -166,11 +167,9 @@ public class PostService {
     }
 
     // 업무자료 게시판 게시글 조회
-    public List<PostResponseDto> getBusinessDocuments(Long postMenuId, BusinessDocumentCategory category){
-        PostMenu menu = menuRepository.findById(postMenuId)
-                .orElseThrow(() -> new ApiException(ErrorCode.POST_MENU_NOT_FOUND));
+    public List<PostResponseDto> getBusinessDocuments(Long depId, BusinessDocumentCategory category){
 
-        return postRepository.findByMenuAndCategory(menu, category).stream()
+        return postRepository.findWithImageUrlByDepartmentIdAndCategory(depId, category).stream()
                 .map(PostResponseDto::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -180,7 +179,7 @@ public class PostService {
         PostMenu menu = menuRepository.findById(postMenuId)
                 .orElseThrow(() -> new ApiException(ErrorCode.POST_MENU_NOT_FOUND));
 
-        return postRepository.findByMenuAndIsDeletedFalse(menu).stream()
+        return postRepository.findAllByMenuWithImageUrl(menu).stream()
                 .filter(post -> post.getDepartment().getId().equals(deptId))
                 .map(PostResponseDto::fromEntity)
                 .collect(Collectors.toList());
@@ -199,7 +198,7 @@ public class PostService {
     // 게시글 상세보기
     @Transactional(readOnly = true)
     public PostResponseDto getPostById(Long postId){
-        Post post = postRepository.findById(postId)
+        Post post = postRepository.findWithImageUrlById(postId)
                 .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new ApiException(ErrorCode.POST_NOT_FOUND));
         return PostResponseDto.fromEntity(post);
@@ -208,7 +207,7 @@ public class PostService {
     //게시글 UPDATE
     @Transactional
     public PostResponseDto updatePost(Long postId, Long userId, PostRequestDto requestDto, MultipartFile[] postImage) throws IOException, java.io.IOException {
-        Post post = postRepository.findById(postId)
+        Post post = postRepository.findWithImageUrlById(postId)
                 .orElseThrow(() -> new ApiException(ErrorCode.POST_NOT_FOUND));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(USER_NOT_FOUND));

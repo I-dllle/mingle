@@ -1,7 +1,7 @@
 // features/reservation/components/ReservationDetail.tsx
 
 import React from "react";
-import { Reservation } from "@/features/reservation/types/reservation";
+import { Reservation } from "@/features/reservation/types/Reservation";
 import { formatDate, formatTime, getDayOfWeek } from "@/lib/date";
 
 interface Props {
