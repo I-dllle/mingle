@@ -50,45 +50,6 @@ public class ApiV1ScheduleController {
         return ResponseEntity.ok(response);
     }
 
-    // 부서 일정 생성
-    @Operation(summary = "부서 일정 생성",
-            description = "해당 유저의 부서 일정을 생성합니다.")
-    @PostMapping("/department")
-    public ResponseEntity<ScheduleResponse> createDepartmentSchedule(
-            @RequestBody ScheduleRequest request
-    ) {
-        Long userId = rq.getActor().getId();
-        ScheduleResponse departmentSchedule = scheduleService.createDepartmentSchedule(request, userId, request.getPostId());
-        return ResponseEntity.ok(departmentSchedule);
-    }
-
-    // 단건 조회
-    @Operation(summary = "일정 단건 조회",
-            description = "스케줄 ID로 단건 일정을 가져옵니다.")
-    @GetMapping("/{scheduleId}")
-    public ResponseEntity<ScheduleResponse> getSchedule(
-            @PathVariable Long scheduleId
-    ) {
-        Long userId = rq.getActor().getId();
-        ScheduleResponse response = scheduleService.getScheduleById(userId, scheduleId);
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/search")
-    public ResponseEntity<List<ScheduleResponse>> searchSchedules(
-            @RequestParam("keyword") String keyword,
-            @RequestParam(value = "memo", defaultValue = "false") boolean memo
-    ) {
-        Long userId = rq.getActor().getId();
-
-        Long deptId = rq.getActor().getDepartment().getId();
-
-        List<ScheduleResponse> results =
-                scheduleService.searchVisibleSchedules(userId, deptId, keyword, memo);
-
-        return ResponseEntity.ok(results);
-    }
-
     // 상태별 일정 조회
     @Operation(summary = "상태별 일정 조회", description = "특정 상태의 일정을 조회합니다.")
     @GetMapping("/status")
@@ -113,12 +74,11 @@ public class ApiV1ScheduleController {
             @Parameter(description = "일정 타입", example = "DEPARTMENT, COMPANY, PERSONAL")
             @RequestParam(required = false) ScheduleType type,
             @Parameter(description = "조회 기준 날짜(ISO)", example = "2025-05-13")
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(required = false) Long departmentId
     ) {
         Long userId = rq.getActor().getId();
-        LocalDate targetDate = date != null ? date : LocalDate.now();
-        List<ScheduleResponse> responses = scheduleService.getMonthlyView(userId, type, targetDate, departmentId);
+        List<ScheduleResponse> responses = scheduleService.getMonthlyView(userId, type, date, departmentId);
         return ResponseEntity.ok(responses);
     }
 
@@ -129,12 +89,11 @@ public class ApiV1ScheduleController {
             @Parameter(description = "일정 타입", example = "DEPARTMENT, COMPANY, PERSONAL")
             @RequestParam(required = false) ScheduleType type,
             @Parameter(description = "조회 기준 날짜(ISO)", example = "2025-05-13")
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(required = false) Long departmentId
     ) {
         Long userId = rq.getActor().getId();
-        LocalDate targetDate = date != null ? date : LocalDate.now();
-        List<ScheduleResponse> responses = scheduleService.getWeeklyView(userId, targetDate, type, departmentId);
+        List<ScheduleResponse> responses = scheduleService.getWeeklyView(userId, date, type, departmentId);
         return ResponseEntity.ok(responses);
     }
 
@@ -145,12 +104,11 @@ public class ApiV1ScheduleController {
             @Parameter(description = "일정 타입", example = "DEPARTMENT, COMPANY, PERSONAL")
             @RequestParam(required = false) ScheduleType type,
             @Parameter(description = "조회 기준 날짜(ISO)", example = "2025-05-13")
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(required = false) Long departmentId
     ) {
         Long userId = rq.getActor().getId();
-        LocalDate targetDate = date != null ? date : LocalDate.now();
-        List<ScheduleResponse> responses = scheduleService.getDailyView(userId, targetDate, type, departmentId);
+        List<ScheduleResponse> responses = scheduleService.getDailyView(userId, date, type, departmentId);
         return ResponseEntity.ok(responses);
     }
 
@@ -182,6 +140,17 @@ public class ApiV1ScheduleController {
 
     // ==================== 관리자 전용 API =====================
 
+    // 부서 목록 가져오기
+    @Operation(summary = "전체 부서 목록 가져오기", description = "관리자가 팀 일정을 생성할 때 드롭다운에 노출할 부서 목록을 반환합니다.")
+    @GetMapping("/departments")
+    public List<DepartmentResponse> listDepartments() {
+        return departmentRepository.findAll().stream()
+                .map(dept -> new DepartmentResponse(
+                        dept.getId(),
+                        dept.getDepartmentName()))
+                .collect(Collectors.toList());
+    }
+
     // 회사 일정 생성
     @Operation(summary = "관리자 전용 회사 일정 생성",
             description = "ADMIN 권한으로 회사 공통 일정을 생성합니다.")
@@ -194,6 +163,21 @@ public class ApiV1ScheduleController {
         }
         Long userId = rq.getActor().getId();
         ScheduleResponse companySchedule = scheduleService.createCompanySchedule(request, userId, request.getPostId());
+        return ResponseEntity.ok(companySchedule);
+    }
+
+    // 부서 일정 생성
+    @Operation(summary = "관리자 전용 부서 일정 생성",
+            description = "ADMIN 권한으로 부서 일정을 생성합니다.")
+    @PostMapping("/admin/department")
+    public ResponseEntity<ScheduleResponse> createDepartmentSchedule(
+            @RequestBody ScheduleRequest request
+    ) {
+        if (!UserRole.ADMIN.equals(rq.getActor().getRole())) {
+            throw new ApiException(ErrorCode.ACCESS_DENIED);
+        }
+        Long userId = rq.getActor().getId();
+        ScheduleResponse companySchedule = scheduleService.createDepartmentSchedule(request, userId, request.getPostId());
         return ResponseEntity.ok(companySchedule);
     }
 
@@ -211,17 +195,6 @@ public class ApiV1ScheduleController {
         Long userId = rq.getActor().getId();
         ScheduleResponse scheduleResponse = scheduleService.updateAnySchedule(request, scheduleId, userId);
         return ResponseEntity.ok(scheduleResponse);
-    }
-
-    // 부서 목록 가져오기
-    @Operation(summary = "전체 부서 목록 가져오기", description = "관리자가 팀 일정을 생성할 때 드롭다운에 노출할 부서 목록을 반환합니다.")
-    @GetMapping("/departments")
-    public List<DepartmentResponse> listDepartments() {
-        return departmentRepository.findAll().stream()
-                .map(dept -> new DepartmentResponse(
-                        dept.getId(),
-                        dept.getDepartmentName()))
-                .collect(Collectors.toList());
     }
 }
 

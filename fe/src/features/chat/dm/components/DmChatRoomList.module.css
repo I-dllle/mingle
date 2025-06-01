@@ -1,0 +1,53 @@
+.container {
+  padding: 16px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.empty {
+  color: #777;
+  font-size: 14px;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.item {
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.read {
+  background-color: #f9f9f9;
+}
+
+.unread {
+  background-color: #fff7e6;
+}
+
+.nickname {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.message {
+  font-size: 14px;
+  color: #333;
+}
+
+.unreadCount {
+  margin-top: 6px;
+  color: red;
+  font-weight: bold;
+}

@@ -1,5 +1,7 @@
-import React, { createContext, useContext } from "react";
-import { departmentMenus } from "./departmentMenus"; // ← 방금 만든 파일
+'use client';
+
+import React, { createContext, useContext } from 'react';
+import { departmentMenus } from './departmentMenus';
 
 export interface DepartmentMenu {
   icon: string;
@@ -15,7 +17,7 @@ export interface DepartmentInfo {
 }
 
 export const DepartmentContext = createContext<DepartmentInfo>({
-  name: "",
+  name: '',
   menus: [],
 });
 

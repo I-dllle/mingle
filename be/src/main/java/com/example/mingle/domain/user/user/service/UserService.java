@@ -4,6 +4,7 @@ import com.example.mingle.domain.user.team.entity.Department;
 import com.example.mingle.domain.user.team.repository.DepartmentRepository;
 import com.example.mingle.domain.user.user.dto.ProfileUpdateRequestDto;
 import com.example.mingle.domain.user.user.dto.SignupRequestDto;
+import com.example.mingle.domain.user.user.dto.UserSimpleDto;
 import com.example.mingle.domain.user.user.entity.*;
 import com.example.mingle.domain.user.user.repository.UserPositionRepository;
 import com.example.mingle.domain.user.user.repository.UserRepository;
@@ -120,5 +121,14 @@ public class UserService {
         return userRepository.findByIdWithRelations(id)
                 .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
     }
+
+
+
+    public List<UserSimpleDto> searchByNickname(String keyword) {
+        return userRepository.findByNicknameContaining(keyword).stream()
+                .map(UserSimpleDto::from)
+                .toList();
+    }
+
 
 }

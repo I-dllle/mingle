@@ -1,11 +1,9 @@
 package com.example.mingle.domain.chat.dm.controller;
 
-import com.example.mingle.domain.chat.common.enums.MessageFormat;
-import com.example.mingle.domain.chat.dm.dto.ChatRoomSummaryResponse;
+import com.example.mingle.domain.chat.dm.dto.DmChatRoomSummaryResponse;
 import com.example.mingle.domain.chat.dm.dto.DmChatMessageResponse;
 import com.example.mingle.domain.chat.dm.dto.DmChatRoomCreateRequest;
 import com.example.mingle.domain.chat.dm.dto.DmChatRoomResponse;
-import com.example.mingle.domain.chat.dm.entity.DmChatMessage;
 import com.example.mingle.domain.chat.dm.entity.DmChatRoom;
 import com.example.mingle.domain.chat.dm.repository.DmChatMessageRepository;
 import com.example.mingle.domain.chat.dm.service.DmChatMessageService;
@@ -45,13 +43,27 @@ public class ApiV1DmChatController {
 
     /**
      * GET
+     * 특정 DM 채팅방의 상대방(receiverId) 조회
+     */
+    @GetMapping("/room/{roomId}/receiver")
+    public Long getReceiverId(
+            @PathVariable Long roomId,
+            @AuthenticationPrincipal SecurityUser loginUser
+    ) {
+        return dmChatRoomService.getReceiverId(roomId, loginUser.getId());
+    }
+
+
+
+    /**
+     * GET
      * 내가 속한 모든 DM 채팅방 요약 정보 반환
      * - 상대 닉네임
      * - 최근 메시지 (content, format, sentAt)
      * - 읽지 않은 메시지 수
      */
     @GetMapping("/summary")
-    public List<ChatRoomSummaryResponse> getChatRoomSummaries(
+    public List<DmChatRoomSummaryResponse> getChatRoomSummaries(
             @AuthenticationPrincipal SecurityUser loginUser
     ) {
         return dmChatRoomService.getChatRoomSummaries(loginUser.getId());
@@ -77,7 +89,7 @@ public class ApiV1DmChatController {
 
 
 
-    // 🟠 [DELETE] 메시지 삭제
+    // [DELETE] 메시지 삭제
     // @DeleteMapping("/messages/{messageId}")
     // public void deleteMessage(@PathVariable Long messageId) { ... } // TODO
 
