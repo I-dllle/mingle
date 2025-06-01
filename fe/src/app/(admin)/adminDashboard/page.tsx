@@ -346,7 +346,7 @@ export default function Dashboard() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <a
-              href="/panel/revenue"
+              href="/adminRevenue"
               className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
             >
               <div className="p-2 bg-blue-100 rounded-lg mr-3">
@@ -370,7 +370,7 @@ export default function Dashboard() {
               </div>
             </a>
             <a
-              href="/contracts"
+              href="/adminContracts"
               className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
             >
               <div className="p-2 bg-green-100 rounded-lg mr-3">
@@ -392,9 +392,9 @@ export default function Dashboard() {
                 <h4 className="font-medium text-gray-900">계약 관리</h4>
                 <p className="text-sm text-gray-600">계약서 생성 및 관리</p>
               </div>
-            </a>{" "}
+            </a>
             <a
-              href="/panel/users"
+              href="/adminUsers"
               className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
             >
               <div className="p-2 bg-purple-100 rounded-lg mr-3">
