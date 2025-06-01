@@ -12,9 +12,9 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 public class GoodsOrderResponseDto {
-    //주문내역
+    private Long id;
     private String orderId;
-    private String itemName;
+    private String paymentKey;
     private Integer amount;
     private Integer purAmount;
     private PaymentMethod purMethod;
@@ -22,11 +22,24 @@ public class GoodsOrderResponseDto {
     private DeliveryStatus purDeliveryStatus;
     private LocalDateTime orderedAt;
     private LocalDateTime paidAt;
+    
+    // 상품 정보
+    private GoodsInfo goods;
+    
+    @Getter
+    @Builder
+    public static class GoodsInfo {
+        private Long id;
+        private String itemName;
+        private Integer itemPrice;
+        private String imgUrl;
+    }
 
     public static GoodsOrderResponseDto fromEntity(GoodsOrder order) {
         return GoodsOrderResponseDto.builder()
+                .id(order.getId())
                 .orderId(order.getOrderId())
-                .itemName(order.getGoods().getItemName()) // getName()은 Goods에 있다고 가정
+                .paymentKey(order.getPaymentKey())
                 .amount(order.getAmount())
                 .purAmount(order.getPurAmount())
                 .purMethod(order.getPurMethod())
@@ -34,6 +47,14 @@ public class GoodsOrderResponseDto {
                 .purDeliveryStatus(order.getPurDeliveryStatus())
                 .orderedAt(order.getOrderedAt())
                 .paidAt(order.getPaidAt())
+                .goods(GoodsInfo.builder()
+                        .id(order.getGoods().getId())
+                        .itemName(order.getGoods().getItemName())
+                        .itemPrice(order.getGoods().getItemPrice())
+                        .imgUrl(order.getGoods().getImgUrl() != null && !order.getGoods().getImgUrl().isEmpty() 
+                                ? order.getGoods().getImgUrl().get(0) 
+                                : null)
+                        .build())
                 .build();
     }
 }

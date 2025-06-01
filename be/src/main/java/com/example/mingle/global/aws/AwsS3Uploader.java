@@ -44,16 +44,15 @@ public class AwsS3Uploader {
         PutObjectRequest request = PutObjectRequest.builder()
                 .bucket(bucket)
                 .key(fileName)
-//                .acl(ObjectCannedACL.PUBLIC_READ)
-                .build(); // 새로 추가됨
+                .build();
 
         // 실제 업로드 실행
-        s3Client.putObject(request, RequestBody.fromBytes(multipartFile.getBytes())); // 새로 추가됨
+        s3Client.putObject(request, RequestBody.fromBytes(multipartFile.getBytes()));
 
         // 업로드 URL 반환 (v2 utility 사용)
         return s3Client.utilities()
                 .getUrl(builder -> builder.bucket(bucket).key(fileName))
-                .toString(); // 새로 추가됨
+                .toString();
     }
 
     private String getFileExtension(String fileName) {

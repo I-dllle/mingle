@@ -60,25 +60,49 @@ const GoodsCard: React.FC<GoodsCardProps> = ({
   const originalPrice = Math.round(goods.itemPrice / 0.6);
 
   const handlePurchase = () => {
-    window.location.href = `/api/v1/goodsOrder/payment/${goods.id}`;
+    window.location.href = `http://localhost:8080/api/v1/goodsOrder/payment/${goods.id}`;
   };
 
   return (
     <div className="bg-white rounded-xl shadow p-4 flex flex-col items-center relative">
-      <img
-        src={goods.imgUrl[0]}
-        alt={goods.itemName}
-        className="w-40 h-40 object-cover rounded-lg mb-3"
-      />
+      {goods.imgUrl && goods.imgUrl.length > 0 ? (
+        <img
+          src={goods.imgUrl[0]}
+          alt={goods.itemName}
+          className="w-40 h-40 object-cover rounded-lg mb-3"
+          onError={(e) => {
+            console.error("이미지 로드 실패:", goods.imgUrl[0]);
+            e.currentTarget.style.display = "none";
+            // 대체 플레이스홀더 표시
+            const fallback = document.getElementById(`fallback-${goods.id}`);
+            if (fallback) fallback.style.display = "flex";
+          }}
+        />
+      ) : (
+        <div className="w-40 h-40 bg-gray-200 rounded-lg mb-3 flex items-center justify-center">
+          <span className="text-gray-400 text-sm">이미지 없음</span>
+        </div>
+      )}
+
+      {/* 이미지 로드 실패 시 표시될 플레이스홀더 */}
+      {goods.imgUrl && goods.imgUrl.length > 0 && (
+        <div
+          className="w-40 h-40 bg-gray-200 rounded-lg mb-3 flex items-center justify-center"
+          style={{ display: "none" }}
+          id={`fallback-${goods.id}`}
+        >
+          <span className="text-gray-400 text-sm">이미지 로드 실패</span>
+        </div>
+      )}
       <div className="w-full flex flex-col items-center">
         <h3 className="font-semibold text-base mb-1 text-center line-clamp-1">
           {goods.itemName}
         </h3>
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-gray-400 line-through text-sm">
-            {originalPrice.toLocaleString()}원
+        <div className="flex flex-col items-center gap-0.5 mb-1">
+          <span className="text-gray-400 line-through text-xs">
+            {originalPrice.toLocaleString()}원 (정가)
           </span>
-          <span className="text-lg font-bold text-pink-600">
+          <span className="text-base font-bold text-pink-600">
             {goods.itemPrice.toLocaleString()}원
           </span>
         </div>

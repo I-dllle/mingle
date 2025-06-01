@@ -72,7 +72,8 @@ public class SecurityConfig {
                                 "/api/v1/users/refresh",
                                 "/api/v1/finance/**",
                                 "/api/v1/admin/**",
-                                "/api/v1/goods/**"
+                                "/api/v1/goods/**",
+                                "/api/v1/goodsOrder/**"
                         ).permitAll() // 회원가입, 로그인, 토큰 재발급 : 허용✔️
                         .requestMatchers("/actuator/health")
                         .permitAll()

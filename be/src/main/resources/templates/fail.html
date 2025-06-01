@@ -1,41 +1,295 @@
 <!DOCTYPE html>
-<html lang="kr">
+<html lang="ko">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="https://static.toss.im/icons/png/4x/icon-toss-logo.png" />
-    <link rel="stylesheet" type="text/css" href="/style.css" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>토스페이먼츠 샘플 프로젝트</title>
+    <title>결제 실패</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .container {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        max-width: 500px;
+        width: 100%;
+        padding: 40px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .container::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #f44336, #d32f2f);
+      }
+
+      .fail-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #f44336, #d32f2f);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px;
+        position: relative;
+        animation: shakeIn 0.6s ease-out;
+      }
+
+      .fail-icon::after {
+        content: "✕";
+        color: white;
+        font-size: 32px;
+        font-weight: bold;
+      }
+
+      @keyframes shakeIn {
+        0% {
+          transform: scale(0.3) rotate(-10deg);
+          opacity: 0;
+        }
+        25% {
+          transform: scale(1.05) rotate(5deg);
+        }
+        50% {
+          transform: scale(0.95) rotate(-2deg);
+        }
+        75% {
+          transform: scale(1.02) rotate(1deg);
+        }
+        100% {
+          transform: scale(1) rotate(0deg);
+          opacity: 1;
+        }
+      }
+
+      .title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #191f28;
+        margin-bottom: 8px;
+      }
+
+      .subtitle {
+        color: #8b95a1;
+        font-size: 16px;
+        margin-bottom: 32px;
+      }
+
+      .error-info {
+        background: #ffebee;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 32px;
+        border: 1px solid #ffcdd2;
+      }
+
+      .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+        font-size: 14px;
+        gap: 16px;
+      }
+
+      .info-item:last-child {
+        margin-bottom: 0;
+      }
+
+      .info-label {
+        color: #6c757d;
+        min-width: 80px;
+        text-align: left;
+      }
+
+      .info-value {
+        font-weight: 500;
+        color: #191f28;
+        text-align: right;
+        word-break: break-word;
+      }
+
+      .error-message {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 24px;
+        color: #856404;
+        font-size: 14px;
+        text-align: left;
+      }
+
+      .redirect-info {
+        background: #e3f2fd;
+        border: 1px solid #90caf9;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 24px;
+        color: #1565c0;
+        font-size: 14px;
+      }
+
+      .countdown {
+        font-weight: 600;
+        color: #1976d2;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+      }
+
+      .btn {
+        flex: 1;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #1976d2, #1565c0);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: linear-gradient(135deg, #1565c0, #0d47a1);
+        transform: translateY(-1px);
+      }
+
+      .btn-secondary {
+        background: #f5f5f5;
+        color: #666;
+        border: 1px solid #ddd;
+      }
+
+      .btn-secondary:hover {
+        background: #e0e0e0;
+      }
+
+      .loading {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #e3f2fd;
+        border-top: 2px solid #1976d2;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: 8px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
   </head>
-
   <body>
-    <div id="info" class="box_section" style="width: 600px">
-      <img width="100px" src="https://static.toss.im/lotties/error-spot-no-loop-space-apng.png" />
-      <h2>결제를 실패했어요</h2>
+    <div class="container">
+      <div class="fail-icon"></div>
 
-      <div class="p-grid typography--p" style="margin-top: 50px">
-        <div class="p-grid-col text--left"><b>에러메시지</b></div>
-        <div class="p-grid-col text--right" id="message"></div>
+      <h1 class="title">결제 실패</h1>
+      <p class="subtitle">결제 처리 중 문제가 발생했습니다.</p>
+
+      <div class="error-info">
+        <div class="info-item">
+          <span class="info-label">에러코드</span>
+          <span class="info-value" id="code">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">실패 사유</span>
+          <span class="info-value" id="message">-</span>
+        </div>
       </div>
-      <div class="p-grid typography--p" style="margin-top: 10px">
-        <div class="p-grid-col text--left"><b>에러코드</b></div>
-        <div class="p-grid-col text--right" id="code"></div>
+
+      <div class="error-message">
+        💡 <strong>안내사항:</strong><br />
+        • 카드 잔액이나 한도를 확인해주세요<br />
+        • 카드 정보가 정확한지 확인해주세요<br />
+        • 문제가 지속되면 고객센터로 연락주세요
       </div>
-      <div class="p-grid">
-        <button class="button p-grid-col5" onclick="location.href='https://docs.tosspayments.com/guides/v2/payment-widget/integration';">연동 문서</button>
-        <button class="button p-grid-col5" onclick="location.href='https://discord.gg/A4fRFXQhRu';" style="background-color: #e8f3ff; color: #1b64da">실시간 문의</button>
+
+      <div class="redirect-info">
+        <div class="loading"></div>
+        <span id="countdown">5</span>초 후 상품 페이지로 이동합니다...
+      </div>
+
+      <div class="button-group">
+        <a href="#" class="btn btn-secondary" onclick="goToGoods()"
+          >상품 보기</a
+        >
+        <a href="#" class="btn btn-primary" onclick="retryPayment()"
+          >다시 결제하기</a
+        >
       </div>
     </div>
 
     <script>
       const urlParams = new URLSearchParams(window.location.search);
+      const errorCode = urlParams.get("code");
+      const errorMessage = urlParams.get("message");
 
-      const codeElement = document.getElementById("code");
-      const messageElement = document.getElementById("message");
+      // 에러 정보 표시
+      document.getElementById("code").textContent = errorCode || "알 수 없음";
+      document.getElementById("message").textContent =
+        errorMessage || "상세 정보 없음";
 
-      codeElement.textContent = urlParams.get("code");
-      messageElement.textContent = urlParams.get("message");
+      let countdown = 5;
+      const countdownElement = document.getElementById("countdown");
+
+      // 카운트다운 타이머
+      const timer = setInterval(() => {
+        countdown--;
+        countdownElement.textContent = countdown;
+
+        if (countdown <= 0) {
+          clearInterval(timer);
+          goToGoods();
+        }
+      }, 1000);
+
+      function goToGoods() {
+        window.location.href = "/goods";
+      }
+
+      function retryPayment() {
+        // 이전 페이지로 돌아가기 (결제 페이지)
+        window.history.back();
+      }
     </script>
   </body>
 </html>
