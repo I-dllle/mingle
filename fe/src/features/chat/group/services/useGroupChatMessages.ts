@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { ChatMessagePayload } from '@/features/chat/common/types/ChatMessagePayload';
-import { connectWebSocket, onMessage } from '@/lib/socket';
+import { useSocket } from '@/hooks/useSocket';
 import { ChatRoomType } from '@/features/chat/common/types/ChatRoomType';
 import { fetchGroupChatMessages } from './fetchGroupChatMessages';
 
@@ -13,6 +13,13 @@ import { fetchGroupChatMessages } from './fetchGroupChatMessages';
  */
 export function useGroupChatMessages(roomId: number) {
   const [messages, setMessages] = useState<ChatMessagePayload[]>([]);
+
+  const token = localStorage.getItem('token')!;
+  useSocket(token, (msg) => {
+    if (msg.chatType === ChatRoomType.GROUP && msg.roomId === roomId) {
+      setMessages((prev) => [...prev, msg]);
+    }
+  });
 
   // 1. 초기 메시지 목록 불러오기
   useEffect(() => {
@@ -26,20 +33,6 @@ export function useGroupChatMessages(roomId: number) {
     };
 
     loadMessages();
-  }, [roomId]);
-
-  // 2. WebSocket 수신 메시지 핸들링
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      connectWebSocket(token);
-    }
-
-    onMessage((msg: ChatMessagePayload) => {
-      if (msg.chatType === ChatRoomType.GROUP && msg.roomId === roomId) {
-        setMessages((prev) => [...prev, msg]);
-      }
-    });
   }, [roomId]);
 
   return {
