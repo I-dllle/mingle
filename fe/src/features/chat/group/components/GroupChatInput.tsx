@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useGroupChat } from '@/features/chat/group/services/useGroupChat';
+import styles from './GroupChatInput.module.css';
 
 interface GroupChatInputProps {
   roomId: number;
@@ -13,7 +14,7 @@ export default function GroupChatInput({ roomId }: GroupChatInputProps) {
   // [2] 중복 전송 방지용 상태
   const [isSending, setIsSending] = useState(false);
 
-  // [3] 그룹 채팅 메시지 전송 함수
+  // [3] 그룹 채팅 메시지 WebSocket 전송 함수
   const { sendGroupMessage } = useGroupChat(roomId);
 
   // [4] 전송 처리 함수
@@ -38,16 +39,7 @@ export default function GroupChatInput({ roomId }: GroupChatInputProps) {
 
   return (
     // [4] 채팅 입력 폼 렌더링
-    <form
-      onSubmit={handleSubmit}
-      style={{
-        display: 'flex',
-        gap: '8px',
-        padding: '12px',
-        borderTop: '1px solid #ddd', // 상단 구분선
-        backgroundColor: '#fff',
-      }}
-    >
+    <form onSubmit={handleSubmit} className={styles.inputContainer}>
       {/* [5] 입력창 */}
       <input
         type="text"
@@ -59,28 +51,12 @@ export default function GroupChatInput({ roomId }: GroupChatInputProps) {
           if (e.key === 'Enter' && !e.shiftKey) handleSubmit(e);
         }}
         disabled={isSending} // 전송 중 입력 비활성화
-        style={{
-          flex: 1,
-          padding: '10px',
-          border: '1px solid #ccc',
-          borderRadius: '6px',
-          fontSize: '14px',
-          backgroundColor: isSending ? '#f5f5f5' : 'white',
-        }}
       />
+      {/* 전송 버튼 구성 */}
       <button
         type="submit"
+        className={styles.sendButton}
         disabled={!content.trim() || isSending} // 전송 조건 및 중복 방지
-        style={{
-          padding: '10px 16px',
-          backgroundColor: '#0070f3',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '6px',
-          cursor: 'pointer',
-          fontWeight: 'bold',
-          opacity: !content.trim() || isSending ? 0.6 : 1,
-        }}
       >
         전송
       </button>
