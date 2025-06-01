@@ -21,7 +21,7 @@ export default function AttendanceRequestsPage() {
         setLoading(true);
         setError(null);
         const data = await attendanceRequestService.getAllRequests();
-        setRequests(data);
+        setRequests(data.content);
       } catch (err: any) {
         setError(err.message || "요청 목록을 불러오는데 실패했습니다.");
         console.error("Error fetching requests:", err);

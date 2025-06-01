@@ -1,5 +1,5 @@
 // features/attendance/services/attendanceRequestService.ts
-import apiClient from "@/lib/api/apiClient";
+import { apiClient } from "@/lib/api/apiClient";
 import type {
   AttendanceRequest,
   AttendanceRequestDetail,
@@ -11,155 +11,221 @@ const BASE_URL = "/attendance-requests";
 
 // ============================== 일반 사용자용 API ==============================
 
-// 휴가/출장 등 요청 생성
+/**
+ * 휴가/출장 등 요청 생성 (JSON)
+ */
 export const submitRequest = async (
   requestData: AttendanceRequest
 ): Promise<AttendanceRequestDetail> => {
-  const response = await apiClient.post<AttendanceRequestDetail>(
-    BASE_URL,
-    requestData
-  );
-  return response.data;
+  // POST 요청 시 JSON.stringify
+  const data = await apiClient<AttendanceRequestDetail>(BASE_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(requestData),
+  });
+  return data;
 };
 
-// 요청 생성 (FormData 처리)
+/**
+ * 요청 생성 (FormData 처리)
+ */
 export const createRequest = async (
   formData: FormData
 ): Promise<AttendanceRequestDetail> => {
-  const response = await apiClient.post<AttendanceRequestDetail>(
-    BASE_URL,
-    formData,
+  // Content-Type을 multipart/form-data 로 지정하지 않으면 fetch가 자동으로
+  // 올바른 boundary까지 함께 설정해 줍니다. 따라서 headers 생략해도 무방합니다.
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}${BASE_URL}`,
     {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+      method: "POST",
+      credentials: "include",
+      body: formData,
     }
   );
-  return response.data;
+
+  if (!response.ok) {
+    throw new Error(`요청 생성 실패: ${response.statusText}`);
+  }
+  return response.json();
 };
 
-// 단일 요청 상세 조회
+/**
+ * 단일 요청 상세 조회
+ */
 export const getRequestById = async (
   requestId: number
 ): Promise<AttendanceRequestDetail> => {
-  const response = await apiClient.get<AttendanceRequestDetail>(
+  const data = await apiClient<AttendanceRequestDetail>(
     `${BASE_URL}/${requestId}`
   );
-  return response.data;
+  return data;
 };
 
-// 사용자 본인 요청 목록 조회
+/**
+ * 사용자 본인 요청 목록 조회 (페이지네이션, 쿼리스트링)
+ */
 export const getUserRequests = async (
   status: ApprovalStatus = "PENDING",
-  yearMonth?: string, // 'YYYY-MM' 형식
+  yearMonth?: string,
   page: number = 1,
   size: number = 15
-) => {
-  const params: Record<string, any> = {
+): Promise<{
+  content: AttendanceRequestDetail[];
+  totalPages: number;
+}> => {
+  const params = new URLSearchParams({
     status,
-    page,
-    size,
-  };
-
+    page: page.toString(),
+    size: size.toString(),
+  });
   if (yearMonth) {
-    params.yearMonth = yearMonth;
+    params.append("yearMonth", yearMonth);
   }
 
-  const response = await apiClient.get(`${BASE_URL}`, { params });
-  return response.data;
+  const fullUrl = `${BASE_URL}?${params.toString()}`;
+  const data = await apiClient<{
+    content: AttendanceRequestDetail[];
+    totalPages: number;
+  }>(fullUrl);
+  return data;
 };
 
-// 요청 수정
+/**
+ * 요청 수정 (JSON 또는 FormData)
+ */
 export const updateRequest = async (
   requestId: number,
   requestData: AttendanceRequest | FormData
 ): Promise<AttendanceRequestDetail> => {
-  const isFormData = requestData instanceof FormData;
-
-  const config = isFormData
-    ? {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+  // FormData 인스턴스인지 확인
+  if (requestData instanceof FormData) {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}${BASE_URL}/${requestId}`,
+      {
+        method: "PUT",
+        credentials: "include",
+        body: requestData,
       }
-    : {};
-
-  const response = await apiClient.put<AttendanceRequestDetail>(
-    `${BASE_URL}/${requestId}`,
-    requestData,
-    config
-  );
-  return response.data;
+    );
+    if (!response.ok) {
+      throw new Error(`요청 수정 실패: ${response.statusText}`);
+    }
+    return response.json();
+  } else {
+    // 일반 JSON 객체
+    const data = await apiClient<AttendanceRequestDetail>(
+      `${BASE_URL}/${requestId}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestData),
+      }
+    );
+    return data;
+  }
 };
 
-// 요청 삭제
+/**
+ * 요청 삭제
+ */
 export const deleteRequest = async (requestId: number): Promise<void> => {
-  await apiClient.delete(`${BASE_URL}/${requestId}`);
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}${BASE_URL}/${requestId}`,
+    {
+      method: "DELETE",
+      credentials: "include",
+    }
+  );
+  if (!response.ok) {
+    throw new Error(`요청 삭제 실패: ${response.statusText}`);
+  }
 };
 
 // ============================== 관리자용 API ==============================
 
-// 관리자용 단일 요청 상세 조회
+/**
+ * 관리자용 단일 요청 상세 조회
+ */
 export const getRequestByIdForAdmin = async (
   requestId: number
 ): Promise<AttendanceRequestDetail> => {
-  const response = await apiClient.get<AttendanceRequestDetail>(
+  const data = await apiClient<AttendanceRequestDetail>(
     `${BASE_URL}/admin/${requestId}`
   );
-  return response.data;
+  return data;
 };
 
-// 관리자용 전체 출결 요청 목록 조회
+/**
+ * 관리자용 전체 출결 요청 목록 조회
+ */
 export const getAllRequests = async (
   status: ApprovalStatus = "PENDING",
   yearMonth?: string,
   page: number = 1,
   size: number = 15
-) => {
-  const params: Record<string, any> = {
+): Promise<{
+  content: AttendanceRequestDetail[];
+  totalPages: number;
+}> => {
+  const params = new URLSearchParams({
     status,
-    page,
-    size,
-  };
-
+    page: page.toString(),
+    size: size.toString(),
+  });
   if (yearMonth) {
-    params.yearMonth = yearMonth;
+    params.append("yearMonth", yearMonth);
   }
 
-  const response = await apiClient.get(`${BASE_URL}/admin`, { params });
-  return response.data;
+  const fullUrl = `${BASE_URL}/admin?${params.toString()}`;
+  const data = await apiClient<{
+    content: AttendanceRequestDetail[];
+    totalPages: number;
+  }>(fullUrl);
+  return data;
 };
 
-// 관리자용 요청 승인
+/**
+ * 관리자용 요청 승인
+ */
 export const approveRequest = async (
   requestId: number,
   comment: string = ""
 ): Promise<AttendanceRequestDetail> => {
-  const response = await apiClient.post<AttendanceRequestDetail>(
+  const data = await apiClient<AttendanceRequestDetail>(
     `${BASE_URL}/admin/${requestId}/approve`,
-    { comment }
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ comment }),
+    }
   );
-  return response.data;
+  return data;
 };
 
-// 관리자용 요청 반려
+/**
+ * 관리자용 요청 반려
+ */
 export const rejectRequest = async (
   requestId: number,
   comment: string
 ): Promise<AttendanceRequestDetail> => {
-  // 반려 시에는 반드시 사유를 입력해야 함
   if (!comment || comment.trim() === "") {
     throw new Error("반려 사유를 입력해주세요");
   }
-
-  const response = await apiClient.post<AttendanceRequestDetail>(
+  const data = await apiClient<AttendanceRequestDetail>(
     `${BASE_URL}/admin/${requestId}/reject`,
-    { comment }
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ comment }),
+    }
   );
-  return response.data;
+  return data;
 };
 
-// 관리자용 요청 상태 변경
+/**
+ * 관리자용 요청 상태 변경 (PATCH)
+ */
 export const changeRequestStatus = async (
   requestId: number,
   approvalStatus: ApprovalStatus,
@@ -169,15 +235,20 @@ export const changeRequestStatus = async (
     approvalStatus,
     comment,
   };
-
-  const response = await apiClient.patch<AttendanceRequestDetail>(
+  const data = await apiClient<AttendanceRequestDetail>(
     `${BASE_URL}/admin/${requestId}/status`,
-    actionData
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(actionData),
+    }
   );
-  return response.data;
+  return data;
 };
 
-// 확장성을 위해 Electron 환경에서도 API 호출 방식 통일
+/**
+ * 확장성을 위해 Electron 환경에서도 API 호출 방식 통일
+ */
 export const isElectron = (): boolean => {
   return process.env.NEXT_PUBLIC_ENV === "electron";
 };

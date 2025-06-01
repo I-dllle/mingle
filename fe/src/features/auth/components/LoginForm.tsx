@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import apiClient from "@/lib/api/apiClient"; // lib에서 불러오기
+import { apiClient } from "@/lib/api/apiClient"; // lib에서 불러오기
 
 export default function LoginForm() {
   const [loginId, setLoginId] = useState("");
