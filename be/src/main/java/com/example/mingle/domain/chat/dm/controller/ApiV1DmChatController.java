@@ -8,6 +8,7 @@ import com.example.mingle.domain.chat.dm.entity.DmChatRoom;
 import com.example.mingle.domain.chat.dm.repository.DmChatMessageRepository;
 import com.example.mingle.domain.chat.dm.service.DmChatMessageService;
 import com.example.mingle.domain.chat.dm.service.DmChatRoomService;
+import com.example.mingle.domain.user.user.dto.UserSimpleDto;
 import com.example.mingle.global.security.auth.SecurityUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -25,6 +26,18 @@ public class ApiV1DmChatController {
     private final DmChatRoomService dmChatRoomService;
     private final DmChatMessageService dmChatMessageService;
     private final DmChatMessageRepository dmMessageRepository;
+
+    /**
+     * DM 시작 가능한 유저 목록 조회 (본인 제외)
+     */
+    @GetMapping("/candidates")
+    public List<UserSimpleDto> getDmCandidates(
+            @AuthenticationPrincipal SecurityUser loginUser
+    ) {
+        return dmChatRoomService.getDmCandidates(loginUser.getId());
+    }
+
+
 
     /**
      * POST

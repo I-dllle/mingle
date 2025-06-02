@@ -18,6 +18,7 @@ export default function LoginForm() {
       await apiClient('/users/login', {
         method: 'POST',
         body: JSON.stringify({ loginId, password }),
+        credentials: 'include',
       });
 
       // 성공 시 메인 페이지로 이동
