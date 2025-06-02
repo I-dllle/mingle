@@ -59,10 +59,32 @@ const updateUser = async (
   userId: number,
   updateData: AdminUpdateUser
 ): Promise<void> => {
-  await apiClient(`${API_BASE_URL}/${userId}`, {
-    method: "PUT",
-    body: JSON.stringify(updateData),
-  });
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}${API_BASE_URL}/${userId}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updateData),
+      credentials: "include",
+      cache: "no-store",
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(`API 요청 실패: ${res.statusText}`);
+  }
+
+  // 응답이 비어있는 경우를 처리
+  const text = await res.text();
+  if (text) {
+    try {
+      JSON.parse(text);
+    } catch (e) {
+      // JSON이 아닌 경우 무시
+    }
+  }
 };
 
 // 유저 권한 변경
@@ -70,10 +92,32 @@ const updateRole = async (
   id: number,
   roleData: AdminRoleUpdate
 ): Promise<void> => {
-  await apiClient(`${API_BASE_URL}/${id}/role`, {
-    method: "PATCH",
-    body: JSON.stringify(roleData),
-  });
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}${API_BASE_URL}/${id}/role`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(roleData),
+      credentials: "include",
+      cache: "no-store",
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(`API 요청 실패: ${res.statusText}`);
+  }
+
+  // 응답이 비어있는 경우를 처리
+  const text = await res.text();
+  if (text) {
+    try {
+      JSON.parse(text);
+    } catch (e) {
+      // JSON이 아닌 경우 무시
+    }
+  }
 };
 
 // 유저 상태 변경

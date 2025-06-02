@@ -6,7 +6,7 @@ import { postService } from "@/features/post/services/postService";
 import { PostResponseDto } from "@/features/post/types/post";
 import { useDepartment } from "@/context/DepartmentContext";
 
-export default function NoticeDetailPage() {
+export default function BusinessDocumentDetailPage() {
   const router = useRouter();
   const params = useParams();
   const { name: userDepartment } = useDepartment();
@@ -109,7 +109,7 @@ export default function NoticeDetailPage() {
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-              <p className="mt-4 text-gray-600">공지사항을 불러오는 중...</p>
+              <p className="mt-4 text-gray-600">업무 문서를 불러오는 중...</p>
             </div>
           </div>
         </div>
@@ -143,7 +143,7 @@ export default function NoticeDetailPage() {
       <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto px-4 py-8 max-w-4xl">
           <div className="text-center py-12">
-            <p className="text-gray-600">공지사항을 찾을 수 없습니다.</p>
+            <p className="text-gray-600">업무 문서를 찾을 수 없습니다.</p>
             <button
               onClick={() => router.back()}
               className="mt-4 flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors mx-auto"
@@ -180,13 +180,13 @@ export default function NoticeDetailPage() {
                     d="M15 19l-7-7 7-7"
                   />
                 </svg>
-                <span className="font-medium">공지사항 목록</span>
+                <span className="font-medium">업무 문서 목록</span>
               </button>
               {/* 브레드크럼 */}
               <nav className="flex items-center space-x-2 text-sm">
                 <span className="text-gray-500">공통 게시판</span>
                 <span className="text-gray-300">/</span>
-                <span className="text-gray-500">공지사항</span>
+                <span className="text-gray-500">업무 문서</span>
                 <span className="text-gray-300">/</span>
                 <span className="text-blue-600 font-semibold">상세보기</span>
               </nav>
@@ -249,9 +249,9 @@ export default function NoticeDetailPage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-4 mb-3">
                     {" "}
-                    <span className="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full bg-green-100 text-green-800">
-                      <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                      공지사항
+                    <span className="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full bg-orange-100 text-orange-800">
+                      <span className="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
+                      업무 문서
                     </span>
                     <span className="text-sm text-gray-500">
                       ID: {post.postId}
@@ -335,7 +335,7 @@ export default function NoticeDetailPage() {
                   value={editContent}
                   onChange={(e) => setEditContent(e.target.value)}
                   className="w-full h-64 bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                  placeholder="공지사항 내용을 입력하세요..."
+                  placeholder="업무 문서 내용을 입력하세요..."
                 />
               ) : (
                 <div className="bg-gray-50 rounded-lg p-6 min-h-[200px]">

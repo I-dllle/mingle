@@ -132,10 +132,9 @@ export default function AdminContractsPage() {
       }
     }
   };
-
   // 계약 상세 페이지로 이동
   const handleViewDetail = (id: number) => {
-    router.push(`/panel/contracts/${id}?category=${category}`);
+    router.push(`/adminContracts/${id}?category=${category}`);
   };
 
   // 검색 실행

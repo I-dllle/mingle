@@ -1,5 +1,6 @@
 import { apiClient } from '@/lib/api/apiClient';
 import type { CurrentUser } from '@/features/user/auth/types/user';
+import type { UserSimpleDto } from '@/features/user/search/types/UserSimpleDto';
 
 export const userService = {
   getMyProfile: async (): Promise<CurrentUser | null> => {
@@ -10,4 +11,8 @@ export const userService = {
       return null;
     }
   },
+};
+
+export const fetchDmCandidates = async (): Promise<UserSimpleDto[]> => {
+  return await apiClient<UserSimpleDto[]>('/dm-chat/candidates');
 };

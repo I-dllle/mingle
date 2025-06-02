@@ -139,8 +139,7 @@ public class PostMenuInitializer implements ApplicationRunner {
             initializeMenu("NOTICEBOARD_MANAGEMENT", "공지사항 관리", "운영팀 - 공지사항 관리", "System Operations", creator);
             initializeMenu("USER_MANAGEMENT", "사용자 관리", "운영팀 - 사용자 계정 관리", "System Operations", creator);
             initializeMenu("ATTENDANCE_MANAGEMENT", "근태관리", "운영팀 - 근태 관리", "System Operations", creator);
-            initializeMenu("REVENUE_ANALYSIS", "수익분석", "운영팀 - 수익분석 기능", "System Operations", creator);
-            initializeMenu("SETTLEMENT_MANAGEMENT", "정산관리", "운영팀 - 정산 내역 관리", "System Operations", creator);
+            initializeMenu("SETTLEMENT_MANAGEMENT", "수익/정산관리", "운영팀 - 수익, 정산 내역 관리", "System Operations", creator);
             initializeMenu("CONTRACT_MANAGEMENT", "계약서관리", "운영팀 - 계약 문서 관리", "System Operations", creator);
 
             //아티스트/매니저

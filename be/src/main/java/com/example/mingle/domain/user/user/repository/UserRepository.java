@@ -21,8 +21,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // → UserService.login()에서 입력값이 일반 ID일 때 사용됨
     Optional<User> findByLoginId(String loginId);
 
+
+
+
     // loginId 중복 여부 확인 (회원가입 또는 초기화 시 사용)
     boolean existsByLoginId(String loginId);
+
+
+
 
     //부서id로 사용자 목록 찾기
     List<User> findByDepartment_Id(Long departmentId);
@@ -30,7 +36,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     //부서명으로 사용자 목록 찾기
     List<User> findByDepartment_DepartmentName(String departmentName);
 
-    List<User> findByNicknameContaining(String keyword);
+
 
     //사용자를 이름으로 찾기
     Optional<User> findByName(String name);
@@ -38,12 +44,23 @@ public interface UserRepository extends JpaRepository<User, Long> {
     //사용자를 닉네임으로 찾기
     Optional<User> findByNickname(String nickname);
 
+    List<User> findByNicknameContaining(String keyword);
+
+    List<User> findByNicknameContainingIgnoreCase(String nickname);
+
+
+
     // refreshToken으로 사용자 조회
     Optional<User> findByRefreshToken(String refreshToken);
+
+
 
     //역할에 해당하는 사용자 목록 찾기
     List<User> findByRole(String role);
 
+
+
+    // 포지션 + 부서 조건으로 사용자 필터링 (검색/페이징 용도)
     @Query("""
     SELECT u FROM User u
     JOIN u.position p
@@ -54,6 +71,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
                                                @Param("positionCode") PositionCode positionCode,
                                                Pageable pageable);
 
+    // 유저 조회 시 department, position 즉시 로딩
     @Query("""
     SELECT u FROM User u
     LEFT JOIN FETCH u.department
@@ -62,5 +80,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 """)
     Optional<User> findByIdWithRelations(@Param("id") Long id);
 
-    List<User> findByNicknameContainingIgnoreCase(String nickname);
+
+
+    // 현재 로그인한 유저를 제외한 전체 유저 목록 (DM 대상 조회 등에서 사용)
+    List<User> findAllByIdNot(Long id);
 }

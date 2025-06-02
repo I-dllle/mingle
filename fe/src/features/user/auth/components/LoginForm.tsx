@@ -13,11 +13,11 @@ export default function LoginForm() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    try {
-      // 로그인 요청
+    try {      // 로그인 요청
       await apiClient('/users/login', {
         method: 'POST',
         body: JSON.stringify({ loginId, password }),
+        credentials: 'include',
       });
 
       // 성공 시 메인 페이지로 이동

@@ -5,6 +5,7 @@ import com.example.mingle.domain.chat.dm.entity.DmChatMessage;
 import com.example.mingle.domain.chat.dm.entity.DmChatRoom;
 import com.example.mingle.domain.chat.dm.repository.DmChatMessageRepository;
 import com.example.mingle.domain.chat.dm.repository.DmChatRoomRepository;
+import com.example.mingle.domain.user.user.dto.UserSimpleDto;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.domain.user.user.repository.UserRepository;
 import com.example.mingle.global.exception.ApiException;
@@ -97,5 +98,18 @@ public class DmChatRoomServiceImpl implements DmChatRoomService {
         } else {
             throw new ApiException(ErrorCode.FORBIDDEN);
         }
+    }
+
+
+
+    /**
+     * 현재 로그인 유저를 제외한 전체 유저 목록을 반환
+     * - DM을 새로 시작할 수 있는 유저 목록으로 사용
+     */
+    @Override
+    public List<UserSimpleDto> getDmCandidates(Long myId) {
+        return userRepository.findAllByIdNot(myId).stream()
+                .map(UserSimpleDto::from)
+                .toList();
     }
 }

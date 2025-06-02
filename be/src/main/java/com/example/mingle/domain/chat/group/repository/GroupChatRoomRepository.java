@@ -65,4 +65,10 @@ public interface GroupChatRoomRepository extends JpaRepository<GroupChatRoom, Lo
     // (추후 구현) 내가 만든 채팅방만 필터링 (예: "내가 만든 채팅방 목록")
     List<GroupChatRoom> findAllByCreatedBy(Long userId); // TODO
 
+
+    // ===============================
+    // - Initializer에서 중복 생성 방지용
+    // - Spring Data JPA가 자동 구현
+    // ===============================
+    boolean existsByName(String name);
 }

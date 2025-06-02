@@ -369,20 +369,20 @@ export default function RevenueDashboardPage() {
             <h3 className="text-lg font-semibold text-gray-900">
               월별 수익 현황
             </h3>
-          </div>
-
+          </div>{" "}
           {Object.keys(monthlyData).length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
               {Object.entries(monthlyData).map(([month, revenue]) => (
                 <div
                   key={month}
-                  className="group p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all duration-200"
+                  className="group p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all duration-200 min-h-[100px] flex flex-col justify-between"
                 >
-                  <div className="text-center">
-                    <p className="text-sm font-medium text-gray-600 mb-1">
+                  {" "}
+                  <div className="text-center flex-1 flex flex-col justify-center">
+                    <p className="text-xs font-medium text-gray-600 mb-1">
                       {month}
                     </p>
-                    <p className="text-lg font-bold text-blue-600 group-hover:text-blue-700 transition-colors">
+                    <p className="text-[10px] font-bold text-blue-600 group-hover:text-blue-700 transition-colors whitespace-nowrap overflow-hidden text-ellipsis">
                       {formatCurrency(revenue)}
                     </p>
                     <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">

@@ -1,24 +1,18 @@
 'use client';
 
-import styles from './DmChatMessageList.module.css';
 import { useEffect, useRef } from 'react';
 import { useDmChat } from '@/features/chat/dm/services/useDmChat';
 import { ChatMessagePayload } from '@/features/chat/common/types/ChatMessagePayload';
-
+import { MessageFormat } from '@/features/chat/common/types/MessageFormat';
+import {
+  getDateString,
+  getTimeString,
+} from '@/features/chat/common/utils/dateUtils';
+import styles from './DmChatMessageList.module.css';
 interface DmChatMessageListProps {
   roomId: number;
   receiverId: number;
 }
-
-// 날짜 추출 유틸
-const getDateString = (dateStr: string) => dateStr.split('T')[0];
-
-// 시간 포맷 유틸
-const getTimeString = (dateStr: string) =>
-  new Date(dateStr).toLocaleTimeString('ko-KR', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
 
 export default function DmChatMessageList({
   roomId,
@@ -81,7 +75,41 @@ export default function DmChatMessageList({
                 {isMe ? '나' : `상대(${msg.senderId})`}
               </div>
 
-              <div className={styles.messageText}>{msg.content}</div>
+              {/* 메시지 포맷 분기 처리 */}
+              <div className={styles.messageText}>
+                {msg.format === MessageFormat.ARCHIVE ? (
+                  <>
+                    <a
+                      href={msg.content}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: '#1890ff', textDecoration: 'underline' }}
+                    >
+                      📎 {msg.content.split('/').pop()} {/* 파일명만 출력 */}
+                    </a>
+
+                    {/* 태그 정보 표시 */}
+                    {!!msg.tagNames && msg.tagNames.length > 0 && (
+                      <div
+                        style={{
+                          marginTop: '4px',
+                          fontSize: '12px',
+                          color: '#999',
+                        }}
+                      >
+                        {msg.tagNames.map((tag) => (
+                          <span key={tag} style={{ marginRight: '6px' }}>
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  msg.content
+                )}
+              </div>
+
               <div className={styles.timeStamp}>
                 {getTimeString(msg.createdAt)}
               </div>
