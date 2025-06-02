@@ -1,5 +1,5 @@
  <a href="https://www.mingleservice.site/" target="_blank">
- <img src="" alt="배너" width="100%"/>
+ <img src="https://github.com/user-attachments/assets/41aab2bc-87f8-497e-a679-b076ab77abbb" alt="배너" width="100%"/>
  </a>
 
  <br/>
@@ -45,18 +45,18 @@
     - **일반로그인(JWT)**
 
     - **좌측 사이드바**
+        - **공지사항**
+        - **업무자료 게시판**
+        - **부서별 게시판**
         - **캘린더 일정관리 CRUD**
             - 스케줄 열람/등록/수정/삭제
-            - 개인 스케줄(아티스트)
-            - 이동 시간, 교통 수단, 숙소 정보 등(아티스트)
-            - 이력 관리
-            - 출석(?)
+            - 회사전체 일정, 부서별 일정, 개인 일정
             - 메모
-        - **게시글 검색(게시판-공지사항)**
         - **근태 및 출퇴근 관리**
         - **모집공고**
         - **굿즈샵(직원할인가 판매 페이지)**
         - **회의실 예약**
+        - **연습실 예약**
 
     - **우측 사이드바**
         - 실시간 채팅 서비스
@@ -89,10 +89,10 @@
 # 4. Tasks & Responsibilities (작업 및 역할 분담)
 |  |  |  |
  |-----------------|-----------------|-----------------|
-| 이은서   |  <img src="https://github.com/user-attachments/assets/5bd4b56f-3b71-45e9-8b85-be926de56cdc" width="100"> | <ul><li>(1)</li><li>(2) </li><li>(3)</li></ul>     |
+| 이은서   |  <img src="https://github.com/user-attachments/assets/5bd4b56f-3b71-45e9-8b85-be926de56cdc" width="100"> | <ul><li>(1) 채팅기능</li><li>(2) 프론트구조 빌드</li></ul>     |
 | 이서영   |  <img src="https://github.com/user-attachments/assets/eb93e3ee-4b64-41e4-9672-745062936efd" width = "100">| <ul><li>(1) 게시판기능 </li><li>(2) 상점 및 결제기능 </li><li>(3) 배포</li></ul> |
-| 전병우   |  <img src="" width="100">    |<ul><li>(1) </li><li></li><li>(2)</li><li>(3)</li></ul>  |
-| 김현우    |  <img src="" width="100">    | <ul><li>(1)</li><li>(2)</li><li>(3)</li></ul>    |
+| 전병우   |  <img src="" width="100">    |<ul><li>(1) 캘린더 및 일정관리 기능</li><li></li><li>(2) 회의실/연습실 예약기능 </li><li>(3) 근태기능</li></ul>  |
+| 김현우    |  <img src="" width="100">    | <ul><li>(1) 정산 및 계약기능</li><li>(2) 관리자기능</li></ul>    |
 
  <br/>
  <br/>
