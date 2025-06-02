@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import AuthGuard from '@/features/user/auth/components/AuthGuard';
 
 export default function ChatLayout({
@@ -7,5 +8,5 @@ export default function ChatLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <AuthGuard>{children}</AuthGuard>; // 또는 메신저 레이아웃 포함
+  return <AuthGuard>{children}</AuthGuard>;
 }
