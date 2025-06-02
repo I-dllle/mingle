@@ -33,7 +33,7 @@
 # 2. Team Members (팀원 및 팀 소개)
 | 이은서 | 이서영 | 전병우 | 김현우 |
  |:------:|:------:|:------:|:------:|
-| <img src="https://github.com/user-attachments/assets/5bd4b56f-3b71-45e9-8b85-be926de56cdc" alt="이은서" width="150"> | <img src="https://github.com/user-attachments/assets/eb93e3ee-4b64-41e4-9672-745062936efd" alt="이서영" width="150"> | <img src="" alt="전병우" width="150"> | <img src="" alt="김현우" width="150"> |
+| <img src="https://github.com/user-attachments/assets/5bd4b56f-3b71-45e9-8b85-be926de56cdc" alt="이은서" width="150"> | <img src="https://github.com/user-attachments/assets/eb93e3ee-4b64-41e4-9672-745062936efd" alt="이서영" width="150"> | <img src="https://github.com/user-attachments/assets/1c9a4ac0-28af-4f03-9dbe-ace797c34fef" alt="전병우" width="150"> | <img src="" alt="김현우" width="150"> |
 | BE | BE | BE | BE |
 | [GitHub](https://github.com/monimoni12) | [GitHub](https://github.com/Si159521) | [GitHub]() | [GitHub]() |
 
