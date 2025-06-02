@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { GoodsOrder } from "../types/Order";
 import OrderCard from "./OrderCard";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface OrdersListProps {
   orders: GoodsOrder[];
@@ -19,6 +19,19 @@ export default function OrdersList({
   onClearError,
 }: OrdersListProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [highlightedOrderId, setHighlightedOrderId] = useState<string | null>(
+    null
+  );
+
+  useEffect(() => {
+    const orderId = searchParams.get("orderId");
+    if (orderId) {
+      setHighlightedOrderId(orderId);
+      // URL에서 orderId 파라미터 제거
+      router.replace("/goods/orders");
+    }
+  }, [searchParams, router]);
 
   if (loading) {
     return (
@@ -102,7 +115,16 @@ export default function OrdersList({
       ) : (
         <div className="space-y-6">
           {orders.map((order) => (
-            <OrderCard key={order.id} order={order} onCancel={onCancel} />
+            <div
+              key={order.id}
+              className={`transition-all duration-300 ${
+                highlightedOrderId === order.orderId
+                  ? "transform scale-[1.02] shadow-lg"
+                  : ""
+              }`}
+            >
+              <OrderCard order={order} onCancel={onCancel} />
+            </div>
           ))}
         </div>
       )}

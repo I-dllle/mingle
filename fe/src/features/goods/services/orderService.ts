@@ -1,29 +1,28 @@
 import { GoodsOrder } from "../types/Order";
+import { api } from "@/lib/api";
 
 export class OrderService {
-  private baseUrl = "/api/v1/goodsOrder";
-
   async getOrders(): Promise<GoodsOrder[]> {
-    const response = await fetch(`${this.baseUrl}/orders`, {
-      credentials: "include",
-    });
-
-    if (!response.ok) {
-      throw new Error("주문내역을 불러오는데 실패했습니다.");
+    try {
+      console.log("주문내역 조회 API 호출");
+      const response = await api.get("/api/v1/goodsOrder/orders");
+      console.log("주문내역 조회 결과:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("주문내역 조회 실패:", error);
+      throw error;
     }
-
-    return response.json();
   }
 
   async cancelOrder(orderId: string): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/orders/${orderId}`, {
-      method: "DELETE",
-      credentials: "include",
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "주문 취소에 실패했습니다.");
+    try {
+      console.log("주문 취소 API 호출:", orderId);
+      const response = await api.delete(`/api/v1/goodsOrder/orders/${orderId}`);
+      console.log("주문 취소 결과:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("주문 취소 실패:", error);
+      throw error;
     }
   }
 }

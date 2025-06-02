@@ -2,17 +2,18 @@ export interface GoodsOrder {
   id: number;
   orderId: string;
   paymentKey: string;
-  purAmount: number;
   amount: number;
-  purStatus: "PENDING" | "PAID" | "FAILED" | "CANCELED";
-  purDeliveryStatus: "PREPARING" | "SHIPPED" | "DELIVERED";
+  purAmount: number;
+  purMethod: string;
+  purStatus: string;
+  purDeliveryStatus: string;
   orderedAt: string;
-  paidAt?: string;
+  paidAt: string;
   goods: {
     id: number;
     itemName: string;
     itemPrice: number;
-    imgUrl?: string;
+    imgUrl: string;
   };
 }
 
@@ -23,15 +24,15 @@ export const statusColors = {
   CANCELED: "bg-gray-100 text-gray-800",
 } as const;
 
-export const statusLabels = {
+export const statusLabels: Record<string, string> = {
   PENDING: "결제 대기",
   PAID: "결제 완료",
   FAILED: "결제 실패",
   CANCELED: "주문 취소",
-} as const;
+};
 
-export const deliveryStatusLabels = {
+export const deliveryStatusLabels: Record<string, string> = {
   PREPARING: "배송 준비중",
   SHIPPED: "배송중",
   DELIVERED: "배송 완료",
-} as const;
+};

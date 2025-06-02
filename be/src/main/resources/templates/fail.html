@@ -249,7 +249,7 @@
       </div>
 
       <div class="button-group">
-        <a href="#" class="btn btn-secondary" onclick="goToGoods()"
+        <a href="#" class="btn btn-secondary" onclick="goToOrders()"
           >상품 보기</a
         >
         <a href="#" class="btn btn-primary" onclick="retryPayment()"
@@ -278,12 +278,18 @@
 
         if (countdown <= 0) {
           clearInterval(timer);
-          goToGoods();
+          goToOrders();
         }
       }, 1000);
 
-      function goToGoods() {
-        window.location.href = "/goods";
+      function goToOrders() {
+        if (window.opener) {
+          window.opener.postMessage({ type: "PAYMENT_FAIL" }, "*");
+          window.close();
+        } else {
+          // fallback: 직접 이동 (단, 보안 에러 발생 가능)
+          window.location.href = `/goods/orders/fail`;
+        }
       }
 
       function retryPayment() {

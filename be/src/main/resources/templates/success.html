@@ -310,7 +310,13 @@
       }
 
       function goToOrders() {
-        window.location.href = "http://localhost:3000/goods/orders";
+        if (window.opener) {
+          window.opener.postMessage({ type: "PAYMENT_SUCCESS", orderId }, "*");
+          window.close();
+        } else {
+          // fallback: 직접 이동 (단, 보안 에러 발생 가능)
+          window.location.href = `/goods/orders?orderId=${orderId}`;
+        }
       }
 
       function goToGoods() {
