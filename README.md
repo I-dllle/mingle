@@ -90,7 +90,7 @@
 |  |  |  |
  |-----------------|-----------------|-----------------|
 | 이은서   |  <img src="https://github.com/user-attachments/assets/5bd4b56f-3b71-45e9-8b85-be926de56cdc" width="100"> | <ul><li>(1)</li><li>(2) </li><li>(3)</li></ul>     |
-| 이서영   |  <img src="https://github.com/user-attachments/assets/eb93e3ee-4b64-41e4-9672-745062936efd" width = "100">| <ul><li>(1)</li><li>(2)</li><li>(3)</li></ul> |
+| 이서영   |  <img src="https://github.com/user-attachments/assets/eb93e3ee-4b64-41e4-9672-745062936efd" width = "100">| <ul><li>(1) 게시판기능 </li><li>(2) 상점 및 결제기능 </li><li>(3) 배포</li></ul> |
 | 전병우   |  <img src="" width="100">    |<ul><li>(1) </li><li></li><li>(2)</li><li>(3)</li></ul>  |
 | 김현우    |  <img src="" width="100">    | <ul><li>(1)</li><li>(2)</li><li>(3)</li></ul>    |
 
