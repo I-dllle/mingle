@@ -83,7 +83,7 @@ export default function AdminUsersPage() {
     }
   };
   const handleUserSelect = (userId: number) => {
-    router.push(`/panel/users/${userId}`);
+    router.push(`/adminUsers/${userId}`);
   };
 
   const getRoleColor = (role: UserRole) => {

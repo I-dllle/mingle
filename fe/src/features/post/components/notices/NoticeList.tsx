@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { postService } from "../../services/postService";
 import type { PostResponseDto } from "../../types/post";
 
@@ -74,8 +75,9 @@ export default function NoticeList({
           </div>
         ) : (
           apiNotices.map((notice) => (
-            <div
+            <Link
               key={notice.postId}
+              href={`/board/common/notices/${notice.postId}`}
               className="flex flex-col border-b last:border-b-0 py-2 gap-1 cursor-pointer hover:bg-gray-50"
             >
               <div className="flex items-center gap-2">
@@ -95,7 +97,7 @@ export default function NoticeList({
                 <span>·</span>
                 <span>{notice.departmentName}</span>
               </div>
-            </div>
+            </Link>
           ))
         )}
       </div>

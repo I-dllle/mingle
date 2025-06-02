@@ -101,7 +101,6 @@ export default function FinanceNoticesDetailPage() {
       loadPost();
     }
   }, [postId]);
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -109,7 +108,7 @@ export default function FinanceNoticesDetailPage() {
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-              <p className="mt-4 text-gray-600">활동보고서를 불러오는 중...</p>
+              <p className="mt-4 text-gray-600">공지사항을 불러오는 중...</p>
             </div>
           </div>
         </div>
@@ -143,7 +142,7 @@ export default function FinanceNoticesDetailPage() {
       <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto px-4 py-8 max-w-4xl">
           <div className="text-center py-12">
-            <p className="text-gray-600">활동보고서를 찾을 수 없습니다.</p>
+            <p className="text-gray-600">공지사항을 찾을 수 없습니다.</p>
             <button
               onClick={() => router.back()}
               className="mt-4 flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors mx-auto"
@@ -167,17 +166,26 @@ export default function FinanceNoticesDetailPage() {
                 onClick={() => router.back()}
                 className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-blue-600 hover:bg-white/70 rounded-xl transition-all duration-200 backdrop-blur-sm"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M15 19l-7-7 7-7"
+                  />
                 </svg>
-                <span className="font-medium">활동보고서 목록</span>
+                <span className="font-medium">공지사항 목록</span>
               </button>
-              
               {/* 브레드크럼 */}
               <nav className="flex items-center space-x-2 text-sm">
-                <span className="text-gray-500">아티스트</span>
+                <span className="text-gray-500">재무법무팀</span>
                 <span className="text-gray-300">/</span>
-                <span className="text-gray-500">활동보고서</span>
+                <span className="text-gray-500">공지사항</span>
                 <span className="text-gray-300">/</span>
                 <span className="text-blue-600 font-semibold">상세보기</span>
               </nav>
@@ -191,8 +199,18 @@ export default function FinanceNoticesDetailPage() {
                     onClick={handleEdit}
                     className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-xl transition-all duration-200"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                      />
                     </svg>
                     <span className="hidden sm:inline">수정</span>
                   </button>
@@ -200,8 +218,18 @@ export default function FinanceNoticesDetailPage() {
                     onClick={handleDelete}
                     className="flex items-center gap-2 px-4 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-xl transition-all duration-200"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
                     </svg>
                     <span className="hidden sm:inline">삭제</span>
                   </button>
@@ -219,13 +247,16 @@ export default function FinanceNoticesDetailPage() {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-4 mb-3">
-                    <span className="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full bg-blue-100 text-blue-800">
-                      <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                      활동보고서
+                    {" "}
+                    <span className="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full bg-green-100 text-green-800">
+                      <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                      재무법무팀 공지사항
                     </span>
-                    <span className="text-sm text-gray-500">ID: {post.postId}</span>
+                    <span className="text-sm text-gray-500">
+                      ID: {post.postId}
+                    </span>
                   </div>
-                  
+
                   {isEditing ? (
                     <input
                       type="text"
@@ -235,17 +266,24 @@ export default function FinanceNoticesDetailPage() {
                       placeholder="제목을 입력하세요"
                     />
                   ) : (
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{post.title}</h1>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                      {post.title}
+                    </h1>
                   )}
                 </div>
-              </div>              {/* 메타 정보 */}
+              </div>{" "}
+              {/* 메타 정보 */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
                 <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4">
                   <label className="text-xs font-semibold text-blue-600 uppercase tracking-wider">
                     작성자
                   </label>
-                  <p className="text-lg font-semibold text-gray-900 mt-2">{post.writerName}</p>
-                  <p className="text-sm text-blue-600/70 mt-1">ID: {post.userId}</p>
+                  <p className="text-lg font-semibold text-gray-900 mt-2">
+                    {post.writerName}
+                  </p>
+                  <p className="text-sm text-blue-600/70 mt-1">
+                    ID: {post.userId}
+                  </p>
                 </div>
                 <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4">
                   <label className="text-xs font-semibold text-green-600 uppercase tracking-wider">
@@ -255,13 +293,13 @@ export default function FinanceNoticesDetailPage() {
                     {new Date(post.createdAt).toLocaleDateString("ko-KR", {
                       year: "numeric",
                       month: "short",
-                      day: "numeric"
+                      day: "numeric",
                     })}
                   </p>
                   <p className="text-sm text-green-600/70 mt-1">
                     {new Date(post.createdAt).toLocaleTimeString("ko-KR", {
                       hour: "2-digit",
-                      minute: "2-digit"
+                      minute: "2-digit",
                     })}
                   </p>
                 </div>
@@ -273,13 +311,13 @@ export default function FinanceNoticesDetailPage() {
                     {new Date(post.updatedAt).toLocaleDateString("ko-KR", {
                       year: "numeric",
                       month: "short",
-                      day: "numeric"
+                      day: "numeric",
                     })}
                   </p>
                   <p className="text-sm text-purple-600/70 mt-1">
                     {new Date(post.updatedAt).toLocaleTimeString("ko-KR", {
                       hour: "2-digit",
-                      minute: "2-digit"
+                      minute: "2-digit",
                     })}
                   </p>
                 </div>
@@ -296,7 +334,7 @@ export default function FinanceNoticesDetailPage() {
                   value={editContent}
                   onChange={(e) => setEditContent(e.target.value)}
                   className="w-full h-64 bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                  placeholder="활동보고서 내용을 입력하세요..."
+                  placeholder="공지사항 내용을 입력하세요..."
                 />
               ) : (
                 <div className="bg-gray-50 rounded-lg p-6 min-h-[200px]">
@@ -323,7 +361,7 @@ export default function FinanceNoticesDetailPage() {
                       />
                       <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all duration-200 flex items-center justify-center">
                         <button
-                          onClick={() => window.open(url, '_blank')}
+                          onClick={() => window.open(url, "_blank")}
                           className="opacity-0 group-hover:opacity-100 bg-white text-gray-800 px-4 py-2 rounded-lg shadow-lg transition-opacity"
                         >
                           확대보기

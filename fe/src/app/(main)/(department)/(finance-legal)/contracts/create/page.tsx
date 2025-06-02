@@ -13,7 +13,7 @@ import {
   UserSearchDto,
 } from "@/features/department/finance-legal/contracts/types/Contract";
 import { contractService } from "@/features/department/finance-legal/contracts/services/contractService";
-import { useAuth } from "@/features/auth/hooks/useAuth";
+import { useAuth } from "@/features/user/auth/hooks/useAuth";
 
 interface CreateFormData {
   userId: number;
@@ -43,7 +43,6 @@ export default function CreateContractPage() {
     ContractCategory.EXTERNAL;
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-
   // 내부 계약 당사자 검색 관련 상태
   const [contractPartyName, setContractPartyName] = useState<string>("");
   const [contractPartyResults, setContractPartyResults] = useState<
@@ -57,6 +56,113 @@ export default function CreateContractPage() {
     useState<NodeJS.Timeout | null>(null);
   const [isContractPartyComposing, setIsContractPartyComposing] =
     useState<boolean>(false);
+
+  // 대상 사용자 검색 관련 상태
+  const [targetUserSearches, setTargetUserSearches] = useState<
+    Array<{
+      searchName: string;
+      results: UserSearchDto[];
+      selectedUser: UserSearchDto | null;
+      isSearching: boolean;
+      searchTimer: NodeJS.Timeout | null;
+      isComposing: boolean;
+    }>
+  >([]);
+
+  // 새로운 대상 사용자 항목 추가
+  const addNewTargetUser = () => {
+    setTargetUserSearches((prev) => [
+      ...prev,
+      {
+        searchName: "",
+        results: [],
+        selectedUser: null,
+        isSearching: false,
+        searchTimer: null,
+        isComposing: false,
+      },
+    ]);
+    setCreateFormData({
+      ...createFormData,
+      targetUserIds: [...createFormData.targetUserIds, 1],
+    });
+  };
+
+  // 대상 사용자 검색
+  const handleTargetUserSearch = async (index: number) => {
+    const searchItem = targetUserSearches[index];
+    if (!searchItem || searchItem.searchName.trim().length < 2) {
+      return;
+    }
+
+    const newSearches = [...targetUserSearches];
+    newSearches[index].isSearching = true;
+    setTargetUserSearches(newSearches);
+
+    try {
+      const results = await contractService.searchUsers(
+        searchItem.searchName.trim(),
+        createFormData.contractCategory
+      );
+      newSearches[index].results = results || [];
+      newSearches[index].isSearching = false;
+      setTargetUserSearches(newSearches);
+    } catch (error) {
+      console.error("사용자 검색 실패:", error);
+      newSearches[index].results = [];
+      newSearches[index].isSearching = false;
+      setTargetUserSearches(newSearches);
+      setError(
+        error instanceof Error ? error.message : "사용자 검색에 실패했습니다."
+      );
+    }
+  };
+
+  // 대상 사용자 선택
+  const handleSelectTargetUser = (index: number, user: UserSearchDto) => {
+    const newSearches = [...targetUserSearches];
+    newSearches[index].selectedUser = user;
+    newSearches[index].searchName = user.nickname;
+    newSearches[index].results = [];
+    setTargetUserSearches(newSearches);
+
+    const newUserIds = [...createFormData.targetUserIds];
+    newUserIds[index] = user.id;
+    setCreateFormData({
+      ...createFormData,
+      targetUserIds: newUserIds,
+    });
+  };
+
+  // 대상 사용자 선택 해제
+  const handleClearTargetUser = (index: number) => {
+    const newSearches = [...targetUserSearches];
+    newSearches[index].selectedUser = null;
+    newSearches[index].searchName = "";
+    newSearches[index].results = [];
+    setTargetUserSearches(newSearches);
+
+    const newUserIds = [...createFormData.targetUserIds];
+    newUserIds[index] = 1;
+    setCreateFormData({
+      ...createFormData,
+      targetUserIds: newUserIds,
+    });
+  };
+
+  // 대상 사용자 삭제
+  const removeTargetUser = (index: number) => {
+    const newSearches = targetUserSearches.filter((_, i) => i !== index);
+    setTargetUserSearches(newSearches);
+
+    const newUserIds = createFormData.targetUserIds.filter(
+      (_, i) => i !== index
+    );
+    setCreateFormData({
+      ...createFormData,
+      targetUserIds: newUserIds,
+    });
+  };
 
   const [createFormData, setCreateFormData] = useState<CreateFormData>({
     userId: 1, // 기본값, 실제로는 로그인한 사용자 ID 사용
@@ -196,6 +302,8 @@ export default function CreateContractPage() {
       setLoading(false);
     }
   };
+  // useEffect 제거 - 초기에 자동으로 항목을 추가하지 않음
+
   return (
     <div className="container mx-auto p-6">
       {" "}
@@ -511,7 +619,7 @@ export default function CreateContractPage() {
                     </button>
                   </div>
                 </div>
-              )}
+              )}{" "}
               {/* 내부계약 기준 대상 사용자 입력 섹션 */}
               {!createFormData.useManualRatios && (
                 <div className="border border-gray-200 rounded-lg p-4">
@@ -519,60 +627,142 @@ export default function CreateContractPage() {
                     내부계약 기준 대상 사용자
                   </h3>
                   <div className="space-y-3">
-                    {createFormData.targetUserIds.map((userId, index) => (
-                      <div key={index} className="flex gap-3 items-end">
-                        {" "}
-                        <div className="flex-1">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            사용자 ID
-                          </label>
-                          <input
-                            type="number"
-                            value={userId === 1 ? "" : userId}
-                            onChange={(e) => {
-                              const newUserIds = [
-                                ...createFormData.targetUserIds,
-                              ];
-                              newUserIds[index] = e.target.value
-                                ? Number(e.target.value)
-                                : 1;
-                              setCreateFormData({
-                                ...createFormData,
-                                targetUserIds: newUserIds,
-                              });
-                            }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                            min="1"
-                            placeholder="사용자 ID"
-                            required
-                          />
+                    {targetUserSearches.map((searchItem, index) => (
+                      <div key={index} className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <div className="relative flex-grow">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              사용자 검색 {index + 1}
+                            </label>{" "}
+                            <input
+                              type="text"
+                              value={searchItem.searchName}
+                              onCompositionStart={() => {
+                                const newSearches = [...targetUserSearches];
+                                newSearches[index].isComposing = true;
+                                setTargetUserSearches(newSearches);
+                              }}
+                              onCompositionEnd={(e) => {
+                                const newSearches = [...targetUserSearches];
+                                newSearches[index].isComposing = false;
+                                newSearches[index].searchName =
+                                  e.currentTarget.value;
+                                setTargetUserSearches(newSearches);
+                                const value = e.currentTarget.value;
+                                if (value.trim().length >= 2) {
+                                  if (searchItem.searchTimer) {
+                                    clearTimeout(searchItem.searchTimer);
+                                  }
+                                  const timer = setTimeout(() => {
+                                    handleTargetUserSearch(index);
+                                  }, 300);
+                                  newSearches[index].searchTimer = timer;
+                                  setTargetUserSearches(newSearches);
+                                }
+                              }}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                const newSearches = [...targetUserSearches];
+                                newSearches[index].searchName = value;
+
+                                if (searchItem.searchTimer) {
+                                  clearTimeout(searchItem.searchTimer);
+                                }
+
+                                // 한글 입력 중이거나 이미 사용자가 선택된 상태일 때는 검색하지 않음
+                                if (
+                                  searchItem.isComposing ||
+                                  searchItem.selectedUser
+                                ) {
+                                  setTargetUserSearches(newSearches);
+                                  return;
+                                }
+
+                                if (value.trim().length >= 2) {
+                                  const timer = setTimeout(() => {
+                                    handleTargetUserSearch(index);
+                                  }, 500); // 한글 입력을 위해 딜레이 증가
+                                  newSearches[index].searchTimer = timer;
+                                  setTargetUserSearches(newSearches);
+                                } else if (value.trim().length === 0) {
+                                  newSearches[index].results = [];
+                                  setTargetUserSearches(newSearches);
+                                }
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  if (
+                                    !searchItem.isComposing &&
+                                    searchItem.searchName.trim().length >= 2
+                                  ) {
+                                    handleTargetUserSearch(index);
+                                  }
+                                }
+                              }}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              placeholder="사용자 이름 입력 (2글자 이상)"
+                              disabled={
+                                !!searchItem.selectedUser ||
+                                searchItem.isSearching
+                              }
+                              required
+                            />
+                            {searchItem.results.length > 0 &&
+                              !searchItem.selectedUser && (
+                                <div className="absolute z-50 w-full mt-1 bg-white shadow-lg rounded-md border border-gray-200 max-h-48 overflow-y-auto">
+                                  {searchItem.results.map((user) => (
+                                    <div
+                                      key={user.id}
+                                      onClick={() =>
+                                        handleSelectTargetUser(index, user)
+                                      }
+                                      className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                    >
+                                      <div className="font-medium">
+                                        {user.nickname}
+                                      </div>
+                                      <div className="text-xs text-gray-500">
+                                        {user.email}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                          </div>
+                          {searchItem.selectedUser && (
+                            <button
+                              type="button"
+                              onClick={() => handleClearTargetUser(index)}
+                              className="px-3 py-2 bg-yellow-100 text-yellow-700 rounded-md hover:bg-yellow-200 text-sm whitespace-nowrap"
+                            >
+                              해제
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => removeTargetUser(index)}
+                            className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                          >
+                            삭제
+                          </button>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const newUserIds =
-                              createFormData.targetUserIds.filter(
-                                (_, i) => i !== index
-                              );
-                            setCreateFormData({
-                              ...createFormData,
-                              targetUserIds: newUserIds,
-                            });
-                          }}
-                          className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                        >
-                          삭제
-                        </button>
+                        {searchItem.selectedUser && (
+                          <div className="ml-4 p-2 bg-blue-50 rounded-md">
+                            <div className="text-sm font-medium text-blue-800">
+                              선택된 사용자: {searchItem.selectedUser.nickname}
+                            </div>
+                            <div className="text-xs text-blue-600">
+                              ID: {searchItem.selectedUser.id} | 이메일:{" "}
+                              {searchItem.selectedUser.email}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ))}
                     <button
                       type="button"
-                      onClick={() => {
-                        setCreateFormData({
-                          ...createFormData,
-                          targetUserIds: [...createFormData.targetUserIds, 1],
-                        });
-                      }}
+                      onClick={addNewTargetUser}
                       className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                     >
                       사용자 추가
@@ -600,6 +790,7 @@ export default function CreateContractPage() {
                       }
                       onCompositionEnd={(e) => {
                         setIsContractPartyComposing(false);
+                        setContractPartyName(e.currentTarget.value);
                         const value = e.currentTarget.value;
                         if (value.trim().length >= 2) {
                           if (contractPartySearchTimer) {
@@ -619,26 +810,27 @@ export default function CreateContractPage() {
                           clearTimeout(contractPartySearchTimer);
                         }
 
-                        if (isContractPartyComposing) {
+                        // 한글 입력 중이거나 이미 계약 당사자가 선택된 상태일 때는 검색하지 않음
+                        if (isContractPartyComposing || selectedContractParty) {
                           return;
                         }
 
                         if (value.trim().length >= 2) {
                           const timer = setTimeout(() => {
                             handleContractPartySearch();
-                          }, 300);
+                          }, 500); // 한글 입력을 위해 딜레이 증가
                           setContractPartySearchTimer(timer);
                         } else if (value.trim().length === 0) {
                           setContractPartyResults([]);
-                          if (selectedContractParty) {
-                            handleClearContractParty();
-                          }
                         }
                       }}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
                           e.preventDefault();
-                          if (contractPartyName.trim().length >= 2) {
+                          if (
+                            !isContractPartyComposing &&
+                            contractPartyName.trim().length >= 2
+                          ) {
                             handleContractPartySearch();
                           }
                         }

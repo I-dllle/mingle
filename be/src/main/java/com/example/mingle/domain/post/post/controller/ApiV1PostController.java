@@ -87,12 +87,12 @@ public class ApiV1PostController {
                     @ApiResponse(responseCode = "404", description = "해당 카테고리를 찾을 수 없습니다")
             }
     )
-    @GetMapping("/menu/{depId}/posts")
+    @GetMapping("/menu/{deptId}/posts")
     public ResponseEntity<List<PostResponseDto>> getBusinessDocuments(
-            @Parameter(description = "게시판 ID", required = true) @PathVariable Long depId,
+            @Parameter(description = "게시판 ID", required = true) @PathVariable Long deptId,
             @RequestParam(required = false) BusinessDocumentCategory category
     ){
-        List<PostResponseDto> posts = postService.getBusinessDocuments(depId, category);
+        List<PostResponseDto> posts = postService.getBusinessDocuments(deptId, category);
         return ResponseEntity.ok(posts);
     }
 
