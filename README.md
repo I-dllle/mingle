@@ -1,5 +1,5 @@
  <a href="https://www.mingleservice.site/" target="_blank">
- <img src="https://github.com/user-attachments/assets/41aab2bc-87f8-497e-a679-b076ab77abbb" alt="배너" width="100%"/>
+ <img src="https://github.com/user-attachments/assets/1c9a4ac0-28af-4f03-9dbe-ace797c34fef" alt="배너" width="100%"/>
  </a>
 
  <br/>
