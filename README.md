@@ -158,347 +158,37 @@ fe/(Frontend - Next.js / TypeScript)
     │   │   ├── common/page.tsx             # 공지사항, 업무자료 등 공통 게시판
     │   │   └── department/[menu]/page.tsx  # 부서별 게시판
     │   │
-    │   ├── (common)/ 
-    │   │   ├── attendance/                  # 출결 관리 도메인
-    │   │   │   ├── calendar/page.tsx        # 월별 출결 캘린더
-    │   │   │   ├── detail/page.tsx          # 하루 출결 상세
-    │   │   │   └── requests/page.tsx        # 연차/조퇴 요청
-    │   │   ├── reservation/                       # 회의실 예약 도메인
-    │   │   │   ├── requests/page.tsx              # 예약 신청 목록
-    │   │   │   ├── new/page.tsx                   # 예약 생성 페이지
-    │   │   │   ├── edit/[reservationId]/page.tsx  # 예약 수정 페이지
-    │   │   │   ├── [reservationId]/page.tsx       # 예약 상세 페이지
-    │   │   │   └── layout.tsx                     # 예약 도메인 전용 레이아웃 (옵션)
-    │   │   ├── schedule/                       # 일정 관리 도메인
-    │   │   │   ├── page.tsx                    # 기본 달력 뷰
-    │   │   │   ├── [scheduleId]/page.tsx       # 일정 상세 페이지
-    │   │   │   ├── new/page.tsx                # 일정 등록 페이지
-    │   │   │   └── edit/[scheduleId]/page.tsx  # 일정 수정 페이지
-    │   │   └── goods/                               # 굿즈 상점
-    │   │       ├── page.tsx                          # 상품 리스트      
-    │   │       └── [goodsId]/                        # 상품 상세
-    │   │              └── page.tsx                   #
+    │   ├── (common)/  #공통게시판
+    |   |                  ,,, 
     │   │
-    │   ├── (department)/ 
-    │   │   ├── (finance-legal)/                      # 법무/정산 도메인
-    │   │   │   ├── contracts/                        # 계약서 관리 
-    │   │   │   │      ├── list/                      # 
-    │   │   │   │      │    └── page.tsx              # 
-    │   │   │   │      └── page.tsx                   # 
-    │   │   │   ├── legal-disputes/                   # 법률 분쟁 내역
-    │   │   │   │      ├──                  
-    
-    │   │   │   ├── policy/                           # 내부 규정
-    │   │   │   │      ├──                            # 
-          
-    │   │   │   └── revenue/                          #  수익 정산 내역 
-    │   │   │          ├── analytics/                 #
-    │   │   │          │    └── page.tsx      
-    │   │   │          ├── contracts/                 #
-    │   │   │          │    └── page.tsx      
-    │   │   │          ├── dashboard/                 #
-    │   │   │          │    └── page.tsx      
-    │   │   │          ├── settlements/               #
-    │   │   │          │    └── page.tsx      
-    │   │   │          └── page.tsx      
-    │   │   ├── (artist)/                           # 아티스트 & 매니저 도메인
-    │   │   │   ├── artist-report/page.tsx          # 활동보고서
-    │   │   │   ├── studio-reservation/page.tsx     # 연습실
-    │   │   │   ├──                                 # 
-    │   │   │   └──                                 # 
-    │   │   ├── (marketing)/                      # 마케팅/홍보팀 도메인
-    │   │   │   ├── sns-content/page.tsx          # SNS컨텐츠
-    │   │   │   └── events/page.tsx               # 이벤트 
-    │   │   ├── (planning)/                       # 기획팀 도메인
-    │   │   │   ├── team-composition/page.tsx     # 팀/유닛 구성
-    │   │   │   ├── artists/page.tsx              # 아티스트    
-    │   │   │   └── activity-planning/page.tsx    # 활동기획  
-    │   │   └── (creative)/                       # 콘텐츠팀 도메인
-    │   │       ├── audio-video/page.tsx          # 음원, 영상
-    │   │       ├── press-releases/page.tsx       # 보도자료
-    │   │       └── contentclassification-albumcovers/page.tsx # 콘텐츠분류, 앨범커버    
-    │   │
-    │   ├── orders/                      # 주문 내역
-    │   │   ├── page.tsx                 # 내 주문 목록
-    │   │   └── [orderId]/success.tsx    # 결제 성공 페이지
-    │   │
-    │   ├── payment/                     # 결제 위젯
-    │   │   ├── success/page.tsx         # 결제 성공 시 리다이렉트
-    │   │   ├── fail/page.tsx            # 결제 실패 시 안내
-    │   │   └── toss/page.tsx            # 토스 결제 위젯
-    │   │
-    │   └── user/                        # 사용자 정보
-    │       ├── profile/page.tsx         # 내 프로필
-    │       ├── presence/page.tsx        # 접속 상태 목록
-    │       └── teams/page.tsx           # 소속 부서 및 팀 목록
-    │   
+    │   ├── (department)/  #부서별게시판
+    |   |                      ,,,
+    │   |
     ├── (auth)/                          # 인증 전용 페이지 (공통 레이아웃 미적용)
     │   ├── login/page.tsx               # 로그인 페이지
     │   ├── signup/page.tsx              # 회원가입 페이지
     │   └── logout/page.tsx              # 로그아웃 처리
     │   
-    ├── (chat-detail)/                   # 채팅방 상세 전용 페이지 (전체화면)
-    │   ├── layout.tsx                   # 채팅 전용 전체 레이아웃
-    │   ├── dm/                          # DM
-    │   │   ├── page.tsx                 # DM 목록
-    │   │   └── [roomId]/                # 요청 승인/반려 
-    │   │       └── page.tsx             # 특정 DM
-    │   └── group/                       # 그룹채팅
-    │       ├── create/                  # 그룹 채팅방 생성 페이지
-    │       │   └── page.tsx             # 생성 Form (권한자만 가능)
-    │       ├── project/                 #  
-    │       │   ├── layout.tsx           # 
-    │       │   ├── [roomId]/            #  
-    │       │   │   ├── archive/         # 자료방
-    │       │   │   │   └── page.tsx     #
-    │       │   │   └── normal/          # 일반채팅
-    │       │   │       └── page.tsx     #  
-    │       │   └── list/                # 
-    │       │       └── page.tsx         # 
-    │       └── team/                    # 팀채팅
-    │           ├── layout.tsx           # 
-    │           └── [roomId]/            #  
-    │               ├── archive/         # 자료방
-    │               │   └── page.tsx     #
-    │               └── normal/          # 일반채팅
-    │                   └── page.tsx     #             
+    ├── (chat-detail)/                   # 채팅방기능 
+    |                                         ,,,     
     │   
-    ├── (admin)/                         # 관리자 전용 페이지
-    │   ├── dashboard/page.tsx           # 관리자 대시보드
-    │   ├── approvals/page.tsx           # 가입 승인 관리
-    │   └── panel/
-    │   │   ├── users/page.tsx           # 유저 관리
-    │   │   ├── contracts/page.tsx       # 관리자용 계약 통계/조회
-    │   │   ├── posts/page.tsx           # 게시글 관리
-    │   │   ├── revenue/page.tsx         # 관리자용 정산 통계/조회
-    │   │   ├── attendance/page.tsx      # 관리자 근태 조회
-    │   │   └── requests/page.tsx        # 요청 승인/반려
-    │   └── (finance-legal)/             # 실무자용 계약/정산 기능
-    │       ├── contracts/page.tsx       # 계약 관리 UI
-    │       └── revenue/page.tsx         # 정산 등록/수정/조회
-    │   
-    ├── (projectleader)/                 # 프로젝트 리더 권한 관리
-    │   └── project/create/              # 
-    │       └── page.tsx                 #
+    ├── (admin)/                         # 관리자 페이지
+    |                                        ,,,
     │
-    │  
+    |
     ├── features/                        # [도메인 기반 로직 집합] - 상태/서비스/UI 통합
-    │   ├── post/                        
-    │   │   ├── components/              
-    │   │   ├── services/                
-    │   │   └── types/                   
-    │   │
-    │   ├── chat/
-    │   │   ├── archive/                            
-    │   │   │   ├── components/                     
-    │   │   │   │   ├── ArchiveFileList.tsx          # 업로드된 파일 목록 출력
-    │   │   │   │   ├── ArchiveTagFilter.module.css  # 
-    │   │   │   │   ├── ArchiveTagFilter.tsx         # 태그 기반 필터링 UI
-    │   │   │   │   └── ArchiveUploadForm.tsx        # 파일 업로드 폼 컴포넌트  
-    │   │   │   ├── services/     
-    │   │   │   │   ├── fetchArchiveItems.ts         
-    │   │   │   │   ├── uploadArchiveItem.ts                 
-    │   │   │   │   └── useArchive.ts                # 파일 업로드/필터링 로직 포함 커스텀 훅
-    │   │   │   └── types/    
-    │   │   │   │   ├── ArchiveItem.ts               # 아카이브 아이템 단건 정보 타입
-    │   │   │   │   ├── ArchiveItemResponse.ts        
-    │   │   │   │   ├── ArchiveTag.ts                # 태그 정보 타입
-    │   │   │   │   └── ArchiveUploadRequest.ts      # 업로드 요청 시 사용하는 DTO 타입   
-    │   │   └── common/         
-    │   │   │   ├── types/     
-    │   │   │   │   ├── ChatMessagePayload.ts        # 메시지 전달 시 WebSocket payload 타입
-    │   │   │   │   ├── ChatRoomType.ts              # 채팅방 유형 ENUM (GROUP, DM)
-    │   │   │   │   ├── ChatScope.ts                 # 채팅방 범위 ENUM (DEPARTMENT, PROJECT)
-    │   │   │   │   ├── MessageFormat.ts             #   
-    │   │   │   │   └── RoomType.ts                  # 룸 타입 정의 (NORMAL, ARCHIVE)
-    │   │   │   └── utils/
-    │   │   │   │   └── dateUtils.ts                 # 시간 관련 유틸 함수 모음 
-    │   │   │   │   └── chatUtils.ts                 # 채팅 포맷
-    │   │   ├── dm/                
-    │   │   │   ├── components/                     
-    │   │   │   │   ├── DmChatInput.tsx              # DM 채팅 입력창
-    │   │   │   │   ├── DmChatInput.module.css       
-    │   │   │   │   ├── DmChatMessageList.tsx        # DM 메시지 리스트 출력
-    │   │   │   │   ├── DmChatMessageList.module.css 
-    │   │   │   │   ├── DmChatRoomList.tsx           # DM 채팅방 목록 출력
-    │   │   │   │   ├── DmChatRoomList.module.css   
-    │   │   │   │   ├── DmStartUserList.tsx         
-    │   │   │   │   └── DmUserSearch.tsx                
-    │   │   │   ├── services/  
-    │   │   │   │   ├── fetchDmChatMessages.ts       #           
-    │   │   │   │   ├── useDmChat.ts                 # DM 메시지 수신/전송 훅 (WebSocket)
-    │   │   │   │   ├── useCreateDmRoom.ts           # 
-    │   │   │   │   └── useDmChatRoomList.ts         # DM 채팅방 목록 조회 훅       
-    │   │   │   └── types/ 
-    │   │   │   │   ├── DmChatMessage.ts             # DM 메시지 타입
-    │   │   │   │   ├── DmChatRoom.ts                # DM 채팅방 단건 정보
-    │   │   │   │   └── DmChatRoomSummary.ts         # DM 채팅방 요약 정보
-    │   │   └── group/                 
-    │   │       ├── components/           
-    │   │       │   ├── GroupChatInput.tsx              # DM 채팅방 요약 정보
-    │   │       │   ├── GroupChatInput.module.css       #
-    │   │       │   ├── GroupChatMessageList.tsx        # 그룹 채팅 메시지 리스트 출력
-    │   │       │   ├── GroupChatMessageList.module.css # 
-    │   │       │   ├── GroupChatRoomHeader.tsx         #
-    │   │       │   └── GroupChatRoomList.tsx           # 그룹 채팅방 목록 탭 전환 및 리스트     
-    │   │       ├── services/   
-    │   │       │   ├── createGroupChatRoom.ts         #           
-    │   │       │   ├── useGroupChat.ts                # 그룹채팅방 WebSocket 연결 및 송수신 처리
-    │   │       │   ├── useGroupChatRoomList.ts        # 그룹 채팅방 목록 조회 (scope 포함)
-    │   │       │   ├── fetchGroupChatMessages.ts      # 초기 메시지 목록 서버에서 가져오기
-    │   │       │   ├── fetchGroupChatRoomInfo.ts      # 특정 채팅방의 메타정보 조회 API 함수(참여자, 이름 등)  
-    │   │       │   ├── fetchGroupChatRoomSummaries.ts # 
-    │   │       │   ├── useGroupChatMessages.ts        # 메시지 상태 관리 훅 (초기 fetch + 실시간 append)            
-    │   │       │   ├── useGroupChatScrollManager.ts   # (구현 전)무한스크롤 및 스크롤 동기화 로직 훅
-    │   │       │   └── useGroupChatParticipants.ts    # (구현 전)참여자 리스트 및 상태관리 (읽음 여부 등)
-    │   │       └── types/
-    │   │           ├── GroupChatMessage.ts            # 그룹 채팅 메시지 타입
-    │   │           ├── GroupChatRoomCreateRequest.ts  # 
-    │   │           ├── GroupChatRoom.ts               # 그룹 채팅방 단건 정보
-    │   │           └── GroupChatRoomSummary.ts        # 그룹 채팅방 요약 정보  
-    │   │                         
-    │   ├── department/                       # 부서별
-    │   │   ├── artist/                        
-    │   │   │   ├── components/                         
-    │   │   │   ├── services/                          
-    │   │   │   └── types/    
-    │   │   ├── finance-legal/               
-    │   │   │   ├── contracts/                
-    │   │   │   │   ├── components/           
-    │   │   │   │   ├── services/             
-    │   │   │   │   └── types/    
-    │   │   │   └── revenue/         
-    │   │   │   │   ├── components/  
-    │   │   │   │   ├── services/        
-    │   │   │   │   └── types/       
-    │   │   ├── creative/                 
-    │   │   │   ├── components/                      
-    │   │   │   ├── services/                    
-    │   │   │   └── types/        
-    │   │   ├── marketing/             
-    │   │   │   ├── components/                       
-    │   │   │   ├── services/                      
-    │   │   │   └── types/        
-    │   │   └── planning/                
-    │   │       ├── components/                         
-    │   │       ├── services/                    
-    │   │       └── types/  
-    │   │      
-    │   ├── attendance/
-    │   │   ├── components/              
-    │   │   ├── services/                
-    │   │   └── types/     
-    │   │      
-    │   ├── goods/
-    │   │   ├── components/              
-    │   │   ├── services/                
-    │   │   └── types/
-    │   │           
-    │   ├── orders/
-    │   │   ├── components/              
-    │   │   ├── services/                
-    │   │   └── types/     
-    │   │      
-    │   ├── payment/
-    │   │   ├── components/              
-    │   │   ├── services/                
-    │   │   └── types/           
-    │   │
-    │   ├── schedule/
-    │   │   ├── components/              
-    │   │   ├── services/                
-    │   │   └── types/           
-    │   │ 
-    │   ├── reservation/
-    │   │   ├── components/              
-    │   │   ├── services/                
-    │   │   └── types/         
-    │   │
-    │   ├── user/
-    │   │   ├── auth/                        
-    │   │   │   ├── AuthProvider.tsx         
-    │   │   │   ├── components/              
-    │   │   │   │   ├── LoginForm.tsx        # 로그인 폼 UI + 로그인 API 호출
-    │   │   │   │   ├── LogoutButton.tsx     # 로그아웃 처리 버튼   
-    │   │   │   │   └── SignupForm.tsx       # 회원가입 폼 UI + 가입 API 호출
-    │   │   │   ├── hooks/                 
-    │   │   │   │   └── useAuth.ts           
-    │   │   │   ├── services/                 
-    │   │   │   │   └── authService.tsx      # 로그인/회원가입/내 정보 가져오기 등 API 함수들          
-    │   │   │   └── types/   
-    │   │   │       ├── Auth.ts             
-    │   │   │       ├── LoginRequest.ts      # 로그인 요청 DTO 타입
-    │   │   │       ├── SignupRequest.ts     # 회원가입 요청 DTO 타입   
-    │   │   │       ├── TokenResponse.ts     # 토큰 응답 DTO 타입     
-    │   │   │       └── user.ts              # 사용자 정보 타입 정의 (예: id, name, role 등)
-    │   │   ├── presence/                           
-    │   │   │   ├── components/              
-    │   │   │   │   └── PresenceList.tsx     
-    │   │   │   ├── types/                   
-    │   │   │   │   └──                    
-    │   │   ├── profile/                             
-    │   │   │   ├── components/              
-    │   │   │   │   └── UserProfile.tsx      
-    │   │   │   ├── services/                
-    │   │   │   │   └── userService.ts      
-    │   │   │   └── types/                   
-    │   │   │       └── user.ts             
-    │   │   ├── search/                            
-    │   │   │   ├── services/                
-    │   │   │   │   └── useUserSearch.ts     
-    │   │   │   └── types/                    
-    │   │   │       ├── UserSearchResult.ts  
-    │   │   │       └── UserSimpleDto.ts     
-    │   │   └── team/                               
-    │   │       ├── components/              
-    │   │       │   └── TeamList.tsx         
-    │   │       ├── services/               
-    │   │       │   └── getDepartment.ts        
-    │   │       └── types/                   
-    │   │           └── department.ts           
-    │   │
-    │   ├── admin/                       # 관리자 패널용 기능 묶음
-    │   │   ├── components/              
-    │   │   ├── services/               
-    │   │   └── types/
-    │   │                                 
-    │   └── projectleader/
-    │       ├── services/                 
-    │       │   ├── createProject.ts         
-    │       │   └── getProjects.ts        
-    │       └── types/     
-    │           ├── project.ts                
-    │           └── ProjectLeader.ts          
-    │
+    |                                                         ,,,,
     │   
     ├── components                            # 전역 컴포넌트 (재사용 목적)
-    │   ├── ui/                               # UI 컴포넌트   
-    │   │   ├── LeftSidebar.tsx               # 좌측 고정 메뉴바 (일정~회의실 예약, 7개 아이콘)
-    │   │   ├── DepartmentSidebar.tsx         # 부서별 사이드바 (채팅, 캘린더 등)
-    │   │   ├── RightMessenger.tsx            # 우측 채팅 사이드바 (DM/TeamChat/ProjectChat)
-    │   │   ├── commonSidebarReducer.ts       # 좌측 고정 메뉴바 상태관리
-    │   │   └── departmentSidebarReducer.ts   # 부서별 사이드바 상태관리(부서에 따라 다르게 표시되는 메뉴)   
-    │   └── layout                            #
-    │       ├── ClientDepartmentProvider.tsx  # 부서 이름 기반으로 DepartmentContext 제공해주는 컴포넌트
-    │       └── ClientFetcher.tsx             # 로그인한 유저 정보 fetch → 없으면 /login 리다이렉트 : 있으면 사이드바 + 메시지 포함된 전체 레이아웃 구성
-    │    
+    | 
     ├── constants/                        # Enum 및 상수 값
-    │   ├── PostMenu.ts                   # 공지/업무자료 카테고리 정의
-    │   └── Routes.ts                     # 고정 라우팅 상수
-    ├── context/                          # 
-    │   ├── DepartmentContext.tsx         # 부서 이름에 따라 사이드바 메뉴를 자동으로 넣어주는 Context Provider
-    │   └── departmentMenus.ts            # 부서별 사이드바 메뉴 목록을 정의해둔 객체    
-    │
-    │    
+    |                                            ,,,
+    ├── context/                                                
+    │                                       
     ├── hooks/                            # 전역 커스텀 훅
-    │   └── useSidebar.ts                 # 사이드바 열림/닫힘 상태 제어
     │  
     ├── lib/                              # 공통 유틸리티, axios 등
-    │   ├── api/        
-    │   │   └── apiClient.ts              # fetch 기반 공통 API 유틸 (쿠키 포함 및 no-cache 설정)
-    │   ├── date.ts                       # 날짜 포맷, 달력 관련
-    │   └── socket.ts                     # WebSocket 연결 모듈 (옵션)  
-    │   
+    |                                             ,,,
     └── middleware.ts                     # 인증 상태에 따라 페이지 접근 제어 (리디렉션 처리용 미들웨어)
 
 ```
