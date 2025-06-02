@@ -320,7 +320,12 @@
       }
 
       function goToGoods() {
-        window.location.href = "http://localhost:3000/goods";
+        if (window.opener) {
+          window.opener.postMessage({ type: "GOODS_SHOP" }, "*");
+          window.close();
+        } else {
+          window.location.href = "http://localhost:3000/goods";
+        }
       }
 
       // 페이지 로드 시 결제 승인 처리

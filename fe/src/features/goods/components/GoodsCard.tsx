@@ -59,8 +59,23 @@ const GoodsCard: React.FC<GoodsCardProps> = ({
 
   const originalPrice = Math.round(goods.itemPrice / 0.6);
 
-  const handlePurchase = () => {
-    window.location.href = `http://localhost:8080/api/v1/goodsOrder/payment/${goods.id}`;
+  const handlePurchase = async () => {
+    try {
+      const orderRes = await createOrder({
+        goods,
+        purAmount: 1, // 기본 1개
+        amount: goods.itemPrice,
+        purMethod: PaymentMethod.TOSS,
+      });
+      // 결제창을 팝업으로 띄움!
+      window.open(
+        `http://localhost:8080/api/v1/goodsOrder/payment/${goods.id}?orderId=${orderRes.orderId}`,
+        "_blank",
+        "width=500,height=700"
+      );
+    } catch (error) {
+      alert("주문 생성에 실패했습니다.");
+    }
   };
 
   return (

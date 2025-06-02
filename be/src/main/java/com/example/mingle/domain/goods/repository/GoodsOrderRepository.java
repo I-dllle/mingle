@@ -22,4 +22,6 @@ public interface GoodsOrderRepository extends JpaRepository<GoodsOrder, Long> {
 
     // 주문 ID로 조회
     Optional<GoodsOrder> findByOrderId(String orderId);
+
+    List<GoodsOrder> findByUserOrderByOrderedAtDesc(User user);
 }

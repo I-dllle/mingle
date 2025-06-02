@@ -118,9 +118,4 @@ public class ApiV1GoodsController {
         return ResponseEntity.noContent().build();
     }
 
-    //상품검색
-
-
-    //결제내역 상세보기(주문서조회)
-
 }

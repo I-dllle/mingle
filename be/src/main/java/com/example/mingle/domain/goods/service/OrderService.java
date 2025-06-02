@@ -79,6 +79,7 @@ public class OrderService {
                 order.setPurStatus(OrderStatus.PAID);
                 order.setPaidAt(LocalDateTime.now());
                 order.setPaymentKey(paymentKey);
+                goodsOrderRepository.save(order); // 상태 변경 후 명확히 반영
             } else {
                 // 주문이 없는 경우 - 로그만 출력
                 System.out.println("결제 완료 처리할 주문이 없음 - orderId: " + orderId + ", paymentKey: " + paymentKey);
@@ -92,10 +93,17 @@ public class OrderService {
     //TODO : 주문내역 확인(+배송상태 반영)
     @Transactional(readOnly = true)
     public List<GoodsOrderResponseDto> getOrdersByUser(User user) {
-        return goodsOrderRepository.findByUser(user)
-                .stream()
-                .map(GoodsOrderResponseDto::fromEntity)
+        System.out.println("주문내역 조회 시작 - 사용자 ID: " + user.getId());
+        List<GoodsOrder> orders = goodsOrderRepository.findByUserOrderByOrderedAtDesc(user);
+        System.out.println("조회된 주문 수: " + orders.size());
+        List<GoodsOrderResponseDto> responseDtos = orders.stream()
+                .map(order -> {
+                    System.out.println("주문 변환 중 - 주문 ID: " + order.getOrderId());
+                    return GoodsOrderResponseDto.fromEntity(order);
+                })
                 .collect(Collectors.toList());
+        System.out.println("변환된 DTO 수: " + responseDtos.size());
+        return responseDtos;
     }
 
     //주문취소
