@@ -1,6 +1,7 @@
 package com.example.mingle.domain.attendance.attendanceRequest.dto;
 
 import com.example.mingle.domain.attendance.enums.LeaveType;
+import com.example.mingle.domain.user.team.entity.Department;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
@@ -31,13 +32,16 @@ public class AttendanceRequestDto {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate endDate;
 
-    @JsonFormat(pattern = "HH:mm:ss")
+    @JsonFormat(pattern = "HH:mm")
     @NotNull(message = "조퇴 시 시작 시간을 입력해야 합니다.")
     private LocalTime startTime;
-    @JsonFormat(pattern = "HH:mm:ss")
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime endTime;
 
     @NotBlank
     @Size(min = 1, max = 500, message = "신청 사유를 입력해야 합니다. (500자 이내)")
     private String reason;
+
+    private String departmentName;
+
 }

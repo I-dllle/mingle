@@ -2,7 +2,7 @@
 "use client";
 
 import React from "react";
-import { Reservation } from "@/features/reservation/types/Reservation";
+import { Reservation } from "@/features/reservation/types/rservation";
 
 interface Props {
   reservation: Reservation;

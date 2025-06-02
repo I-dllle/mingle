@@ -51,13 +51,19 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <div className="container mx-auto px-6">
           <div className="flex overflow-x-auto space-x-8">
             {[
-              { name: "근태 관리", href: "/panel/attendance", current: true },
+              // { name: "근태 관리", href: "/panel/attendance", current: true },
+
+              { name: "사용자 관리", href: "/panel/users", current: false },
               {
                 name: "휴가/부재 관리",
-                href: "/panel/request",
+                href: "/panel/attendance/requests",
                 current: false,
               },
-              { name: "사용자 관리", href: "/panel/users", current: false },
+              {
+                name: "회의실, 연습실 관리",
+                href: "/panel/room",
+                current: false,
+              },
               { name: "부서 관리", href: "/panel/departments", current: false },
               { name: "설정", href: "/panel/settings", current: false },
             ].map((tab) => (

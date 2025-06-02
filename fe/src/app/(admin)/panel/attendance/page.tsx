@@ -35,8 +35,8 @@ export default function AdminAttendanceRequestsPage() {
   const [yearMonthFilter, setYearMonthFilter] = useState<string>(
     new Date().toISOString().slice(0, 7) // 기본: 현재 연·월 ("YYYY-MM")
   );
-  const [searchKeyword, setSearchKeyword] = useState<string>(""); // 검색어
 
+  const [searchKeyword, setSearchKeyword] = useState<string>(""); // 검색어
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
 
@@ -46,13 +46,12 @@ export default function AdminAttendanceRequestsPage() {
       setLoading(true);
       setError(null);
 
-      // “ALL”이면 status 파라미터를 제외
+      // “ALL” 이면 status 파라미터를 제외
       const apiStatus =
         statusFilter === "ALL" ? undefined : (statusFilter as ApprovalStatus);
-      const apiKeyword = searchKeyword || undefined;
 
       const res = await attendanceRequestService.getAllRequests(
-        apiStatus as ApprovalStatus,
+        apiStatus,
         yearMonthFilter,
         currentPage,
         10 // 한 페이지당 10개
@@ -75,8 +74,9 @@ export default function AdminAttendanceRequestsPage() {
     fetchRequests();
   }, [statusFilter, yearMonthFilter, searchKeyword, currentPage]);
 
-  // ─── 3) 툴바 핸들러들 ─────────────────────────────────────────────────────
-  // (1) 상태 필터: StatusType(ApprovalStatus|"ALL")을 받아옴
+  // ─── 3) 핸들러들 ────────────────────────────────────────────────────────────
+  // (1) onStatusFilter: AdminAttendanceToolbar 에서 StatusType 으로 넘어오기 때문에
+  //     여기서는 ApprovalStatus | "ALL" 로 좁혀서 처리
   const handleStatusFilter = (newStatus: StatusType) => {
     if (
       newStatus === "ALL" ||
@@ -87,43 +87,42 @@ export default function AdminAttendanceRequestsPage() {
     }
   };
 
-  // (2) 연·월 필터 변경: YYYY-MM-DD 두 개를 받지만, Approval 모드에선 시작일만 YYYY-MM으로 사용
-  const handleDateRangeChange = (start: string, end: string) => {
-    const ym = start.slice(0, 7);
+  // (2) 연·월 필터
+  const handleYearMonthChange = (ym: string) => {
     setYearMonthFilter(ym);
     setCurrentPage(1);
   };
 
-  // (3) 검색어 입력
+  // (3) 검색
   const handleSearch = (q: string) => {
     setSearchKeyword(q);
     setCurrentPage(1);
   };
 
-  // (4) 엑셀 다운로드: 요청 페이지에선 제공하지 않음
+  // (4) 엑셀 다운로드: 휴가 요청 페이지에서는 사용하지 않으므로 경고 알림만
   const handleExport = () => {
     alert("휴가 요청 페이지에서는 엑셀 기능을 제공하지 않습니다.");
   };
 
-  // (5) 요약 보고서 페이지 이동
-  const handleViewReport = () => {
-    router.push("/attendance/admin/reports");
-  };
-
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto py-8">
       {/* ─── ① 상단 툴바 ───────────────────────────────────────────────── */}
       <AdminAttendanceToolbar
         statusType="approval"
         selectedStatus={statusFilter as StatusType}
         onStatusFilter={handleStatusFilter}
-        onDateRangeChange={handleDateRangeChange}
+        // “Approval” 모드에선 연·월(YYYY-MM)만 사용하므로, onDateRangeChange 래핑
+        onDateRangeChange={(start, end) => {
+          handleYearMonthChange(start.slice(0, 7));
+        }}
         onSearch={handleSearch}
         onExport={handleExport}
-        onViewReport={handleViewReport}
+        onViewReport={() => {
+          router.push("/attendance/admin/reports");
+        }}
       />
 
-      {/* ─── ② 요청 목록 테이블 ────────────────────────────────────────── */}
+      {/* ─── ② 요청 목록 테이블 ───────────────────────────────────────────────── */}
       <div className="bg-white shadow rounded-lg overflow-hidden">
         {loading ? (
           <div className="p-8 text-center text-gray-500">로딩 중…</div>
@@ -166,7 +165,7 @@ export default function AdminAttendanceRequestsPage() {
                   key={req.id}
                   className="hover:bg-gray-50 cursor-pointer"
                   onClick={() =>
-                    void router.push(`/admin/attendance/request/${req.id}`)
+                    void router.push(`/admin/attendance/${req.id}`)
                   }
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -198,7 +197,7 @@ export default function AdminAttendanceRequestsPage() {
                     {new Date(req.appliedAt).toLocaleDateString("ko-KR")}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-purple-600 hover:text-purple-800">
-                    <Link href={`/admin/attendance/request/${req.id}`}>
+                    <Link href={`/panel/attendance/requests/${req.id}`}>
                       상세보기
                     </Link>
                   </td>
@@ -209,7 +208,7 @@ export default function AdminAttendanceRequestsPage() {
         )}
       </div>
 
-      {/* ─── ③ 페이지네이션 ────────────────────────────────────────── */}
+      {/* ─── ③ 페이지네이션 ───────────────────────────────────────────────── */}
       {totalPages > 1 && (
         <div className="flex justify-center mt-6">
           <nav>

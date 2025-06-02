@@ -154,7 +154,8 @@ export const getAllAttendanceRecordsForAdmin = async (
   status?: AttendanceStatus,
   page: number = 1,
   size: number = 15
-): Promise<AttendanceAdminRecord[]> => {
+): Promise<AttendancePageResponse> => {
+  // 1) URLSearchParams로 쿼리스트링 생성
   const params = new URLSearchParams();
   params.append("yearMonth", yearMonth);
   params.append("page", page.toString());
@@ -165,11 +166,19 @@ export const getAllAttendanceRecordsForAdmin = async (
   if (keyword) params.append("keyword", keyword);
   if (status) params.append("status", status);
 
-  const fullUrl = `${BASE_URL}/admin/all?${params.toString()}`;
-  const data = await apiClient<AttendanceAdminRecord[]>(fullUrl);
-  return data;
-};
+  // 2) 쿼리스트링을 URL 뒤에 붙여서 단일 문자열로 만들어서 apiClient 함수에 넘김
+  const urlWithQuery = `${BASE_URL}/admin/all?${params.toString()}`;
 
+  // 3) apiClient<T> 함수 자체가 fetch 후 res.json()을 리턴하기 때문에,
+  //    response.data 가 아니라, 함수가 곧 { content: [...], totalPages, … } 형태를 직접 리턴함.
+  const response: AttendancePageResponse =
+    await apiClient<AttendancePageResponse>(urlWithQuery, {
+      method: "GET",
+      // fetch 기본이 “GET”이므로, 사실 옵션을 안 줘도 무방합니다.
+    });
+
+  return response;
+};
 /**
  * 관리자용 개별 근태 상세 조회
  */

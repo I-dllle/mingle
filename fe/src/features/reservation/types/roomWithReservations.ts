@@ -1,6 +1,6 @@
 // features/reservation/types/RoomWithReservationsDto.ts
 
-import { Reservation } from "./Reservation";
+import { Reservation } from "./rservation";
 import { RoomType } from "@/features/room/types/room";
 
 export interface RoomWithReservations {

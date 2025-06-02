@@ -1,3 +1,4 @@
+// CheckInOutButtons.tsx
 "use client";
 
 import { useState } from "react";
@@ -99,7 +100,7 @@ export default function CheckInOutButtons({
 
   // 연장근무 보고 페이지로 이동
   const handleOvertimeReport = () => {
-    router.push("/attendance/overtime/report");
+    router.push("/attendance/request/overtime/report");
   };
   // 근무 상태 요약
   const getStatusSummary = () => {

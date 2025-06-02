@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import type {
   AttendanceRecord,
   AttendanceAdminRecord,
+  AttendancePageResponse,
 } from "@/features/attendance/types/attendance";
 import attendanceService from "@/features/attendance/services/attendanceService";
 import { AttendanceStatusBadge } from "./StatusBadge"; // 상태 배지 컴포넌트 경로 확인
@@ -81,19 +82,20 @@ export default function RecentRecordsTable({
       if (isAdmin) {
         // ---------- 관리자 모드: 전체 사용자 근태 기록 조회 ----------
         // 서버에서 AttendanceAdminRecord[] 만 반환한다고 가정
-        const data: AttendanceAdminRecord[] =
+        const data: AttendancePageResponse =
           await attendanceService.getAllAttendanceRecordsForAdmin(
             yearMonth ?? "",
             departmentId || undefined,
             userIdFilter || undefined,
             keyword || undefined,
-            statusFilter as any, // 예: "PRESENT" 등
+            statusFilter as any,
             currentPage,
             perPage
           );
 
         // 정확한 타입으로 setRecords
-        setRecords(data);
+        setRecords(data.content);
+        setTotalPages(data.totalPages);
         // (만약 백엔드가 pagination 정보를 별도 제공한다면, 아래 처럼 써야 합니다)
         // setRecords(data.content);
         // setTotalPages(data.totalPages);

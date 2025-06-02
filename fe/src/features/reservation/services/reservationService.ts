@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import type {
   Reservation,
   ReservationFormInput,
-} from "@/features/reservation/types/Reservation";
+} from "@/features/reservation/types/rservation";
 import type { ReservationStatus } from "@/features/reservation/types/reservationStatus";
 import { RoomWithReservations } from "@/features/reservation/types/roomWithReservations";
 import type { RoomType } from "@/features/room/types/room";

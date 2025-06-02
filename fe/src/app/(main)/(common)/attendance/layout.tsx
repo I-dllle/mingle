@@ -9,7 +9,7 @@ export default function AttendanceLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  
+
   // 현재 경로에 따라 탭의 활성 상태 결정
   const isActive = (path: string) => {
     if (path === "/attendance" && pathname === "/attendance") {
@@ -45,9 +45,9 @@ export default function AttendanceLayout({
                   : "border-transparent text-gray-600 hover:text-gray-800"
               } font-medium text-sm whitespace-nowrap`}
             >
-              휴가/부재 신청
+              휴가/부재 신청 목록
             </Link>
-            <Link
+            {/* <Link
               href="/attendance/overtime"
               className={`flex-none py-4 px-6 border-b-2 ${
                 isActive("/attendance/overtime")
@@ -55,8 +55,8 @@ export default function AttendanceLayout({
                   : "border-transparent text-gray-600 hover:text-gray-800"
               } font-medium text-sm whitespace-nowrap`}
             >
-              야근 관리
-            </Link>
+              야근 신청
+            </Link> */}
           </div>
         </div>
       </div>

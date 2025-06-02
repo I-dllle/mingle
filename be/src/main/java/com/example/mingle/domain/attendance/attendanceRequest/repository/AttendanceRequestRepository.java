@@ -1,5 +1,6 @@
 package com.example.mingle.domain.attendance.attendanceRequest.repository;
 
+import com.example.mingle.domain.attendance.attendance.entity.Attendance;
 import com.example.mingle.domain.attendance.enums.ApprovalStatus;
 import com.example.mingle.domain.attendance.attendanceRequest.entity.AttendanceRequest;
 import org.springframework.data.domain.Page;
@@ -31,4 +32,5 @@ public interface AttendanceRequestRepository extends JpaRepository<AttendanceReq
     Page<AttendanceRequest> findByApprovalStatusAndStartDateBetween(
             ApprovalStatus status, LocalDate start, LocalDate end, Pageable pageable
     );
+
 }
