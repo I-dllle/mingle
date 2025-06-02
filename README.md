@@ -90,7 +90,7 @@
 |  |  |  |
  |-----------------|-----------------|-----------------|
 | 이은서   |  <img src="https://github.com/user-attachments/assets/5bd4b56f-3b71-45e9-8b85-be926de56cdc" width="100"> | <ul><li>(1)</li><li>(2) </li><li>(3)</li></ul>     |
-| 이서영   |  <img src="https://github.com/user-attachments/assets/eb93e3ee-4b64-41e4-9672-745062936efd" width = "100">| <ul><li>(1)</li><li>(2)</li><li>(3)</li></ul> |
+| 이서영   |  <img src="https://github.com/user-attachments/assets/eb93e3ee-4b64-41e4-9672-745062936efd" width = "100">| <ul><li>(1) 게시판기능 </li><li>(2) 상점 및 결제기능 </li><li>(3) 배포</li></ul> |
 | 전병우   |  <img src="" width="100">    |<ul><li>(1) </li><li></li><li>(2)</li><li>(3)</li></ul>  |
 | 김현우    |  <img src="" width="100">    | <ul><li>(1)</li><li>(2)</li><li>(3)</li></ul>    |
 
@@ -144,9 +144,52 @@ be/
 
 ## 6.2 Frontend
 ```plaintext
-fe/ (Frontend - Next.js / TypeScript)
-├── 
-
+fe/(Frontend - Next.js / TypeScript)
+└── src/                                  # 프론트엔드 루트 디렉토리 (Next.js 기반)
+    ├── app/                              # Next.js App Router 기반 라우팅 디렉토리
+    │   ├── layout.tsx                    # 루트 전역 레이아웃 (폰트, 테마, 인증만 적용 — 사이드바 X)
+    │   ├── globals.css                   # 전역 CSS 파일 (폰트, reset 등)
+    │   └── page.tsx                      # 기본 랜딩 페이지 (예: 일정 캘린더)
+    │   
+    ├── (main)/                             # 공통 레이아웃 적용되는 일반 업무 페이지
+    │   ├── layout.tsx                      # 공통 레이아웃: 좌측 사이드바 + 우측 메신저 포함
+    │   │
+    │   ├── board/                          # 게시판 도메인
+    │   │   ├── common/page.tsx             # 공지사항, 업무자료 등 공통 게시판
+    │   │   └── department/[menu]/page.tsx  # 부서별 게시판
+    │   │
+    │   ├── (common)/  #공통게시판
+    |   |                  ,,, 
+    │   │
+    │   ├── (department)/  #부서별게시판
+    |   |                      ,,,
+    │   |
+    ├── (auth)/                          # 인증 전용 페이지 (공통 레이아웃 미적용)
+    │   ├── login/page.tsx               # 로그인 페이지
+    │   ├── signup/page.tsx              # 회원가입 페이지
+    │   └── logout/page.tsx              # 로그아웃 처리
+    │   
+    ├── (chat-detail)/                   # 채팅방기능 
+    |                                         ,,,     
+    │   
+    ├── (admin)/                         # 관리자 페이지
+    |                                        ,,,
+    │
+    |
+    ├── features/                        # [도메인 기반 로직 집합] - 상태/서비스/UI 통합
+    |                                                         ,,,,
+    │   
+    ├── components                            # 전역 컴포넌트 (재사용 목적)
+    | 
+    ├── constants/                        # Enum 및 상수 값
+    |                                            ,,,
+    ├── context/                                                
+    │                                       
+    ├── hooks/                            # 전역 커스텀 훅
+    │  
+    ├── lib/                              # 공통 유틸리티, axios 등
+    |                                             ,,,
+    └── middleware.ts                     # 인증 상태에 따라 페이지 접근 제어 (리디렉션 처리용 미들웨어)
 
 ```
  <br/>
