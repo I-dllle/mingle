@@ -48,8 +48,8 @@ custom:
   site:
     name: "MINGLE DEV"
     cookie:
-      secure: false # 로컬은 HTTPS 아님 - dev 환경
-      sameSite: Lax
+      secure: true
+      sameSite: Strict
     cookieDomain: "${custom.dev.cookieDomain}"
     frontUrl: "${custom.dev.frontUrl}"
     backUrl: "${custom.dev.backUrl}"
