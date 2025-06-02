@@ -20,7 +20,7 @@ export default function AttendanceRequestsPage() {
       try {
         setLoading(true);
         setError(null);
-        const data = await attendanceRequestService.getAllRequests();
+        const data = await attendanceRequestService.getUserRequests();
         setRequests(data.content);
       } catch (err: any) {
         setError(err.message || "요청 목록을 불러오는데 실패했습니다.");
@@ -98,7 +98,9 @@ export default function AttendanceRequestsPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {requests.map((request) => (
                 <tr
-                  key={request.id}
+                  key={
+                    request.id ?? `${request.startDate}-${request.createdAt}`
+                  }
                   className="hover:bg-gray-50 cursor-pointer"
                   onClick={() => {
                     window.location.href = `/attendance/requests/${request.id}`;
@@ -112,7 +114,9 @@ export default function AttendanceRequestsPage() {
                     {formatDate(request.endDate || request.startDate)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {new Date(request.appliedAt).toLocaleDateString("ko-KR")}
+                    {new Date(request.createdAt ?? "").toLocaleDateString(
+                      "ko-KR"
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <span

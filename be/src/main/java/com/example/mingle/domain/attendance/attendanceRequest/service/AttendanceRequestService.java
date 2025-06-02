@@ -91,7 +91,6 @@ public class AttendanceRequestService {
                 .startTime(dto.getStartTime())
                 .endTime(dto.getEndTime())
                 .reason(dto.getReason())
-                .appliedAt(LocalDateTime.now())
                 .approvalStatus(ApprovalStatus.PENDING)
                 .build();
 

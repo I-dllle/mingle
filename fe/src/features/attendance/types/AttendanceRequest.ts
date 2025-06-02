@@ -88,12 +88,13 @@ export interface AttendanceRequest {
 export interface AttendanceRequestDetail extends AttendanceRequest {
   id: number;
   userName?: string;
+  nickName?: string;
   departmentName?: string;
   approvalStatus: ApprovalStatus;
   approvalComment?: string;
   approverId?: number;
   approverName?: string;
-  appliedAt: string;
+  createdAt?: string;
   approvedAt?: string;
   rejectReason?: string;
   attendances: AttendanceSummary[];

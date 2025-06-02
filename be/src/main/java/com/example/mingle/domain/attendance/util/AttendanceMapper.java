@@ -18,6 +18,7 @@ public class AttendanceMapper {
 
     public AttendanceRecordDto toRecordDto(Attendance attendance) {
         return AttendanceRecordDto.builder()
+                .id(attendance.getId())
                 .userId(attendance.getUser().getId())
                 .date(attendance.getDate())
                 .checkInTime(attendance.getCheckInTime())
@@ -65,6 +66,7 @@ public class AttendanceMapper {
                 .toList();
 
         return AttendanceRequestDetailDto.builder()
+                .id(attendanceRequest.getId())
                 .userId(attendanceRequest.getUser().getId())
                 .leaveType(attendanceRequest.getLeaveType())
                 .startDate(attendanceRequest.getStartDate())
@@ -75,10 +77,11 @@ public class AttendanceMapper {
                 .approvalStatus(attendanceRequest.getApprovalStatus())
                 .approvalComment(attendanceRequest.getApprovalComment())
                 .approverId(attendanceRequest.getApprover() != null ? attendanceRequest.getApprover().getId() : null)
-                .appliedAt(attendanceRequest.getAppliedAt())
                 .approvedAt(attendanceRequest.getApprovedAt())
                 .attendances(summary)
+                .createdAt(attendanceRequest.getCreatedAt())
                 .leaveType(attendanceRequest.getLeaveType())
+                .departmentName(attendanceRequest.getUser().getDepartment().getDepartmentName())
                 .build();
     }
 

@@ -1,3 +1,5 @@
+// StatusBadge.tsx
+
 import React from "react";
 import type {
   AttendanceStatus,

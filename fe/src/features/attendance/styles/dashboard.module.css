@@ -1,0 +1,27 @@
+/* 파일: app/attendance/dashboard.module.css */
+
+/* 전체 페이지 컨테이너 */
+.container {
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* SummaryCards 섹션 여백 */
+.summarySection {
+  /* 상 · 하 여백을 충분히 주어 컴포넌트들이 분리되어 보이도록 설정 */
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* RecordChart 섹션 여백 */
+.chartSection {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* RecentRecordsTable 섹션 */
+.tableSection {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}

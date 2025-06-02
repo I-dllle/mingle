@@ -26,10 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.*;
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.example.mingle.global.constants.TimeConstants.*;
@@ -180,6 +177,22 @@ public class AttendanceService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 근태 기록이 없습니다. id=" + attendanceId));
 
         // 3) DTO로 매핑하여 반환
+        return attendanceMapper.toDetailDto(attendance);
+    }
+
+    @Transactional(readOnly = true)
+    public AttendanceDetailDto getDailyAttendance(Long userId, LocalDate date) {
+
+        User user = userRepository.findById(userId).orElseThrow();
+
+        Attendance  attendance= attendanceRepository
+                .findByUser_IdAndDate(userId, date)
+                .orElseGet(() -> Attendance.builder()
+                        .user(user)
+                        .date(date)
+                        .build());
+
+        // 4) 없으면, 빈 DTO (출근 전 상태) 반환
         return attendanceMapper.toDetailDto(attendance);
     }
 

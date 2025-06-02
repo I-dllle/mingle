@@ -1,0 +1,12 @@
+/* 파일: app/attendance/chart.module.css */
+
+/* RecordChart 컴포넌트 내부에서 필요하다면
+   여기에 추가적인 스타일을 정의하세요.
+   예를 들어, 차트 wrapper 높이나 배경 등. */
+
+.chartWrapper {
+  /* 예시: 차트 전체 높이를 고정하고 싶을 때 */
+  height: 300px;
+}
+
+/* (필요시 다른 클래스들을 여기에 추가) */

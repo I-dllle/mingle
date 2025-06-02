@@ -1,6 +1,6 @@
 // features/reservation/utils/reservationDateUtils.ts
 
-import { Reservation } from "@/features/reservation/types/Reservation";
+import { Reservation } from "@/features/reservation/types/rservation";
 import { combineDateAndTime } from "@/lib/date";
 
 /**

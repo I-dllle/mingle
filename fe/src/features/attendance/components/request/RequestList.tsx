@@ -184,14 +184,16 @@ export default function RequestList({
                     <ApprovalStatusBadge status={request.approvalStatus} />
                   </td>
                   <td className="px-4 py-3">
-                    {new Date(request.appliedAt).toLocaleDateString()}
+                    {request.createdAt
+                      ? new Date(request.createdAt).toLocaleDateString()
+                      : ""}
                   </td>
                   <td className="px-4 py-3">
                     <Link
                       href={
                         isAdmin
-                          ? `/admin/attendance/request/${request.id}`
-                          : `/attendance/request/${request.id}`
+                          ? `/panel/attendance/requests/${request.id}`
+                          : `/attendance/requests/${request.id}`
                       }
                       className="text-purple-600 hover:text-purple-800 hover:underline"
                     >

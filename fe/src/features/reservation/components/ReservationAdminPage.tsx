@@ -3,8 +3,8 @@
 
 import React, { useState, useEffect } from "react";
 import { format, addMonths, subMonths } from "date-fns";
-import type { Reservation } from "@/features/reservation/types/Reservation";
-import type { ReservationFormInput } from "@/features/reservation/types/Reservation";
+import type { Reservation } from "@/features/reservation/types/rservation";
+import type { ReservationFormInput } from "@/features/reservation/types/rservation";
 import { reservationService } from "@/features/reservation/services/reservationService";
 import { ReservationForm } from "@/features/reservation/components/ReservationForm";
 import { Calendar, PencilIcon, Trash2Icon } from "lucide-react";

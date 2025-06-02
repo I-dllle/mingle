@@ -17,6 +17,8 @@ public class AttendanceRequestDetailDto {
 
     private Long userId;
 
+    private Long id;
+
     private LeaveType leaveType;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
@@ -38,9 +40,14 @@ public class AttendanceRequestDetailDto {
     private Long approverId;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime createdAt;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime appliedAt;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime approvedAt;
 
     private List<AttendanceSummaryDto> attendances;
+
+    private String departmentName;
 }

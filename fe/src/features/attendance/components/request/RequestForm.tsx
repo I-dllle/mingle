@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import attendanceRequestService from "@/features/attendance/services/attendanceRequestService";
 import { LeaveType } from "@/features/attendance/types/attendanceCommonTypes";
 import { leaveTypeLabels } from "@/features/attendance/utils/attendanceLabels";
 import { AttendanceRequest } from "@/features/attendance/types/attendanceRequest";
+import { useAuth } from "@/features/user/auth/hooks/useAuth";
 import {
   validateLeaveRequest,
   hasOverlappingLeaveRequests,
@@ -21,10 +22,19 @@ interface RequestFormProps {
 export default function RequestForm({
   onSuccess,
   onCancel,
-  userId,
+  userId: propUserId,
   isModal = false,
 }: RequestFormProps) {
+  const { user, isLoading } = useAuth();
   const router = useRouter();
+
+  const [userId, setUserId] = useState<number | undefined>(propUserId);
+
+  useEffect(() => {
+    if (!propUserId && user?.id) {
+      setUserId(user.id);
+    }
+  }, [propUserId, user]);
 
   // 휴가 종류에 따라 시간 입력 필드가 필요한지 여부
   const timeBasedLeaveTypes: LeaveType[] = [
@@ -74,7 +84,7 @@ export default function RequestForm({
           ...prev,
           [name]: value as LeaveType,
           startTime: "09:00",
-          endTime: "14:00",
+          endTime: "13:00",
           // 반차는 시작일과 종료일이 같아야 함
           endDate: prev.startDate,
         }));
@@ -83,7 +93,7 @@ export default function RequestForm({
         setFormData((prev) => ({
           ...prev,
           [name]: value as LeaveType,
-          startTime: "14:00",
+          startTime: "13:00",
           endTime: "18:00",
           // 반차는 시작일과 종료일이 같아야 함
           endDate: prev.startDate,
@@ -125,6 +135,12 @@ export default function RequestForm({
     setIsSubmitting(true);
     setError(null);
 
+    if (!userId) {
+      setError("사용자 정보를 불러올 수 없습니다.");
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       // 휴가 신청 데이터 유효성 검사
       const validation = validateLeaveRequest(
@@ -132,6 +148,7 @@ export default function RequestForm({
         formData.startDate,
         formData.endDate
       );
+
       if (!validation.isValid) {
         setError(validation.errorMessage || "유효하지 않은 요청입니다.");
         setIsSubmitting(false);
@@ -159,7 +176,7 @@ export default function RequestForm({
         onSuccess();
       } else {
         // 모달이 아닌 경우 목록 페이지로 이동
-        router.push("/attendance/request");
+        router.push("/attendance/requests");
         router.refresh();
       }
     } catch (err: any) {
