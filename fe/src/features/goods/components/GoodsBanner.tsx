@@ -7,15 +7,9 @@ interface GoodsBannerProps {
 
 const GoodsBanner: React.FC<GoodsBannerProps> = ({ goods }) => {
   return (
-    <div className="w-full h-48 bg-gray-100 rounded-xl flex items-end overflow-hidden mb-8 relative">
-      {goods && goods.imgUrl && goods.imgUrl.length > 0 && (
-        <img
-          src={goods.imgUrl[0]}
-          alt={goods.itemName}
-          className="h-full object-cover rounded-l-xl"
-          style={{ minWidth: 200, maxWidth: 320 }}
-        />
-      )}
+    <div className="w-full h-36 bg-gray-100 rounded-xl flex items-end overflow-hidden mb-8 relative">
+      {/* 흰색 네모칸 */}
+      <div className="w-full h-full bg-white rounded-xl" />
       {/* 고정 문구 */}
       <div className="absolute left-8 bottom-6 text-left">
         <div className="text-2xl font-bold text-gray-900 mb-1">

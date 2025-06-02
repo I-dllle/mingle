@@ -6,7 +6,5 @@ export async function fetchDmChatMessages(
   roomId: number
 ): Promise<ChatMessagePayload[]> {
   // GET 요청으로 해당 roomId의 DM 메시지 조회
-  return await apiClient<ChatMessagePayload[]>(
-    `/api/v1/dm-chat/messages/${roomId}`
-  );
+  return await apiClient<ChatMessagePayload[]>(`/dm-chat/messages/${roomId}`);
 }

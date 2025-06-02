@@ -40,9 +40,14 @@ export function useGoods() {
         const params = new URLSearchParams();
         if (searchQuery) params.append("search", searchQuery);
         if (sortOption) params.append("sort", sortOption);
-        const response = await api.get<PageResponse<Goods>>(
-          `/api/v1/goods?${params.toString()}`
-        );
+
+        const url = `/api/v1/goods?${params.toString()}`;
+        console.log("🔍 검색 요청 URL:", url);
+        console.log("🔍 검색어:", searchQuery);
+
+        const response = await api.get<PageResponse<Goods>>(url);
+        console.log("🔍 검색 결과:", response.data.content.length, "개 상품");
+
         setGoods(response.data.content);
       } catch (error) {
         console.error("Failed to fetch goods:", error);
@@ -60,13 +65,15 @@ export function useGoods() {
             formData.append("imgFiles", file);
           });
         }
-        formData.append("dto", JSON.stringify(data));
+        const { imgUrl, ...dtoWithoutImgUrl } = data as any;
+        formData.append("dto", JSON.stringify(dtoWithoutImgUrl));
 
         const response = await api.post<Goods>("/api/v1/goods", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
+
         setGoods((prev) => [...prev, response.data]);
         return response.data;
       } catch (error) {
@@ -86,17 +93,15 @@ export function useGoods() {
             formData.append("imgFiles", file);
           });
         }
-        formData.append("dto", JSON.stringify(data));
+        const { imgUrl, ...dtoWithoutImgUrl } = data as any;
+        formData.append("dto", JSON.stringify(dtoWithoutImgUrl));
 
-        const response = await api.patch<Goods>(
-          `/api/v1/goods/${id}`,
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
+        const response = await api.put<Goods>(`/api/v1/goods/${id}`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
         setGoods((prev) =>
           prev.map((item) => (item.id === id ? response.data : item))
         );

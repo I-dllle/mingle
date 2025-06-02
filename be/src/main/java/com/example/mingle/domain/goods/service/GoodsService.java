@@ -61,18 +61,27 @@ public class GoodsService {
                 .createdBy(user)
                 .build();
 
-        goodsRepository.save(goods);
-        return GoodsResponseDto.fromEntity(goods);
+        Goods savedGoods = goodsRepository.save(goods);
+        
+        return GoodsResponseDto.fromEntity(savedGoods);
     }
 
     //상품조회 with 페이징
     @Transactional(readOnly = true)
-    public Page<GoodsResponseDto> getAllGoodsPageable(int page, int size, String sortField, Sort.Direction direction) {
+    public Page<GoodsResponseDto> getAllGoodsPageable(int page, int size, String sortField, Sort.Direction direction, String search) {
         Sort sort = Sort.by(direction, sortField);
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        return goodsRepository.findAll(pageable)
-                .map(GoodsResponseDto::fromEntity);
+        Page<Goods> goodsPage;
+        if (search != null && !search.trim().isEmpty()) {
+            // 검색어가 있으면 상품명으로 검색
+            goodsPage = goodsRepository.findByItemNameContainingIgnoreCase(search.trim(), pageable);
+        } else {
+            // 검색어가 없으면 전체 조회
+            goodsPage = goodsRepository.findAll(pageable);
+        }
+
+        return goodsPage.map(GoodsResponseDto::fromEntity);
     }
 
 
@@ -89,15 +98,20 @@ public class GoodsService {
         }
 
         List<String> imgUrls = new ArrayList<>();
+        
+        // 새로운 이미지 파일이 있으면 업로드
         if (imageFiles != null && imageFiles.length > 0) {
             for (MultipartFile file : imageFiles) {
-                String uploadedUrl = awsS3Uploader.upload(file, "goods_images");
-                imgUrls.add(uploadedUrl);
+                if (file != null && !file.isEmpty()) {
+                    String uploadedUrl = awsS3Uploader.upload(file, "goods_images");
+                    imgUrls.add(uploadedUrl);
+                }
             }
         } else {
-            // 변경사항 없으면 기존 이미지 유지
-            imgUrls = goods.getImgUrl();
+            // 새로운 이미지가 없으면 기존 이미지 유지
+            imgUrls = new ArrayList<>(goods.getImgUrl());
         }
+        
         goods.update(
                 requestDto.getItemName(),
                 imgUrls,
@@ -106,8 +120,10 @@ public class GoodsService {
                 requestDto.getIsActive()
         );
 
-        goodsRepository.save(goods);
-        return GoodsResponseDto.fromEntity(goods);
+        // 명시적으로 저장하여 @ElementCollection 변경사항 반영
+        Goods savedGoods = goodsRepository.save(goods);
+        
+        return GoodsResponseDto.fromEntity(savedGoods);
     }
 
     //관리자가 상품 삭제

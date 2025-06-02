@@ -75,9 +75,9 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 
         // 인증 필요 없는 엔드포인트는 통과
         if (List.of(
-                "/api/users/signup",
-                "/api/users/login",
-                "/api/users/refresh"
+                "/api/v1/users/signup",
+                "/api/v1/users/login",
+                "/api/v1/users/refresh"
         ).contains(request.getRequestURI())) {
             filterChain.doFilter(request, response);
             return;

@@ -8,4 +8,5 @@ export interface ChatMessagePayload {
   format: MessageFormat; // TEXT, ARCHIVE, etc
   chatType: ChatRoomType; // 'dm' | 'group'
   createdAt: string; //
+  tagNames?: string[];
 }

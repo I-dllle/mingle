@@ -280,11 +280,10 @@ export default function ExpiringContractsTab({
                             "ko-KR"
                           )}
                         </div>
-                      </div>
-
+                      </div>{" "}
                       {/* 액션 버튼 */}
                       <Link
-                        href={`/panel/contracts/${contract.id}?category=${category}`}
+                        href={`/adminContracts/${contract.id}?category=${category}`}
                         className="inline-flex items-center gap-1 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
                       >
                         상세보기

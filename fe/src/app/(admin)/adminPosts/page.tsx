@@ -19,7 +19,7 @@ export default function AdminPostsPage() {
   const { name: userDepartment } = useDepartment();
   const menus = departmentMenus[userDepartment] || departmentMenus.default;
   const currentMenu =
-    menus.find((menu) => menu.path === "/panel/posts") ||
+    menus.find((menu) => menu.path === "/adminPosts") ||
     menus.find((menu) => menu.id === 21);
   const boardName = currentMenu?.name || "전체 게시글 관리";
 
@@ -27,7 +27,7 @@ export default function AdminPostsPage() {
   console.log("User Department:", userDepartment);
   console.log("Available menus:", menus);
   console.log("Current menu:", currentMenu);
-  console.log("Looking for path:", "/panel/posts");
+  console.log("Looking for path:", "/adminPosts");
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchInput, setSearchInput] = useState("");
@@ -39,14 +39,13 @@ export default function AdminPostsPage() {
   const [loading, setLoading] = useState(false);
   const [navigating, setNavigating] = useState(false);
   const postsPerPage = 10;
-  const router = useRouter();
-  // 게시글 클릭 핸들러 (상세 보기로 이동)
+  const router = useRouter(); // 게시글 클릭 핸들러 (상세 보기로 이동)
   const handlePostClick = async (postId: number) => {
     console.log("게시글 클릭됨, postId:", postId);
 
     try {
       setNavigating(true);
-      const targetUrl = `/panel/posts/${postId}`;
+      const targetUrl = `/adminPosts/${postId}`;
       window.location.href = targetUrl;
     } catch (error) {
       setNavigating(false);

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { DmChatRoomSummary } from '../types/DmChatRoomSummary';
+import { apiClient } from '@/lib/api/apiClient';
 
 export function useDmChatRoomList() {
   // 상태 정의
@@ -11,23 +12,14 @@ export function useDmChatRoomList() {
   useEffect(() => {
     const fetchRooms = async () => {
       try {
-        // fetch 직접 호출 + Authorization 헤더 명시
-        const res = await fetch('/api/v1/dm-chat/summary', {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`, // 토큰 인증 추가
-          },
-        });
-
-        if (!res.ok) throw new Error('채팅방 요약 정보를 불러오지 못했습니다'); // 오류 핸들링 추가
-
-        const data = await res.json(); // 응답 파싱
+        // apiClient가 내부적으로 JSON 파싱 + 에러 처리까지 해주는 경우
+        const data = await apiClient<DmChatRoomSummary[]>('/dm-chat/summary');
         setRooms(data); // 성공 시 상태 반영
       } catch (err) {
-        console.error(err); // 오류 로그 출력
+        console.error('채팅방 요약 정보 불러오기 실패:', err);
         setRooms([]); // 실패 시 rooms 초기화
       } finally {
-        setLoading(false); // 로딩 종료
+        setLoading(false);
       }
     };
 

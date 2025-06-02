@@ -12,7 +12,7 @@ export default function DmUserSearch() {
   const { results, loading, error } = useUserSearch(keyword);
 
   const handleStartDm = async (opponentId: number) => {
-    const { roomId } = await apiClient<{ roomId: number }>('/api/v1/dm-chat', {
+    const { roomId } = await apiClient<{ roomId: number }>('/dm-chat', {
       method: 'POST',
       body: JSON.stringify({ opponentId }),
     });
