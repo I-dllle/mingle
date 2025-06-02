@@ -61,7 +61,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("""
     SELECT DISTINCT p FROM Post p
     LEFT JOIN FETCH p.imageUrl
-    WHERE p.menu.department.id = :depId
+    WHERE p.department.id = :depId
       AND p.category = :category
       AND p.isDeleted = false
 """)
