@@ -1,24 +1,21 @@
 'use client';
 
+import { apiClient } from '@/lib/api/apiClient';
 import { useRouter } from 'next/navigation';
+import type { DmChatRoomResponse } from '@/features/chat/dm/types/DmChatRoomResponse';
 
 export function useCreateDmRoom() {
   const router = useRouter();
 
   const createRoomAndEnter = async (receiverId: number) => {
-    const res = await fetch('/api/v1/dm-chat/room', {
+    const room = await apiClient<DmChatRoomResponse>('/dm-chat/room', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({ receiverId }),
     });
 
-    if (!res.ok) {
-      throw new Error('채팅방 생성 실패');
-    }
-
-    const room = await res.json();
-    router.push(`/dm/${room.roomId}`);
+    router.push(`/dm/${room.id}`);
   };
 
   return { createRoomAndEnter };
