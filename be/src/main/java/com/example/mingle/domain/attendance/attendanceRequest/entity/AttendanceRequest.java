@@ -8,6 +8,7 @@ import com.example.mingle.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -60,9 +61,6 @@ public class AttendanceRequest extends BaseEntity {
     @JoinColumn(name = "approver_id")
     private User approver;
 
-    // 신청/승인 일시
-    @Column(name = "applied_at", nullable = false)
-    private LocalDateTime appliedAt;
 
     @Column(name = "approved_at")
     private LocalDateTime approvedAt;

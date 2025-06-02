@@ -14,6 +14,7 @@ import java.util.List;
 @Builder
 public class GoodsResponseDto {
     //상품 조회시 필요한 정보
+    private Long id;
     private String itemName;
     private List<String> imgUrl;
     private String description;
@@ -26,6 +27,7 @@ public class GoodsResponseDto {
     public static GoodsResponseDto fromEntity(Goods goods) {
         User user = goods.getCreatedBy();
         return GoodsResponseDto.builder()
+                .id(goods.getId())
                 .itemName(goods.getItemName())
                 .imgUrl(goods.getImgUrl())
                 .description(goods.getDescription())

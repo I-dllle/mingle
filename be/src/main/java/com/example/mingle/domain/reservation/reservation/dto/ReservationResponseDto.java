@@ -34,7 +34,11 @@ public class ReservationResponseDto {
 
     private ReservationStatus reservationStatus;
 
+    private String title;
+
     private Long userId;
 
     private String userName;
+
+    private String nickName;
 }

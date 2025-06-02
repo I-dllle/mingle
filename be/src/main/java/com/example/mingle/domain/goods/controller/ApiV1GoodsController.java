@@ -43,14 +43,15 @@ public class ApiV1GoodsController {
     public ResponseEntity<Page<GoodsResponseDto>> getAllGoods(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt,desc") String sort) {
+            @RequestParam(defaultValue = "createdAt,desc") String sort,
+            @RequestParam(required = false) String search) {
         String[] sortParams = sort.split(",");
         String sortField = sortParams[0];
         Sort.Direction direction = sortParams.length > 1 && sortParams[1].equalsIgnoreCase("asc")
                 ? Sort.Direction.ASC
                 : Sort.Direction.DESC;
 
-        Page<GoodsResponseDto> goods = goodsService.getAllGoodsPageable(page, size, sortField, direction);
+        Page<GoodsResponseDto> goods = goodsService.getAllGoodsPageable(page, size, sortField, direction, search);
         return ResponseEntity.ok(goods);
     }
 
@@ -116,10 +117,5 @@ public class ApiV1GoodsController {
         goodsService.deleteGoods(goodsId, user.getId());
         return ResponseEntity.noContent().build();
     }
-
-    //상품검색
-
-
-    //결제내역 상세보기(주문서조회)
 
 }

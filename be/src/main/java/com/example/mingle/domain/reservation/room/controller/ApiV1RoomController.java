@@ -32,16 +32,10 @@ public class ApiV1RoomController {
     public ResponseEntity<RoomDto> create(@RequestBody RoomDto dto) {
         // 관리자 권한 확인
         User user = rq.getActor();
-
-        log.info("CreateRoom 요청자 = {}", user);
-
         // 2) Role 확인 로그
         if (user == null) {
-            log.warn("CreateRoom 실패: 비로그인 사용자가 접근을 시도했습니다.");
             throw new ApiException(ErrorCode.ACCESS_DENIED);
         }
-        log.info("CreateRoom 요청자 역할 = {}", user.getRole());
-
         if (user == null || user.getRole() != UserRole.ADMIN) {
             throw new ApiException(ErrorCode.ACCESS_DENIED);
         }
@@ -90,6 +84,7 @@ public class ApiV1RoomController {
         return ResponseEntity.ok(roomService.updateRoom(id, dto));
     }
 
+    // 삭제
     @DeleteMapping("/{id}")
     @Operation(summary = "방 삭제", description = "특정 방을 삭제합니다.")
     public ResponseEntity<Void> deleteRoom(@PathVariable Long id) {

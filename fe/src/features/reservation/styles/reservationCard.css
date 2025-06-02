@@ -1,0 +1,15 @@
+.reservationCard {
+  position: absolute;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  padding: 0 0.25rem;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.reservationCard.mine {
+  background-color: #6366f1; /* bg-indigo-500 */
+}
+.reservationCard.other {
+  background-color: #d8b4fe; /* bg-purple-300 */
+}

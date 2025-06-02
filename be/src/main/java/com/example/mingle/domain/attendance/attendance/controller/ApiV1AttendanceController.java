@@ -94,14 +94,37 @@ public class ApiV1AttendanceController {
         return ResponseEntity.ok(result);
     }
 
-    @Operation(summary = "일별 근태 조회", description = "특정 날짜의 근태 기록을 조회합니다.")
-    @GetMapping("/daily")
-    public ResponseEntity<AttendanceDetailDto> getDailyAttendance(
-            @Parameter(description = "조회 날짜 (ISO: yyyy-MM-dd)", example = "2025-05-20")
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+    @Operation(
+            summary = "자신의 근태 상세 조회 (ID 기준)",
+            description = "현재 로그인된 사용자의 attendanceId를 받아, 해당 근태 정보를 반환합니다."
+    )
+    @GetMapping("/{attendanceId}")
+    public ResponseEntity<AttendanceDetailDto> getAttendanceByAttendanceId(
+            @PathVariable(name = "attendanceId") Long attendanceId) {
+
+        // 1) 현재 로그인된 사용자 ID
         Long userId = rq.getActor().getId();
-        AttendanceDetailDto result = attendanceService.getDailyAttendance(userId, date);
-        return ResponseEntity.ok(result);
+
+        // 2) 서비스 호출
+        AttendanceDetailDto detail = attendanceService.getAttendanceByAttendanceId(attendanceId, userId);
+        return ResponseEntity.ok(detail);
+    }
+
+
+    @Operation(
+            summary = "일별 근태 조회",
+            description = "특정 날짜(date 쿼리 파라미터)의 내 근태 정보를 반환합니다."
+    )
+    @GetMapping("/daily")
+    @Transactional(readOnly = true)
+    public ResponseEntity<AttendanceDetailDto> getDailyAttendance(
+            @Parameter(description = "ISO 형식 날짜 (yyyy-MM-dd)", example = "2025-06-02")
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    ) {
+        Long userId = rq.getActor().getId();
+        // service에서 userId와 date를 기반으로 근태 정보 조회
+        AttendanceDetailDto detail = attendanceService. getDailyAttendance(userId, date);
+        return ResponseEntity.ok(detail);
     }
 
     @Operation(summary = "최근 근태 기록 목록 조회", description = "최근 근태 기록을 페이지 단위로 조회합니다.")

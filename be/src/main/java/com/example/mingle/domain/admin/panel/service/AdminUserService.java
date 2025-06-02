@@ -72,7 +72,7 @@ public class AdminUserService {
     }
 
     public List<UserSearchDto> searchByName(String name) {
-        List<User> users = userRepository.findByNameContainingIgnoreCase(name);
+        List<User> users = userRepository.findByNicknameContainingIgnoreCase(name);
         return users.stream()
                 .map(UserSearchDto::from)
                 .toList();

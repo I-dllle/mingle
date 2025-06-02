@@ -2,6 +2,7 @@ package com.example.mingle.domain.chat.group.entity;
 
 import com.example.mingle.domain.chat.common.enums.MessageFormat;
 import com.example.mingle.global.jpa.BaseEntity;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -9,6 +10,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+
+import java.time.LocalDateTime;
 
 @SuperBuilder
 @AllArgsConstructor
@@ -25,4 +28,11 @@ public class GroupChatMessage extends BaseEntity {
     private MessageFormat format;
 
     private String content;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "is_read")
+    private boolean isRead;
+
 }

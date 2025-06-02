@@ -2,6 +2,8 @@ package com.example.mingle.domain.post.legalpost.repository;
 
 import com.example.mingle.domain.post.legalpost.entity.Settlement;
 import com.example.mingle.domain.post.legalpost.enums.SettlementStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -60,10 +62,7 @@ public interface SettlementRepository extends JpaRepository<Settlement, Long> {
             @Param("excludedStatus") SettlementStatus excludedStatus
     );
 
-    @Query("""
-    SELECT s FROM Settlement s
-    WHERE s.status != :excludedStatus
-""")
-    List<Settlement> findAllExcludingStatus(@Param("excludedStatus") SettlementStatus excludedStatus);
+    @Query("SELECT s FROM Settlement s WHERE s.status != :excludedStatus")
+    Page<Settlement> findAllExcludingStatus(@Param("excludedStatus") SettlementStatus excludedStatus, Pageable pageable);
 
 }

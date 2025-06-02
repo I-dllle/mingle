@@ -1,10 +1,7 @@
 package com.example.mingle.domain.admin.panel.controller;
 
 
-import com.example.mingle.domain.admin.panel.dto.AdminRequestUser;
-import com.example.mingle.domain.admin.panel.dto.AdminRoleUpdate;
-import com.example.mingle.domain.admin.panel.dto.AdminUpdateUser;
-import com.example.mingle.domain.admin.panel.dto.UserSearchDto;
+import com.example.mingle.domain.admin.panel.dto.*;
 import com.example.mingle.domain.admin.panel.service.AdminUserService;
 import com.example.mingle.domain.user.user.dto.UserSimpleDto;
 import com.example.mingle.domain.user.user.entity.PositionCode;
@@ -54,6 +51,12 @@ public class ApiV1AdminUserController {
     @Operation(summary = "유저 권한 변경")
     public void updateRole(@PathVariable Long id, @RequestBody AdminRoleUpdate req) {
         adminUserService.updateRole(id, req.role());
+    }
+
+    @PatchMapping("/{id}/status")
+    @Operation(summary = "유저 상태 변경")
+    public void updateStatus(@PathVariable Long id, @RequestBody AdminStatusUpdate req) {
+        adminUserService.updateStatus(id, req.status());
     }
 
     @GetMapping("/search")

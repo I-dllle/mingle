@@ -11,6 +11,11 @@ export interface AdminRoleUpdate {
   role: UserRole;
 }
 
+// AdminStatusUpdate DTO - Java의 AdminStatusUpdate 레코드와 동일한 구조
+export interface AdminStatusUpdate {
+  status: UserStatus;
+}
+
 // AdminUpdateUser DTO - Java의 AdminUpdateUser 레코드와 동일한 구조
 export interface AdminUpdateUser {
   name: string;
@@ -23,7 +28,6 @@ export interface AdminUpdateUser {
 export enum UserStatus {
   ACTIVE = "ACTIVE",
   INACTIVE = "INACTIVE",
-  BANNED = "BANNED",
 }
 
 // AdminRequestUser DTO - Java의 AdminRequestUser 레코드와 동일한 구조

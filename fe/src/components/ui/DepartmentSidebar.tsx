@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
-import { useDepartment } from '@/context/DepartmentContext';
-import { departmentMenus } from '@/context/departmentMenus';
-import styles from './Sidebar.module.css';
+import { useDepartment } from "@/context/DepartmentContext";
+import { departmentMenus } from "@/context/departmentMenus";
+import styles from "./Sidebar.module.css";
+import Link from "next/link";
 
 export default function DepartmentSidebar() {
   const { name: userDepartment } = useDepartment();
@@ -24,10 +25,10 @@ export default function DepartmentSidebar() {
             className={`${styles.menuItem} ${
               menu.isActive ? styles.menuItemActive : styles.menuItemInactive
             }`}
-            // onClick 등 부서별 메뉴 클릭 핸들러
           >
-            {/* 아이콘 처리 */}
-            <span>{menu.name}</span>
+            <Link href={menu.path} className={styles.menuLink}>
+              <span>{menu.name}</span>
+            </Link>
           </li>
         ))}
       </ul>

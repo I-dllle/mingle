@@ -26,10 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.*;
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.example.mingle.global.constants.TimeConstants.*;
@@ -173,17 +170,29 @@ public class AttendanceService {
         return attendanceMapper.toRecordDto(attendance);
     }
 
-    //일별 근태 기록 조회
+    @Transactional(readOnly = true)
+    public AttendanceDetailDto getAttendanceByAttendanceId(Long attendanceId, Long userId) {
+        // 1) 해당 ID의 Attendance가 존재하는지 확인
+        Attendance attendance = attendanceRepository.findById(attendanceId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 근태 기록이 없습니다. id=" + attendanceId));
+
+        // 3) DTO로 매핑하여 반환
+        return attendanceMapper.toDetailDto(attendance);
+    }
+
     @Transactional(readOnly = true)
     public AttendanceDetailDto getDailyAttendance(Long userId, LocalDate date) {
-        if (!userRepository.existsById(userId)) {
-            throw new IllegalArgumentException("존재하지 않는 유저입니다.");
-        }
 
-        Attendance attendance = attendanceRepository
+        User user = userRepository.findById(userId).orElseThrow();
+
+        Attendance  attendance= attendanceRepository
                 .findByUser_IdAndDate(userId, date)
-                .orElseThrow(() -> new IllegalArgumentException("해당 날짜의 근태 기록이 없습니다."));
+                .orElseGet(() -> Attendance.builder()
+                        .user(user)
+                        .date(date)
+                        .build());
 
+        // 4) 없으면, 빈 DTO (출근 전 상태) 반환
         return attendanceMapper.toDetailDto(attendance);
     }
 

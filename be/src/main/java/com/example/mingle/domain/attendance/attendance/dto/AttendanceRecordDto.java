@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 public class AttendanceRecordDto {
+    private Long id;
     private Long userId;
     private LocalDateTime checkInTime;
     private LocalDateTime checkOutTime;

@@ -48,12 +48,12 @@ export const departmentSidebarReducer = (
         departmentMenus[userDepartment as keyof typeof departmentMenus] ||
         departmentMenus.default;
 
-      const updatedMenus = menus.map((menu: any) => ({
+      const updatedMenus = menus.map((menu: MenuItem) => ({
         ...menu,
         isActive: menu.path === pathname,
       }));
 
-      const activeMenu = updatedMenus.find((menu: any) => menu.isActive);
+      const activeMenu = updatedMenus.find((menu: MenuItem) => menu.isActive);
 
       return {
         ...state,
