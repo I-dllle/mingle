@@ -55,7 +55,7 @@ custom:
 cloud:
   aws:
     s3:
-      bucket: re-cord
+      bucket: mingle-images
     credentials:
       accessKey: ${cloud.aws.credentials.access-key}
       secretKey: ${cloud.aws.credentials.secret-key}
