@@ -1,11 +1,17 @@
+'use client';
+
+import ArchiveFileList from '@/features/chat/archive/components/ArchiveFileList';
+import ArchiveUploadForm from '@/features/chat/archive/components/ArchiveUploadForm';
+import { useParams } from 'next/navigation';
+
 export default function ProjectArchivePage() {
+  const { roomId } = useParams();
+
   return (
     <div>
       <h3>프로젝트 자료방</h3>
-      {/* 여기에 파일 리스트, 업로드 등 구현 */}
-      <div style={{ marginTop: 32, color: '#888' }}>
-        (여기에 자료방 파일 목록이 표시됩니다)
-      </div>
+      <ArchiveUploadForm roomId={Number(roomId)} />
+      <ArchiveFileList roomId={Number(roomId)} />
     </div>
   );
 }

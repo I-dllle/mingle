@@ -6,8 +6,8 @@ import { useGroupChatRoomList } from '@/features/chat/group/services/useGroupCha
 import { GroupChatRoomSummary } from '@/features/chat/group/types/GroupChatRoomSummary';
 import { ChatScope } from '@/features/chat/common/types/ChatScope';
 import Link from 'next/link';
-import { useAuth } from '@/features/auth/AuthProvider'; // 유저 정보 사용
-import { DepartmentRole, ProjectRole } from '@/features/auth/types/roles';
+import { useAuth } from '@/features/user/auth/AuthProvider'; // 유저 정보 사용
+import { DepartmentRole, ProjectRole } from '@/features/user/auth/types/roles';
 
 // 시간 포맷팅 함수 (오전/오후 HH:MM 형태)
 function formatTime(isoTime: string | null): string {
