@@ -2,148 +2,405 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="utf-8" />
-    <link
-      rel="icon"
-      href="https://static.toss.im/icons/png/4x/icon-toss-logo.png"
-    />
-    <link rel="stylesheet" type="text/css" href="/style.css" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>토스페이먼츠 결제</title>
-    <!-- 토스페이먼츠 SDK 추가 -->
     <script src="https://js.tosspayments.com/v2/standard"></script>
-  </head>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .container {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        max-width: 500px;
+        width: 100%;
+        padding: 40px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .container::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #0080ff, #00d4aa);
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #191f28;
+        margin-bottom: 8px;
+      }
+
+      .subtitle {
+        color: #8b95a1;
+        font-size: 14px;
+      }
+
+      .product-info {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 24px;
+        border: 1px solid #e9ecef;
+      }
+
+      .product-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: #191f28;
+        margin-bottom: 8px;
+      }
+
+      .product-price {
+        font-size: 20px;
+        font-weight: 700;
+        color: #0080ff;
+      }
+
+      .coupon-section {
+        margin: 24px 0;
+        padding: 16px;
+        background: #fff5e6;
+        border-radius: 8px;
+        border: 1px solid #ffd700;
+      }
+
+      .coupon-label {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        color: #cc7a00;
+      }
+
+      .coupon-label input[type="checkbox"] {
+        margin-right: 8px;
+        transform: scale(1.2);
+      }
+
+      .payment-section {
+        margin: 24px 0;
+      }
+
+      .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #191f28;
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #e9ecef;
+      }
+
+      #payment-method {
+        margin-bottom: 24px;
+        min-height: 200px;
+      }
+
+      #agreement {
+        margin-bottom: 24px;
+        min-height: 60px;
+      }
+
+      .payment-button {
+        width: 100%;
+        background: linear-gradient(135deg, #0080ff, #0066cc);
+        border: none;
+        border-radius: 12px;
+        padding: 16px 24px;
+        font-size: 16px;
+        font-weight: 600;
+        color: white;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(0, 128, 255, 0.3);
+      }
+
+      .payment-button:hover {
+        background: linear-gradient(135deg, #0066cc, #0052a3);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 128, 255, 0.4);
+      }
+
+      .payment-button:active {
+        transform: translateY(0);
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        padding: 20px;
+        color: #8b95a1;
+      }
+
+      .loading.show {
+        display: block;
+      }
+
+      .spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #e9ecef;
+        border-top: 2px solid #0080ff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+        margin-right: 8px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .alert {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        color: #856404;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+      }
+
+      .alert::before {
+        content: "⚠️";
+        margin-right: 8px;
+      }
+    </style>
+  </head>
   <body>
-    <!-- 주문서 영역 -->
-    <div class="wrapper">
-      <div
-        class="box_section"
-        style="
-          padding: 40px 30px 50px 30px;
-          margin-top: 30px;
-          margin-bottom: 50px;
-        "
-      >
-        <!-- 결제 UI -->
-        <div id="payment-method"></div>
-        <!-- 이용약관 UI -->
-        <div id="agreement"></div>
-        <!-- 쿠폰 체크박스 -->
-        <div style="padding-left: 25px">
-          <div class="checkable typography--p">
-            <label for="coupon-box" class="checkable__label typography--regular"
-              ><input
-                id="coupon-box"
-                class="checkable__input"
-                type="checkbox"
-                aria-checked="true"
-              /><span class="checkable__label-text"
-                >5,000원 쿠폰 적용</span
-              ></label
-            >
-          </div>
-        </div>
-        <!-- 결제하기 버튼 -->
-        <div class="result wrapper">
-          <button class="button" id="payment-button" style="margin-top: 30px">
-            결제하기
-          </button>
-        </div>
+    <div class="container">
+      <div class="header">
+        <h1 class="title">결제하기</h1>
+        <p class="subtitle">안전하고 간편한 토스페이먼츠</p>
       </div>
+
+      <div class="alert">테스트 환경 - 실제로 결제되지 않습니다.</div>
+
+      <!-- 상품 정보 -->
+      <div class="product-info">
+        <div class="product-name" id="product-name">상품명 로딩중...</div>
+        <div class="product-price" id="product-price">₩0</div>
+      </div>
+
+      <!-- 할인 쿠폰 -->
+      <div class="coupon-section">
+        <label class="coupon-label" for="coupon-box">
+          <input type="checkbox" id="coupon-box" />
+          🎟️ 5,000원 할인 쿠폰 적용
+        </label>
+      </div>
+
+      <!-- 결제 방법 -->
+      <div class="payment-section">
+        <h3 class="section-title">결제 방법</h3>
+        <div id="payment-method"></div>
+      </div>
+
+      <!-- 이용약관 -->
+      <div class="payment-section">
+        <h3 class="section-title">약관 동의</h3>
+        <div id="agreement"></div>
+      </div>
+
+      <!-- 로딩 표시 -->
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        결제 정보를 불러오는 중...
+      </div>
+
+      <!-- 결제하기 버튼 -->
+      <button class="payment-button" id="payment-button">결제하기</button>
     </div>
 
     <script th:inline="javascript">
-      // Thymeleaf에서 전달받은 데이터를 전역 변수로 선언
+      // Thymeleaf에서 전달받은 데이터
       const goodsData = /*[[${goods}]]*/ null;
       const orderIdData = /*[[${orderId}]]*/ null;
       const userData = /*[[${user}]]*/ null;
 
+      console.log("🔍 원본 데이터 확인:");
+      console.log("goodsData:", goodsData);
+      console.log("orderIdData:", orderIdData);
+      console.log("userData:", userData);
+
+      // 상품 정보 표시
+      let parsedGoods = null;
+      if (goodsData) {
+        parsedGoods =
+          typeof goodsData === "string" ? JSON.parse(goodsData) : goodsData;
+        console.log("📦 파싱된 상품 정보:", parsedGoods);
+        console.log("💰 상품 실제 가격:", parsedGoods.itemPrice);
+
+        document.getElementById("product-name").textContent =
+          parsedGoods.itemName || "테스트 상품";
+        document.getElementById("product-price").textContent = `₩${(
+          parsedGoods.itemPrice || 50000
+        ).toLocaleString()}`;
+      }
+
+      main();
+
       async function main() {
         try {
-          // 데이터 검증
-          if (!goodsData || !orderIdData || !userData) {
-            console.error("Required data is missing:", {
-              goodsData,
-              orderIdData,
-              userData,
-            });
-            throw new Error("Required data is missing");
-          }
-
           const button = document.getElementById("payment-button");
           const coupon = document.getElementById("coupon-box");
-          const amount = {
-            currency: "KRW",
-            value: goodsData.itemPrice,
-          };
+          const loading = document.getElementById("loading");
+
+          loading.classList.add("show");
+
+          // 안전한 데이터 처리
+          console.log("🚀 main() 함수 시작");
+          console.log("goodsData:", goodsData);
+          console.log("userData:", userData);
+          console.log("orderIdData:", orderIdData);
 
           // ------  결제위젯 초기화 ------
           const clientKey = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
-          const customerKey = userData.id.toString();
           const tossPayments = TossPayments(clientKey);
 
-          // 회원 결제
+          // 회원 결제 - 더 안전한 customerKey 생성
+          let customerKey = "test-customer-123";
+          if (userData && userData.id) {
+            customerKey = userData.id.toString();
+          }
+          console.log("👤 customerKey:", customerKey);
+
           const widgets = tossPayments.widgets({
             customerKey,
           });
 
-          // ------  주문서의 결제 금액 설정 ------
-          await widgets.setAmount(amount);
+          // ------ 주문의 결제 금액 설정 ------
+          const baseAmount =
+            parsedGoods && parsedGoods.itemPrice
+              ? parsedGoods.itemPrice
+              : 50000;
+          console.log("💵 결제 기본 금액 설정:", baseAmount);
+          console.log("💵 parsedGoods.itemPrice:", parsedGoods?.itemPrice);
+          console.log("💵 타입 확인:", typeof baseAmount);
 
-          // ------  결제 UI 렌더링 ------
-          await widgets.renderPaymentMethods({
-            selector: "#payment-method",
-            variantKey: "DEFAULT",
+          await widgets.setAmount({
+            currency: "KRW",
+            value: baseAmount,
           });
 
-          // ------  이용약관 UI 렌더링 ------
-          await widgets.renderAgreement({
-            selector: "#agreement",
-            variantKey: "AGREEMENT",
-          });
+          console.log("✅ 토스페이먼츠 위젯에 설정된 금액:", baseAmount);
+
+          await Promise.all([
+            // ------  결제 UI 렌더링 ------
+            widgets.renderPaymentMethods({
+              selector: "#payment-method",
+              variantKey: "DEFAULT",
+            }),
+            // ------  이용약관 UI 렌더링 ------
+            widgets.renderAgreement({
+              selector: "#agreement",
+              variantKey: "AGREEMENT",
+            }),
+          ]);
+
+          console.log("✅ 결제 UI 렌더링 완료!");
+          loading.classList.remove("show");
 
           // ------  주문서의 결제 금액이 변경되었을 경우 결제 금액 업데이트 ------
           coupon.addEventListener("change", async function () {
-            try {
-              const newAmount = coupon.checked
-                ? amount.value - 5000
-                : amount.value;
-              await widgets.setAmount({
-                currency: "KRW",
-                value: newAmount,
-              });
-            } catch (error) {
-              console.error("Error updating amount:", error);
-            }
+            const newAmount = coupon.checked ? baseAmount - 5000 : baseAmount;
+            console.log("🎫 쿠폰 적용 상태:", coupon.checked);
+            console.log("💰 쿠폰 적용 후 금액:", newAmount);
+
+            await widgets.setAmount({
+              currency: "KRW",
+              value: newAmount,
+            });
+
+            // 가격 표시 업데이트
+            document.getElementById(
+              "product-price"
+            ).textContent = `₩${newAmount.toLocaleString()}`;
           });
 
           // ------ '결제하기' 버튼 누르면 결제창 띄우기 ------
           button.addEventListener("click", async function () {
+            button.disabled = true;
+            button.textContent = "결제 진행중...";
+
+            // 현재 쿠폰 상태 확인
+            const currentAmount = coupon.checked
+              ? baseAmount - 5000
+              : baseAmount;
+            console.log("🔥 결제 버튼 클릭!");
+            console.log("🔥 기본 금액:", baseAmount);
+            console.log("🔥 쿠폰 적용됨?", coupon.checked);
+            console.log("🔥 최종 결제 금액:", currentAmount);
+
             try {
               await widgets.requestPayment({
-                orderId: orderIdData,
-                orderName: goodsData.itemName,
-                successUrl: `${window.location.origin}/api/v1/goodsOrder/success`,
-                failUrl: `${window.location.origin}/api/v1/goodsOrder/fail`,
-                customerEmail: userData.email,
-                customerName: userData.name,
-                customerMobilePhone: userData.phoneNumber,
+                orderId:
+                  orderIdData ||
+                  "test-order-" + Math.random().toString(36).substr(2, 9),
+                orderName:
+                  parsedGoods && parsedGoods.itemName
+                    ? parsedGoods.itemName
+                    : "테스트 상품",
+                successUrl:
+                  window.location.origin + "/api/v1/goodsOrder/success",
+                failUrl: window.location.origin + "/api/v1/goodsOrder/fail",
+                customerEmail:
+                  userData && userData.email
+                    ? userData.email
+                    : "test@example.com",
+                customerName:
+                  userData && userData.name ? userData.name : "테스트 사용자",
+                customerMobilePhone:
+                  userData && userData.phoneNumber
+                    ? userData.phoneNumber
+                    : "01012341234",
               });
             } catch (error) {
-              console.error("Payment request error:", error);
+              console.error("❌ 결제 요청 실패:", error);
+              button.disabled = false;
+              button.textContent = "결제하기";
             }
           });
         } catch (error) {
-          console.error("Initialization error:", error);
-          alert(
-            "결제 페이지 초기화 중 오류가 발생했습니다. 페이지를 새로고침해주세요."
-          );
+          console.error("❌ 초기화 에러:", error);
+          console.error("❌ 에러 스택:", error.stack);
+          document.getElementById("loading").innerHTML =
+            '<span style="color: #dc3545;">⚠️ 결제 시스템 로딩에 실패했습니다.</span>';
         }
       }
-
-      // 페이지 로드 시 main 함수 실행
-      document.addEventListener("DOMContentLoaded", main);
     </script>
   </body>
 </html>

@@ -2,85 +2,334 @@
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="https://static.toss.im/icons/png/4x/icon-toss-logo.png" />
-    <link rel="stylesheet" type="text/css" href="/style.css" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>토스페이먼츠 샘플 프로젝트</title>
+    <title>결제 성공</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .container {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        max-width: 500px;
+        width: 100%;
+        padding: 40px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .container::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #4caf50, #45a049);
+      }
+
+      .success-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #4caf50, #45a049);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px;
+        position: relative;
+        animation: bounceIn 0.6s ease-out;
+      }
+
+      .success-icon::after {
+        content: "✓";
+        color: white;
+        font-size: 32px;
+        font-weight: bold;
+      }
+
+      @keyframes bounceIn {
+        0% {
+          transform: scale(0.3);
+          opacity: 0;
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        70% {
+          transform: scale(0.9);
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      .title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #191f28;
+        margin-bottom: 8px;
+      }
+
+      .subtitle {
+        color: #8b95a1;
+        font-size: 16px;
+        margin-bottom: 32px;
+      }
+
+      .payment-info {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 32px;
+        border: 1px solid #e9ecef;
+      }
+
+      .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        font-size: 14px;
+      }
+
+      .info-item:last-child {
+        margin-bottom: 0;
+        font-weight: 600;
+        font-size: 16px;
+        color: #4caf50;
+        padding-top: 12px;
+        border-top: 1px solid #e9ecef;
+      }
+
+      .info-label {
+        color: #6c757d;
+      }
+
+      .info-value {
+        font-weight: 500;
+        color: #191f28;
+      }
+
+      .redirect-info {
+        background: #e3f2fd;
+        border: 1px solid #90caf9;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 24px;
+        color: #1565c0;
+        font-size: 14px;
+      }
+
+      .countdown {
+        font-weight: 600;
+        color: #1976d2;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+      }
+
+      .btn {
+        flex: 1;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #1976d2, #1565c0);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: linear-gradient(135deg, #1565c0, #0d47a1);
+        transform: translateY(-1px);
+      }
+
+      .btn-secondary {
+        background: #f5f5f5;
+        color: #666;
+        border: 1px solid #ddd;
+      }
+
+      .btn-secondary:hover {
+        background: #e0e0e0;
+      }
+
+      .loading {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #e3f2fd;
+        border-top: 2px solid #1976d2;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: 8px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
   </head>
-
   <body>
-    <div class="box_section" style="width: 600px">
-      <img width="100px" src="https://static.toss.im/illusts/check-blue-spot-ending-frame.png" />
-      <h2>결제를 완료했어요</h2>
+    <div class="container">
+      <div class="success-icon"></div>
 
-      <div class="p-grid typography--p" style="margin-top: 50px">
-        <div class="p-grid-col text--left"><b>결제금액</b></div>
-        <div class="p-grid-col text--right" id="amount"></div>
-      </div>
-      <div class="p-grid typography--p" style="margin-top: 10px">
-        <div class="p-grid-col text--left"><b>주문번호</b></div>
-        <div class="p-grid-col text--right" id="orderId"></div>
-      </div>
-      <div class="p-grid typography--p" style="margin-top: 10px">
-        <div class="p-grid-col text--left"><b>paymentKey</b></div>
-        <div class="p-grid-col text--right" id="paymentKey" style="white-space: initial; width: 250px"></div>
-      </div>
-      <div class="p-grid" style="margin-top: 30px">
-        <button class="button p-grid-col5" onclick="location.href='https://docs.tosspayments.com/guides/v2/payment-widget/integration';">연동 문서</button>
-        <button class="button p-grid-col5" onclick="location.href='https://discord.gg/A4fRFXQhRu';" style="background-color: #e8f3ff; color: #1b64da">실시간 문의</button>
-      </div>
-    </div>
+      <h1 class="title">결제 완료!</h1>
+      <p class="subtitle">결제가 성공적으로 처리되었습니다.</p>
 
-    <div class="box_section" style="width: 600px; text-align: left">
-      <b>Response Data :</b>
-      <div id="response" style="white-space: initial"></div>
+      <div class="payment-info" id="payment-info">
+        <div class="info-item">
+          <span class="info-label">주문번호</span>
+          <span class="info-value" id="orderId">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">결제키</span>
+          <span class="info-value" id="paymentKey">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">결제금액</span>
+          <span class="info-value" id="amount">-</span>
+        </div>
+      </div>
+
+      <div class="redirect-info" id="redirect-info">
+        <div class="loading"></div>
+        <span id="countdown">5</span>초 후 주문내역 페이지로 이동합니다...
+      </div>
+
+      <div class="button-group">
+        <a href="#" class="btn btn-secondary" onclick="goToGoods()"
+          >상품 보기</a
+        >
+        <a href="#" class="btn btn-primary" onclick="goToOrders()"
+          >주문내역 보기</a
+        >
+      </div>
     </div>
 
     <script>
       // 쿼리 파라미터 값이 결제 요청할 때 보낸 데이터와 동일한지 반드시 확인하세요.
       // 클라이언트에서 결제 금액을 조작하는 행위를 방지할 수 있습니다.
       const urlParams = new URLSearchParams(window.location.search);
+      const paymentKey = urlParams.get("paymentKey");
+      const orderId = urlParams.get("orderId");
+      const amount = urlParams.get("amount");
 
-      // 서버로 결제 승인에 필요한 결제 정보를 보내세요.
+      // 결제 정보 표시
+      document.getElementById("orderId").textContent =
+        orderId || "주문번호 없음";
+      document.getElementById("paymentKey").textContent =
+        paymentKey || "결제키 없음";
+      document.getElementById("amount").textContent = amount
+        ? `₩${parseInt(amount).toLocaleString()}`
+        : "금액 정보 없음";
+
+      let countdown = 5;
+      const countdownElement = document.getElementById("countdown");
+
+      // 카운트다운 타이머
+      const timer = setInterval(() => {
+        countdown--;
+        countdownElement.textContent = countdown;
+
+        if (countdown <= 0) {
+          clearInterval(timer);
+          goToOrders();
+        }
+      }, 1000);
+
       async function confirm() {
-        var requestData = {
-          paymentKey: urlParams.get("paymentKey"),
-          orderId: urlParams.get("orderId"),
-          amount: urlParams.get("amount"),
-        };
-
-        const response = await fetch("/confirm", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestData),
-        });
-
-        const json = await response.json();
-
-        if (!response.ok) {
-          // TODO: 결제 실패 비즈니스 로직을 구현하세요.
-          console.log(json);
-          window.location.href = `/fail?message=${json.message}&code=${json.code}`;
+        if (!paymentKey || !orderId || !amount) {
+          console.warn("결제 정보가 불완전합니다.");
+          return;
         }
 
-        // TODO: 결제 성공 비즈니스 로직을 구현하세요.
-        // console.log(json);
-        return json;
+        try {
+          const requestData = {
+            paymentKey: paymentKey,
+            orderId: orderId,
+            amount: amount,
+          };
+
+          const response = await fetch("/api/v1/goodsOrder/confirm", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(requestData),
+          });
+
+          const json = await response.json();
+
+          if (!response.ok) {
+            // 결제 실패 비즈니스 로직을 구현하세요.
+            console.log(json);
+            window.location.href = `/api/v1/goodsOrder/fail?message=${json.message}&code=${json.code}`;
+            return;
+          }
+
+          // 결제 성공 비즈니스 로직을 구현하세요.
+          console.log("결제 승인 완료:", json);
+        } catch (error) {
+          console.error("결제 승인 처리 중 오류:", error);
+        }
       }
-      confirm().then(function (data) {
-        document.getElementById("response").innerHTML = `<pre>${JSON.stringify(data, null, 4)}</pre>`;
-      });
 
-      const paymentKeyElement = document.getElementById("paymentKey");
-      const orderIdElement = document.getElementById("orderId");
-      const amountElement = document.getElementById("amount");
+      function goToOrders() {
+        if (window.opener) {
+          window.opener.postMessage({ type: "PAYMENT_SUCCESS", orderId }, "*");
+          window.close();
+        } else {
+          // fallback: 직접 이동 (단, 보안 에러 발생 가능)
+          window.location.href = `/goods/orders?orderId=${orderId}`;
+        }
+      }
 
-      orderIdElement.textContent = urlParams.get("orderId");
-      amountElement.textContent = urlParams.get("amount") + "원";
-      paymentKeyElement.textContent = urlParams.get("paymentKey");
+      function goToGoods() {
+        if (window.opener) {
+          window.opener.postMessage({ type: "GOODS_SHOP" }, "*");
+          window.close();
+        } else {
+          window.location.href = "http://localhost:3000/goods";
+        }
+      }
+
+      // 페이지 로드 시 결제 승인 처리
+      confirm();
     </script>
   </body>
 </html>

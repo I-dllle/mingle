@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -25,14 +24,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 
-@Slf4j
 @RestController
 @RequestMapping("api/v1/goods")
 @RequiredArgsConstructor
 @Tag(name = "Goods", description = "상점 관련 API")
 public class ApiV1GoodsController {
     private final GoodsService goodsService;
-    private final ObjectMapper objectMapper;
 
     // 상품 조회 (페이지 단위)
     @Operation(
@@ -46,16 +43,15 @@ public class ApiV1GoodsController {
     public ResponseEntity<Page<GoodsResponseDto>> getAllGoods(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt,desc") String sort) {
-        log.info("Getting all goods - page: {}, size: {}, sort: {}", page, size, sort);
+            @RequestParam(defaultValue = "createdAt,desc") String sort,
+            @RequestParam(required = false) String search) {
         String[] sortParams = sort.split(",");
         String sortField = sortParams[0];
         Sort.Direction direction = sortParams.length > 1 && sortParams[1].equalsIgnoreCase("asc")
                 ? Sort.Direction.ASC
                 : Sort.Direction.DESC;
 
-        Page<GoodsResponseDto> goods = goodsService.getAllGoodsPageable(page, size, sortField, direction);
-        log.info("Found {} goods", goods.getTotalElements());
+        Page<GoodsResponseDto> goods = goodsService.getAllGoodsPageable(page, size, sortField, direction, search);
         return ResponseEntity.ok(goods);
     }
 
@@ -75,24 +71,8 @@ public class ApiV1GoodsController {
             @RequestPart(value = "imgFiles", required = false) MultipartFile[] imageFiles,
             @Parameter(description = "사용자 ID", required = true) @AuthenticationPrincipal SecurityUser user
     ) throws IOException {
-        //GoodsResponseDto responseDto = goodsService.registerGoods(user.getId(), dto, imageFiles);
-        //return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
-        log.info("Registering goods - user: {}, dto: {}", user.getId(), objectMapper.writeValueAsString(dto));
-        if (imageFiles != null) {
-            log.info("Image files count: {}", imageFiles.length);
-            for (MultipartFile file : imageFiles) {
-                log.info("Image file: {}, size: {}, type: {}", file.getOriginalFilename(), file.getSize(), file.getContentType());
-            }
-        }
-        
-        try {
-            GoodsResponseDto responseDto = goodsService.registerGoods(user.getId(), dto, imageFiles);
-            log.info("Goods registered successfully - id: {}", responseDto.getItemName());
-            return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
-        } catch (Exception e) {
-            log.error("Failed to register goods", e);
-            throw e;
-        }
+        GoodsResponseDto responseDto = goodsService.registerGoods(user.getId(), dto, imageFiles);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
     // 상품 수정 (관리자만)
@@ -114,22 +94,8 @@ public class ApiV1GoodsController {
             @Parameter(description = "인증된 사용자 정보", required = true)
             @AuthenticationPrincipal SecurityUser user
     ) throws IOException {
-        log.info("Modifying goods - id: {}, user: {}, dto: {}", goodsId, user.getId(), objectMapper.writeValueAsString(dto));
-        if (imageFiles != null) {
-            log.info("Image files count: {}", imageFiles.length);
-            for (MultipartFile file : imageFiles) {
-                log.info("Image file: {}, size: {}, type: {}", file.getOriginalFilename(), file.getSize(), file.getContentType());
-            }
-        }
-        
-        try {
-            GoodsResponseDto updatedDto = goodsService.modifyGoods(goodsId, user.getId(), dto, imageFiles);
-            log.info("Goods modified successfully - id: {}", goodsId);
-            return ResponseEntity.ok(updatedDto);
-        } catch (Exception e) {
-            log.error("Failed to modify goods", e);
-            throw e;
-        }
+        GoodsResponseDto updatedDto = goodsService.modifyGoods(goodsId, user.getId(), dto, imageFiles);
+        return ResponseEntity.ok(updatedDto);
     }
 
     // 상품 삭제 (관리자만)
@@ -148,17 +114,8 @@ public class ApiV1GoodsController {
             @Parameter(description = "인증된 사용자 정보", required = true)
             @AuthenticationPrincipal SecurityUser user
     ) {
-        log.info("Deleting goods - id: {}, user: {}", goodsId, user.getId());
-        try {
-            goodsService.deleteGoods(goodsId, user.getId());
-            log.info("Goods deleted successfully - id: {}", goodsId);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            log.error("Failed to delete goods", e);
-            throw e;
-        }
+        goodsService.deleteGoods(goodsId, user.getId());
+        return ResponseEntity.noContent().build();
     }
-
-    //결제내역 상세보기(주문서조회)
 
 }

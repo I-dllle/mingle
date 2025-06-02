@@ -13,6 +13,10 @@ import java.util.Optional;
 public interface GoodsRepository extends JpaRepository<Goods, Long> {
     // 상품명으로 검색
     List<Goods> findByItemNameContaining(String keyword);
+    
+    // 상품명으로 검색 (페이징 지원)
+    @EntityGraph(attributePaths = {"imgUrl", "createdBy"})
+    Page<Goods> findByItemNameContainingIgnoreCase(String keyword, Pageable pageable);
 
     // 판매중인 상품만 조회
     List<Goods> findByIsActiveTrue();

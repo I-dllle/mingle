@@ -12,11 +12,7 @@ spring:
     username: su
     password: sususu1234
     driver-class-name: com.mysql.cj.jdbc.Driver
-  data:
-    redis:
-      host: redis_1
-      port: 6379
-      password: mingleservice
+
   jpa:
     open-in-view: false
     hibernate:
@@ -24,6 +20,11 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
   servlet:
     multipart:
       max-file-size: 10MB
@@ -47,7 +48,7 @@ custom:
   site:
     name: "MINGLE DEV"
     cookie:
-      secure: false       # 로컬은 HTTPS 아님 - dev 환경
+      secure: false # 로컬은 HTTPS 아님 - dev 환경
       sameSite: Lax
     cookieDomain: "${custom.dev.cookieDomain}"
     frontUrl: "${custom.dev.frontUrl}"

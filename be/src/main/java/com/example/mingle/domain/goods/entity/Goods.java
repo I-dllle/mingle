@@ -44,7 +44,13 @@ public class Goods extends BaseEntity {
 
     public void update(String itemName, List<String> imgUrl, String description, Integer itemPrice, Boolean isActive){
         this.itemName = itemName;
-        this.imgUrl = imgUrl;
+        
+        // @ElementCollection의 경우 기존 컬렉션을 clear하고 새로 추가해야 함
+        this.imgUrl.clear();
+        if (imgUrl != null) {
+            this.imgUrl.addAll(imgUrl);
+        }
+        
         this.description = description;
         this.itemPrice = itemPrice;
         this.isActive = isActive;
