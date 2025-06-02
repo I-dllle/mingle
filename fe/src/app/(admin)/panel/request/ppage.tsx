@@ -99,28 +99,28 @@ export default function AdminAttendanceRequestsPage() {
     setCurrentPage(1);
   };
 
-  // (4) 엑셀 다운로드: 휴가 요청 페이지에서는 사용하지 않으므로 경고 알림만
-  const handleExport = () => {
-    alert("휴가 요청 페이지에서는 엑셀 기능을 제공하지 않습니다.");
-  };
+  // // (4) 엑셀 다운로드: 휴가 요청 페이지에서는 사용하지 않으므로 경고 알림만
+  // const handleExport = () => {
+  //   alert("휴가 요청 페이지에서는 엑셀 기능을 제공하지 않습니다.");
+  // };
 
-  return (
-    <div className="container mx-auto px-4 py-8">
-      {/* ─── ① 상단 툴바 ───────────────────────────────────────────────── */}
-      <AdminAttendanceToolbar
-        statusType="approval"
-        selectedStatus={statusFilter as StatusType}
-        onStatusFilter={handleStatusFilter}
-        // “Approval” 모드에선 연·월(YYYY-MM)만 사용하므로, onDateRangeChange 래핑
-        onDateRangeChange={(start, end) => {
-          handleYearMonthChange(start.slice(0, 7));
-        }}
-        onSearch={handleSearch}
-        onExport={handleExport}
-        onViewReport={() => {
-          router.push("/attendance/admin/reports");
-        }}
-      />
+  // return (
+  //   <div className="container mx-auto px-4 py-8">
+  //     {/* ─── ① 상단 툴바 ───────────────────────────────────────────────── */}
+  //     <AdminAttendanceToolbar
+  //       statusType="approval"
+  //       selectedStatus={statusFilter as StatusType}
+  //       onStatusFilter={handleStatusFilter}
+  //       // “Approval” 모드에선 연·월(YYYY-MM)만 사용하므로, onDateRangeChange 래핑
+  //       onDateRangeChange={(start, end) => {
+  //         handleYearMonthChange(start.slice(0, 7));
+  //       }}
+  //       onSearch={handleSearch}
+  //       onExport={handleExport}
+  //       onViewReport={() => {
+  //         router.push("/attendance/admin/reports");
+  //       }}
+  //     />
 
       {/* ─── ② 요청 목록 테이블 ───────────────────────────────────────────────── */}
       <div className="bg-white shadow rounded-lg overflow-hidden">
