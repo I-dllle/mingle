@@ -9,4 +9,5 @@ export interface GroupChatRoomSummary {
   format: MessageFormat; // 메시지 형식 (TEXT, ARCHIVE 등)
   unreadCount: number; // 읽지 않은 메시지 수
   sentAt: string | null; // 메시지 전송 시각 (ISO 문자열 - nullable)
+  completed: boolean; // 프로젝트 완료 여부
 }

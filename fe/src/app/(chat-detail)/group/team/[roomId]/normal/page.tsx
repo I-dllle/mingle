@@ -19,15 +19,19 @@ export default function TeamChatRoomPage() {
     })();
   }, [roomId]);
 
-  if (!roomInfo) return <div>채팅방 정보를 불러오는 중...</div>;
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <GroupChatRoomHeader room={roomInfo} />
-      <div style={{ flex: 1, overflowY: 'auto' }}>
-        <GroupChatMessageList roomId={Number(roomId)} />
-      </div>
-      <GroupChatInput roomId={Number(roomId)} />
+    <div>
+      {!roomInfo ? (
+        <div>채팅방 정보를 불러오는 중...</div>
+      ) : (
+        <>
+          <GroupChatRoomHeader room={roomInfo} />
+          <div style={{ flex: 1, overflowY: 'auto' }}>
+            <GroupChatMessageList roomId={Number(roomId)} />
+          </div>
+          <GroupChatInput roomId={Number(roomId)} />
+        </>
+      )}
     </div>
   );
 }

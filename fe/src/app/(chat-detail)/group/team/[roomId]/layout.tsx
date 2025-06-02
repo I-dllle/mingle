@@ -1,5 +1,6 @@
 'use client';
 
+import ChatTopTitle from '@/features/chat/common/components/ChatTopTitle';
 import { usePathname, useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -16,6 +17,7 @@ export default function TeamRoomLayout({
 
   return (
     <div>
+      <ChatTopTitle />
       <div
         style={{
           display: 'flex',

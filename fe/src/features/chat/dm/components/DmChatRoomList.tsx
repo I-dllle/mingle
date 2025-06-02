@@ -22,9 +22,7 @@ export default function DmChatRoomList() {
 
   return (
     <div className={styles.container}>
-      {' '}
-      {/* 인라인 → className */}
-      <h2 className={styles.title}>DM 채팅방 목록</h2>
+      {/* <h2 className={styles.title}>DM 채팅방 목록</h2> */}
       {rooms.length === 0 ? (
         <div className={styles.empty}>채팅방이 없습니다.</div>
       ) : (

@@ -18,7 +18,7 @@ export default function DmStartUserList() {
 
   return (
     <div style={{ padding: 32 }}>
-      <h2 style={{ fontWeight: 700, fontSize: 18 }}>DM 시작하기</h2>
+      {/* <h2 style={{ fontWeight: 700, fontSize: 18 }}>DM 시작하기</h2> */}
 
       {/* 에러 발생 시 메시지 표시 */}
       {error && <p style={{ color: 'red', marginTop: 12 }}>{error}</p>}

@@ -1,5 +1,6 @@
 'use client';
 
+import ChatTopTitle from '@/features/chat/common/components/ChatTopTitle';
 import { useParams } from 'next/navigation';
 import GroupChatRoomHeader from '@/features/chat/group/components/GroupChatRoomHeader';
 import GroupChatMessageList from '@/features/chat/group/components/GroupChatMessageList';
@@ -23,6 +24,7 @@ export default function ProjectChatRoomPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <ChatTopTitle />
       <GroupChatRoomHeader room={roomInfo} />
       <div style={{ flex: 1, overflowY: 'auto' }}>
         <GroupChatMessageList roomId={Number(roomId)} />

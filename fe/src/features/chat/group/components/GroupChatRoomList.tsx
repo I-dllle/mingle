@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGroupChatRoomList } from '@/features/chat/group/services/useGroupChatRoomList';
 import { GroupChatRoomSummary } from '@/features/chat/group/types/GroupChatRoomSummary';
@@ -9,23 +8,16 @@ import Link from 'next/link';
 import { useAuth } from '@/features/user/auth/AuthProvider'; // 유저 정보 사용
 import { DepartmentRole, ProjectRole } from '@/features/user/auth/types/roles';
 
-// 시간 포맷팅 함수 (오전/오후 HH:MM 형태)
-function formatTime(isoTime: string | null): string {
-  if (!isoTime) return '시간 없음';
-  const date = new Date(isoTime);
-  const hours = date.getHours();
-  const minutes = date.getMinutes().toString().padStart(2, '0');
-  const isAM = hours < 12;
-  const displayHour = hours % 12 || 12;
-  return `${isAM ? '오전' : '오후'} ${displayHour}:${minutes}`;
-}
+// props 타입 선언
+type Props = {
+  projectStatus: 'active' | 'completed';
+};
 
 // 그룹 채팅방 목록을 보여주는 UI 컴포넌트
 // - 서버에서 요약 목록 데이터를 받아와 리스트로 출력
-export default function GroupChatRoomList() {
-  // 현재 선택된 scope (부서/프로젝트)
-  const [scope, setScope] = useState<ChatScope>(ChatScope.DEPARTMENT);
-  // 선택된 scope에 따라 API 호출
+export default function GroupChatRoomList({ projectStatus }: Props) {
+  // scope를 PROJECT로 고정
+  const scope = ChatScope.PROJECT;
   const { rooms } = useGroupChatRoomList({ scope });
   // 유저 정보 불러오기
   const { user } = useAuth();
@@ -37,6 +29,11 @@ export default function GroupChatRoomList() {
     user?.role === 'ADMIN' ||
     user?.departmentRole === DepartmentRole.TEAM_LEAD ||
     user?.projectRole === ProjectRole.PROJECT_LEADER;
+
+  // 상태별로 채팅방 필터링
+  const filteredRooms = rooms.filter((room) =>
+    projectStatus === 'active' ? !room.completed : room.completed
+  );
 
   return (
     <div style={{ padding: '16px' }}>
@@ -63,43 +60,13 @@ export default function GroupChatRoomList() {
         </div>
       )}
 
-      {/* scope 전환 탭 버튼 */}
-      <div style={{ marginBottom: '16px', display: 'flex', gap: '8px' }}>
-        <button
-          onClick={() => setScope(ChatScope.DEPARTMENT)}
-          style={{
-            padding: '6px 12px',
-            background: scope === ChatScope.DEPARTMENT ? '#0070f3' : '#eee',
-            color: scope === ChatScope.DEPARTMENT ? 'white' : '#333',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-          }}
-        >
-          부서 채팅방
-        </button>
-        <button
-          onClick={() => setScope(ChatScope.PROJECT)}
-          style={{
-            padding: '6px 12px',
-            background: scope === ChatScope.PROJECT ? '#0070f3' : '#eee',
-            color: scope === ChatScope.PROJECT ? 'white' : '#333',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-          }}
-        >
-          프로젝트 채팅방
-        </button>
-      </div>
-
-      {/* 채팅방이 없을 경우 메시지 표시 */}
-      {rooms.length === 0 ? (
+      {/* 필터링된 채팅방 기준으로 렌더링 */}
+      {filteredRooms.length === 0 ? (
         <div>채팅방이 없습니다.</div>
       ) : (
         <ul style={{ listStyle: 'none', padding: 0 }}>
           {/* 채팅방 목록 map으로 반복 출력 */}
-          {rooms.map((room: GroupChatRoomSummary) => (
+          {filteredRooms.map((room: GroupChatRoomSummary) => (
             <li
               key={room.roomId}
               style={{
@@ -127,4 +94,15 @@ export default function GroupChatRoomList() {
       )}
     </div>
   );
+}
+
+// 시간 포맷팅 함수 (오전/오후 HH:MM 형태)
+function formatTime(isoTime: string | null): string {
+  if (!isoTime) return '시간 없음';
+  const date = new Date(isoTime);
+  const hours = date.getHours();
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const isAM = hours < 12;
+  const displayHour = hours % 12 || 12;
+  return `${isAM ? '오전' : '오후'} ${displayHour}:${minutes}`;
 }
