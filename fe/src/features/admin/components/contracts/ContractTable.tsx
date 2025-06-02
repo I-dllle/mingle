@@ -242,10 +242,8 @@ export default function ContractTable({
                             팀: {contract.teamName}
                           </div>
                         )}
-                      </div>
-                    </td>
+                      </div>                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {" "}
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
                           contract.status
@@ -284,11 +282,10 @@ export default function ContractTable({
                     <td className="px-6 py-4 text-sm text-gray-900">
                       <div className="max-w-xs truncate font-medium">
                         {contract.title}
-                      </div>
-                    </td>
+                      </div>                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <span className="text-gray-500">-</span>
-                    </td>{" "}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
                         {contract.category}
