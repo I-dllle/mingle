@@ -198,7 +198,7 @@ export default function AdminAttendanceRequestsPage() {
                     {new Date(req.appliedAt).toLocaleDateString("ko-KR")}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-purple-600 hover:text-purple-800">
-                    <Link href={`/admin/attendance/request/${req.id}`}>
+                    <Link href={`/panel/attendance/requests/${req.id}`}>
                       상세보기
                     </Link>
                   </td>
