@@ -12,7 +12,7 @@ import { formatDate } from "@/lib/date";
 import type { Reservation, ReservationFormInput } from "../types/rservation";
 import { RoomType } from "@/features/room/types/room";
 import type { RoomWithReservations } from "../types/roomWithReservations";
-import { ReservationStatus } from "../types/reservationStatus";
+import { ReservationStatus } from "../types/ReservationStatus";
 import { RoomLayoutDiagram } from "@/features/room/components/common/RoomLayoutDiagram";
 
 export default function RoomReservationPage() {
@@ -31,7 +31,7 @@ export default function RoomReservationPage() {
   const [roomType, setRoomType] = useState<RoomType>("PRACTICE_ROOM");
 
   // ───────────────────────────────────────────
-  // 4) 해당 날짜·방타입의 “룸 + 예약” 데이터
+  // 4) 해당 날짜·방타입의 "룸 + 예약" 데이터
   // ───────────────────────────────────────────
   const [roomsWithReservations, setRoomsWithReservations] = useState<
     RoomWithReservations[]
@@ -145,7 +145,7 @@ export default function RoomReservationPage() {
   };
 
   // ───────────────────────────────────────────
-  // D) 상세 모달 → “수정” → 예약 폼 모달로 전환
+  // D) 상세 모달 → "수정" → 예약 폼 모달로 전환
   // ───────────────────────────────────────────
   const handleEditReservation = () => {
     setIsFormOpen(true);
@@ -153,14 +153,14 @@ export default function RoomReservationPage() {
   };
 
   // ───────────────────────────────────────────
-  // E) 상세 모달 → “취소” → 예약 취소 & 달력 리프레시
+  // E) 상세 모달 → "취소" → 예약 취소 & 달력 리프레시
   // ───────────────────────────────────────────
   const handleCancelReservation = async () => {
     if (!selectedReservationId) return;
     // ★ 2차 검증: 삭제 전 확인창 띄우기
     const proceed = window.confirm("정말 취소하시겠습니까?");
     if (!proceed) {
-      return; // “취소”를 누르면 이 함수 종료(삭제 로직 실행 안 됨)
+      return; // "취소"를 누르면 이 함수 종료(삭제 로직 실행 안 됨)
     }
 
     try {
@@ -233,7 +233,7 @@ export default function RoomReservationPage() {
   return (
     <div className="space-y-6">
       {/* ┌──────────────────────────────────────────
-          (A) 부모 최상단 헤더: “◀ 날짜 ▶ 오늘” + “방 타입 선택”
+          (A) 부모 최상단 헤더: "◀ 날짜 ▶ 오늘" + "방 타입 선택"
          ─────────────────────────────────────────── */}{" "}
       <div className="p-4 m-0 bg-white rounded-xl shadow-sm ring-1 ring-gray-100">
         <div className="flex items-center justify-between w-full">
@@ -361,7 +361,7 @@ export default function RoomReservationPage() {
         </div>
       </div>
       {/* ┌──────────────────────────────────────────
-          (B) 달력 컴포넌트: 헤더 없음 → “시간 슬롯 + 예약 카드”만 렌더링
+          (B) 달력 컴포넌트: 헤더 없음 → "시간 슬롯 + 예약 카드"만 렌더링
          ─────────────────────────────────────────── */}
       {isLoading ? (
         <div className="p-12 text-center text-gray-500">불러오는 중...</div>
@@ -498,7 +498,7 @@ export default function RoomReservationPage() {
                       const start = new Date(`${r.date}T${r.startTime}`);
                       const end = new Date(`${r.date}T${r.endTime}`);
                       return (
-                        r.reservationStatus !== "CANCELED" &&
+                        r.reservationStatus !== ReservationStatus.CANCELLED &&
                         now >= start &&
                         now < end
                       );
