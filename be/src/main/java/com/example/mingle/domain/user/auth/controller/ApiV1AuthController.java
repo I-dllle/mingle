@@ -65,27 +65,34 @@ public class ApiV1AuthController {
             HttpServletResponse response) {
         TokenResponseDto tokenDto = authLoginService.login(request);
 
-        // accessToken을 쿠키로 설정
-        ResponseCookie accessCookie = ResponseCookie.from("accessToken", tokenDto.getAccessToken())
-                .httpOnly(true) // JS에서 접근 불가 (보안상 안전)
-                .secure(false) // https 환경에서는 true, 로컬에선 false
-                .path("/")
-                .sameSite("Lax")
-                .maxAge(60 * 60) // 1시간
-                .build();
+        // ✅ ResponseCookie 대신 직접 Set-Cookie 헤더 문자열 작성
+        String accessCookie = "accessToken=" + tokenDto.getAccessToken()
+                + "; HttpOnly; Path=/; Max-Age=3600; SameSite=Lax"; // accessToken 1시간
 
-        // refreshToken도 쿠키로 설정
-        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", tokenDto.getRefreshToken())
-                .httpOnly(true)
-                .secure(false)
-                .path("/")
-                .sameSite("Lax")
-                .maxAge(60 * 60 * 24 * 7) // 7일
-                .build();
+        String refreshCookie = "refreshToken=" + tokenDto.getRefreshToken()
+                + "; HttpOnly; Path=/; Max-Age=" + (60 * 60 * 24 * 7) + "; SameSite=Lax"; // refreshToken 7일
+
+//        // accessToken을 쿠키로 설정
+//        ResponseCookie accessCookie = ResponseCookie.from("accessToken", tokenDto.getAccessToken())
+//                .httpOnly(true) // JS에서 접근 불가 (보안상 안전)
+//                .secure(false) // https 환경에서는 true, 로컬에선 false
+//                .path("/")
+//                .sameSite("Lax")
+//                .maxAge(60 * 60) // 1시간
+//                .build();
+//
+//        // refreshToken도 쿠키로 설정
+//        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", tokenDto.getRefreshToken())
+//                .httpOnly(true)
+//                .secure(false)
+//                .path("/")
+//                .sameSite("Lax")
+//                .maxAge(60 * 60 * 24 * 7) // 7일
+//                .build();
 
         // 헤더에 쿠키 추가
-        response.addHeader("Set-Cookie", accessCookie.toString());
-        response.addHeader("Set-Cookie", refreshCookie.toString());
+        response.addHeader("Set-Cookie", accessCookie);
+        response.addHeader("Set-Cookie", refreshCookie);
 
         return ResponseEntity.ok(tokenDto);
     }

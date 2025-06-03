@@ -19,6 +19,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const path = window.location.pathname;
+    const isAuthPage = ['/login', '/signup', '/logout'].includes(path);
+
+    if (isAuthPage) {
+      setLoading(false); // 인증 페이지는 user 확인 건너뜀
+      return;
+    }
+
     fetchCurrentUser()
       .then(setUser)
       .catch(() => setUser(null))
