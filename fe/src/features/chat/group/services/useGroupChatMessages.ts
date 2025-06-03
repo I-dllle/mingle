@@ -14,8 +14,8 @@ import { fetchGroupChatMessages } from './fetchGroupChatMessages';
 export function useGroupChatMessages(roomId: number) {
   const [messages, setMessages] = useState<ChatMessagePayload[]>([]);
 
-  const token = localStorage.getItem('token')!;
-  useSocket(token, (msg) => {
+  const token = sessionStorage.getItem('token')!;
+  useSocket(roomId, token, (msg) => {
     if (msg.chatType === ChatRoomType.GROUP && msg.roomId === roomId) {
       setMessages((prev) => [...prev, msg]);
     }

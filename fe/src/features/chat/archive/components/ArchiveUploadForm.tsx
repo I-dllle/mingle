@@ -22,8 +22,8 @@ export default function ArchiveUploadForm({ roomId }: ArchiveUploadFormProps) {
 
   const { suggestions } = useTagAutocomplete(currentInput); // 자동완성 hook 사용
   const { fetchItems } = useArchive(roomId);
-  const token = localStorage.getItem('token')!; // 토큰 가져오기
-  const { send } = useSocket(token, () => {}); // 메시지 전송용 useSocket 훅 사용
+  const token = sessionStorage.getItem('token')!; // 토큰 가져오기
+  const { send } = useSocket(roomId, token, () => {}); // 메시지 전송용 useSocket 훅 사용
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0] || null;

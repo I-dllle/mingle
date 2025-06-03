@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -33,6 +34,7 @@ public class DmChatMessageServiceImpl implements DmChatMessageService {
     private final WebSocketSessionManager sessionManager;
     private final Validator validator;
     private final DmChatRoomRepository dmChatRoomRepository;
+    private final ObjectMapper objectMapper;
 
     @Override
     public void saveAndSend(ChatMessagePayload payload) {
@@ -63,7 +65,7 @@ public class DmChatMessageServiceImpl implements DmChatMessageService {
             if (ws != null && ws.isOpen()) {
                 try {
                     // JSON 직렬화 없이 단순 텍스트 전송 시, 필요하면 ObjectMapper 사용
-                    ws.sendMessage(new TextMessage(payload.getContent()));
+                    ws.sendMessage(new TextMessage(objectMapper.writeValueAsString(payload)));
                 } catch (Exception e) {
                     log.warn("DM 전송 실패: userId={}, error={}", userId, e.getMessage());
                 }

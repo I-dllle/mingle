@@ -7,7 +7,7 @@ export default function LogoutButton() {
 
   const handleLogout = async () => {
     // 1. 서버에 로그아웃 API 호출 (선택)
-    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    await fetch('/users/logout', { method: 'POST', credentials: 'include' });
 
     // 2. 클라이언트에서 쿠키 삭제 (accessToken, refreshToken)
     document.cookie = 'accessToken=; Max-Age=0; path=/;';

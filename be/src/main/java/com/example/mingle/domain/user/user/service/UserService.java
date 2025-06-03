@@ -3,7 +3,7 @@ package com.example.mingle.domain.user.user.service;
 import com.example.mingle.domain.user.team.entity.Department;
 import com.example.mingle.domain.user.team.repository.DepartmentRepository;
 import com.example.mingle.domain.user.user.dto.ProfileUpdateRequestDto;
-import com.example.mingle.domain.user.user.dto.SignupRequestDto;
+import com.example.mingle.domain.user.auth.dto.SignupRequestDto;
 import com.example.mingle.domain.user.user.dto.UserSimpleDto;
 import com.example.mingle.domain.user.user.entity.*;
 import com.example.mingle.domain.user.user.repository.UserPositionRepository;
@@ -16,8 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor

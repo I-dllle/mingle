@@ -11,10 +11,12 @@ export function useDmChat(roomId: number, receiverId: number | null) {
   const [messages, setMessages] = useState<ChatMessagePayload[]>([]); // 과거 + 실시간 메시지 포함
 
   const token =
-    typeof window !== 'undefined' ? localStorage.getItem('token') : null; // SSR 안전하게 localStorage 접근
+    typeof window !== 'undefined' ? sessionStorage.getItem('token') : null; // SSR 안전하게 localStorage 접근
 
   const userId =
-    typeof window !== 'undefined' ? Number(localStorage.getItem('userId')) : 0; // senderId도 SSR-safe로
+    typeof window !== 'undefined'
+      ? Number(sessionStorage.getItem('userId'))
+      : 0; // senderId도 SSR-safe로
 
   // WebSocket 연결 및 메시지 핸들링 (token이 있을 때만)
   const { send } = useSocket(roomId, token, (msg) => {
