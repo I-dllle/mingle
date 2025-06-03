@@ -1,13 +1,14 @@
 'use client';
 
 import ChatPanelChatLayout from '@/features/chat/panel/ChatPanelChatLayout';
-import ChatPanelHeader from '@/features/chat/panel/ChatPanelHeader';
-import ChatPanelWelcome from '@/features/chat/panel/ChatPanelWelcome';
 import DmChatMessageList from '@/features/chat/dm/components/DmChatMessageList';
 import ChatPanelInput from '@/features/chat/panel/ChatPanelInput';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter, usePathname } from 'next/navigation';
 import { useDmChatRoomList } from '@/features/chat/dm/services/useDmChatRoomList';
 import { useDmChat } from '@/features/chat/dm/services/useDmChat';
+import DMPanelTabs from '@/features/chat/panel/DMPanelTabs';
+import ChatTopTitle from '@/features/chat/panel/ChatTopTitle';
+import DmPanelWelcome from '@/features/chat/panel/DmPanelWelcome';
 
 export default function DmChatRoomPage() {
   const { roomId } = useParams();
@@ -28,25 +29,44 @@ export default function DmChatRoomPage() {
     }
   }
 
+  const router = useRouter();
+  const pathname = usePathname();
+  const activeTab = pathname === '/dm' ? 'start' : 'list';
+  const handleTabChange = (key: string) => {
+    if (key === 'start') router.push('/dm');
+    // 'list'는 현재 방이므로 이동하지 않음
+  };
+
   return (
     <ChatPanelChatLayout
       title={
-        <ChatPanelHeader
-          title={room?.opponentNickname || 'DM'}
-          type="team"
-          onSearch={() => {}}
-          onBack={() => {}}
-        />
+        <div>
+          {/* 1. 상단 타이틀/아이콘 */}
+          <div className="flex items-center justify-between px-8 pt-8">
+            <ChatTopTitle />
+            <div className="flex items-center gap-4">
+              {/* 기존 우측 아이콘 (검색, 화살표 등) 유지: ChatPanelHeader에서 관리하거나 별도 컴포넌트로 분리 가능 */}
+            </div>
+          </div>
+          {/* 2. 탭 */}
+          <div className="mt-2">
+            <DMPanelTabs
+              tabs={[
+                { key: 'start', label: '친구' },
+                { key: 'list', label: 'DM' },
+              ]}
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
+            />
+          </div>
+        </div>
       }
       welcome={
-        <ChatPanelWelcome
-          title={room?.opponentNickname || '상대방'}
-          description={
-            room
-              ? `${room.opponentNickname}님과의 1:1 대화입니다.`
-              : '상대방과의 1:1 대화입니다.'
+        <DmPanelWelcome
+          profileImageUrl={
+            room?.opponentProfileImageUrl || '/default-avatar.png'
           }
-          type="team"
+          nickname={room?.opponentNickname ?? ''}
         />
       }
       input={<ChatPanelInput onSend={(msg) => sendDmMessage(msg)} />}
