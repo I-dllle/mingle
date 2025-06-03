@@ -29,5 +29,5 @@ public interface DmChatMessageService {
     // 페이징 메시지 조회
     // - cursor 기준으로 이전 메시지를 size=20개까지 조회
     // - 최초 요청 시 cursor가 null이면 현재 시각 기준으로 조회됨
-    List<DmChatMessageResponse> getMessagesByRoomIdBefore(Long roomId, LocalDateTime cursor);
+    List<DmChatMessageResponse> getMessagesByRoomIdBefore(Long roomId, LocalDateTime cursor, Long loginUserId);
 }

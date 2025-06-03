@@ -16,9 +16,7 @@ export default function DmPanelWelcome({
         alt={nickname}
         className="w-16 h-16 rounded-full object-cover mb-2"
       />
-      <span className="text-[24px] font-bold text-primary mb-1">
-        {nickname}
-      </span>
+      <span className="text-[24px] font-bold text-black mb-1">{nickname}</span>
       <span className="text-gray-500 text-base mb-2">비즈니스 채팅</span>
       <span className="text-black text-base">
         <b>{nickname}</b> 님과 나눈 다이렉트 메시지의 첫 부분이에요.

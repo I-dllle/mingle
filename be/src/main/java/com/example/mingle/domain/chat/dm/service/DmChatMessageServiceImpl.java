@@ -1,8 +1,12 @@
 package com.example.mingle.domain.chat.dm.service;
 
 import com.example.mingle.domain.chat.dm.dto.DmChatMessageResponse;
+import com.example.mingle.domain.chat.dm.repository.DmChatRoomRepository;
+import com.example.mingle.global.exception.ApiException;
+import com.example.mingle.global.exception.ErrorCode;
 import com.example.mingle.global.websocket.WebSocketSessionManager;
 import com.example.mingle.domain.chat.common.dto.ChatMessagePayload;
+import com.example.mingle.domain.chat.dm.entity.DmChatRoom;
 import com.example.mingle.domain.chat.dm.entity.DmChatMessage;
 import com.example.mingle.domain.chat.dm.repository.DmChatMessageRepository;
 
@@ -28,6 +32,7 @@ public class DmChatMessageServiceImpl implements DmChatMessageService {
     private final DmChatMessageRepository dmRepository;
     private final WebSocketSessionManager sessionManager;
     private final Validator validator;
+    private final DmChatRoomRepository dmChatRoomRepository;
 
     @Override
     public void saveAndSend(ChatMessagePayload payload) {
@@ -108,9 +113,17 @@ public class DmChatMessageServiceImpl implements DmChatMessageService {
     // 페이징 조회: cursor 이전 메시지 20개를 최신순으로 조회
     // - 최초 요청 시 cursor가 null이면 현재 시각 기준으로 조회
     @Override
-    public List<DmChatMessageResponse> getMessagesByRoomIdBefore(Long roomId, LocalDateTime cursor) {
+    public List<DmChatMessageResponse> getMessagesByRoomIdBefore(Long roomId, LocalDateTime cursor, Long loginUserId) {
         if (cursor == null) {
             cursor = LocalDateTime.now();
+        }
+
+        DmChatRoom room = dmChatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND_CHATROOM));
+
+        // 로그인 유저가 채팅 참여자가 아니면 차단
+        if (!room.isParticipant(loginUserId)) {
+            throw new ApiException(ErrorCode.FORBIDDEN_DM_ACCESS);
         }
 
         return dmRepository

@@ -95,9 +95,10 @@ public class ApiV1DmChatController {
             @PathVariable Long roomId,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-            LocalDateTime cursor
+            LocalDateTime cursor,
+            @AuthenticationPrincipal SecurityUser loginUser
     ) {
-        return dmChatMessageService.getMessagesByRoomIdBefore(roomId, cursor);
+        return dmChatMessageService.getMessagesByRoomIdBefore(roomId, cursor, loginUser.getId());
     }
 
 

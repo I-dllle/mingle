@@ -10,15 +10,18 @@ import { fetchDmChatMessages } from './fetchDmChatMessages'; // 과거 메시지
 export function useDmChat(roomId: number, receiverId: number | null) {
   const [messages, setMessages] = useState<ChatMessagePayload[]>([]); // 과거 + 실시간 메시지 포함
 
-  const token = localStorage.getItem('token')!;
+  const token =
+    typeof window !== 'undefined' ? localStorage.getItem('token') : null; // SSR 안전하게 localStorage 접근
+
+  const userId =
+    typeof window !== 'undefined' ? Number(localStorage.getItem('userId')) : 0; // senderId도 SSR-safe로
+
+  // WebSocket 연결 및 메시지 핸들링 (token이 있을 때만)
   const { send } = useSocket(token, (msg) => {
     if (msg.chatType === ChatRoomType.DIRECT && msg.roomId === roomId) {
       setMessages((prev) => [...prev, msg]);
     }
-  }); // connectWebSocket, onMessage 제거하고 useSocket 훅으로 통합
-
-  // senderId를 localStorage에서 가져오도록 변경 예정
-  const userId = Number(localStorage.getItem('userId')); // 인증 연동 시 이 부분은 추상화된 유저 훅으로 대체 가능
+  });
 
   // 초기에 과거 메시지 불러오기
   useEffect(() => {
@@ -34,6 +37,7 @@ export function useDmChat(roomId: number, receiverId: number | null) {
     loadMessages();
   }, [roomId]);
 
+  // 메시지 전송 시 sendFn이 준비되었는지 확인
   const sendDmMessage = (content: string) => {
     if (receiverId === null) return;
 
@@ -46,7 +50,7 @@ export function useDmChat(roomId: number, receiverId: number | null) {
       chatType: ChatRoomType.DIRECT,
       createdAt: new Date().toISOString(),
     };
-    send(payload);
+    send(payload); // sendFn이 준비되었으면 사용
   };
 
   return {
