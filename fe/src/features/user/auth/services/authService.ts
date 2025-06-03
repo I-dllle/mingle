@@ -30,6 +30,7 @@ export async function logout(): Promise<void> {
 
   // 브라우저에서 accessToken 제거
   if (typeof window !== 'undefined') {
+    localStorage.clear();
     document.cookie = 'accessToken=; Max-Age=0; path=/';
     window.location.href = '/login';
   }

@@ -25,6 +25,9 @@ export default function LoginForm() {
         body: JSON.stringify({ loginId, password }),
       });
 
+      // 로그인 전 로컬스토리지 초기화
+      localStorage.clear();
+
       // 응답에서 토큰 및 사용자 정보 저장
       localStorage.setItem('token', res.accessToken);
       localStorage.setItem('userId', res.userId.toString());
