@@ -42,7 +42,7 @@ public class ProductionUserSeeder {
             }
 
             BufferedReader br = new BufferedReader(new InputStreamReader(
-                    new ClassPathResource("seed/staff_seed.csv").getInputStream(), StandardCharsets.UTF_8));
+                    new ClassPathResource("staff_seed.csv").getInputStream(), StandardCharsets.UTF_8));
 
             String line;
             while ((line = br.readLine()) != null) {
