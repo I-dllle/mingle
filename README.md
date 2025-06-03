@@ -173,7 +173,7 @@ be/(Backend - Java)
     │   |           ├── presence/      
     │   |           └── user/      
     |   |
-    │   │   ├── global/             # 프로그램 공통에 적용되는 구조 빌드
+    │   │   ├── global/             # 프로그램 공통에 적용되는 설정과 구조 빌드
     │   |       ├── aws/
     │   |       ├── config/
     │   |       ├── constants/
