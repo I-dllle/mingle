@@ -17,12 +17,18 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     (async () => {
-      const me = await fetchCurrentUser();
-      if (!me) {
+      try {
+        const me = await fetchCurrentUser();
+        if (!me) {
+          router.replace('/login');
+        } else {
+          setUser(me);
+        }
+      } catch (e) {
+        console.error('AuthGuard 오류:', e);
         router.replace('/login');
-      } else {
-        setUser(me);
-        setLoading(false);
+      } finally {
+        setLoading(false); // 무조건 로딩 false로
       }
     })();
   }, [router]);
