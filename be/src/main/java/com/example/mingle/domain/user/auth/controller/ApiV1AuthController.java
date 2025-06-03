@@ -87,7 +87,7 @@ public class ApiV1AuthController {
         response.addHeader("Set-Cookie", accessCookie.toString());
         response.addHeader("Set-Cookie", refreshCookie.toString());
 
-        return ResponseEntity.ok(authLoginService.login(request));
+        return ResponseEntity.ok(tokenDto);
     }
 
 

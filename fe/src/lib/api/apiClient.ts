@@ -17,7 +17,10 @@ export async function apiClient<T>(
   });
 
   if (!res.ok) {
-    throw new Error(`API 요청 실패: ${res.statusText}`);
+    const errorText = await res.text(); // 🔹 추가: 응답 본문까지 읽어서 상세 로그 확인
+    throw new Error(
+      `API 요청 실패: ${res.status} ${res.statusText} - ${errorText}`
+    );
   }
 
   return res.json();
