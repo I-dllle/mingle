@@ -9,7 +9,6 @@
  ```bash
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-
 ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
  \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
   '  |____| .__|_| |_|_| |_\__, | / / / /
@@ -92,7 +91,7 @@
  |-----------------|-----------------|-----------------|
 | 이은서   |  <img src="https://github.com/user-attachments/assets/5bd4b56f-3b71-45e9-8b85-be926de56cdc" width="100"> | <ul><li>(1) 채팅기능</li><li>(2) 프론트구조 빌드</li></ul>     |
 | 이서영   |  <img src="https://github.com/user-attachments/assets/eb93e3ee-4b64-41e4-9672-745062936efd" width = "100">| <ul><li>(1) 게시판기능 </li><li>(2) 상점 및 결제기능 </li><li>(3) 배포</li></ul> |
-| 전병우   |  <img src="" width="100">    |<ul><li>(1) 캘린더 및 일정관리 기능</li><li></li><li>(2) 회의실/연습실 예약기능 </li><li>(3) 근태기능</li></ul>  |
+| 전병우   |  <img src="" width="100">    |<ul><li>(1) 캘린더 및 일정관리 기능</li><li>(2) 회의실/연습실 예약기능 </li><li>(3) 근태기능</li></ul>  |
 | 김현우    |  <img src="" width="100">    | <ul><li>(1) 정산 및 계약기능</li><li>(2) 관리자기능</li></ul>    |
 
  <br/>
@@ -138,8 +137,67 @@
 
 ## 6.1 Backend
  ```plaintext
-be/
-├── 
+be/(Backend - Java)
+└── src/                                  # 백엔드 루트 디렉토리 (Java 기반)
+    ├── main/                              
+    │   ├── java/                         # 로직 소스 폴더
+    │   └── resources/                    # yml파일 및 템플릿 폴더
+    │   
+    ├── (java)/                             # 공통 레이아웃 적용되는 일반 업무 페이지
+    │   ├── mingle/                          # 게시판 도메인
+    │   │   ├── domain/             # 서비스 구성에 필요한 domain 정의. (각각의 최하위 폴더 하에는 entity, dto, repository, service, controller가 존재)
+    │   |       ├── admin/          # 관리자
+    │   |           ├── dashboard/          
+    │   |           └── panel/      
+    │   |       ├── attendance/     # 근태관리(휴가, 출장, 반차) 
+    │   |           ├── attendance/         
+    │   |           └── attendanceRequest/         
+    │   |       ├── chat/           # 실시간 채팅
+    │   |           ├── archive/      
+    │   |           ├── common/      
+    │   |           ├── dm/      
+    │   |           └── group/      
+    │   |       ├── goods/          # 굿즈상점 및 결제시스템
+    │   |       ├── post/           # 게시판
+    │   |           ├── legatpost/  # 계약, 정산, 법무관련 민감자료들을 다루는 게시판
+    │   |           └── post/       # 일반 부서별 게시판
+    │   |       ├── projectleaderauthority/    # 회사에서 진행하는 프로젝트 관련 
+    │   |       ├── reservation/    # 회의실, 연습실 예약
+    │   |           ├── reservation/      
+    │   |           └── room/      
+    │   |       ├── schedule/       # 일정관리(캘린더)
+    │   |       └── user/           # 사용자 관련(로그인, 인증/인가, 출결(출근, 지각, 결근, 야근))
+    │   |           ├── artist/
+    │   |           ├── team/           
+    │   |           ├── auth/      
+    │   |           ├── presence/      
+    │   |           └── user/      
+    |   |
+    │   │   ├── global/             # 프로그램 공통에 적용되는 구조 빌드
+    │   |       ├── aws/
+    │   |       ├── config/
+    │   |       ├── constants/
+    │   |       ├── exception/
+    │   |       ├── init/
+    │   |       ├── jpa/
+    │   |       ├── rq/
+    │   |       ├── rsdata/
+    │   |       ├── scheduler/
+    │   |       ├── jpa/
+    │   |       ├── security/
+    │   |       └── websocket/
+    │   |   └── MingleApplication.java     # main실행
+    │   |
+    ├── (resources)/                          
+    │   ├── application.yml                   # yml 설정파일
+    │   ├── application-secret.yml            # 민감정보 yml
+    │   ├── application-dev.yml               # 개발용 yml
+    │   ├── application-prod.yml              # 배포용 yml
+    │   ├── static                  # 토스페이먼츠 결제시스템 css파일
+    │   └── templates/              # 토스페이먼트 결제시스템 html 페이지
+    │   
+    ├── Dockerfile                 # 도커 실행 설정파일                                       
+    └── infra/                     # 백엔드 무중단 배포 설정파일
  ```
  <br/>
 
