@@ -182,7 +182,7 @@
   box-shadow: 0 0 8px rgba(244, 63, 94, 0.4); /* 빛나는 효과 */
 }
 
-body > div > main {
+.mainContent {
   margin-left: 0 !important; /* 좌측 사이드바와의 간격 */
   margin-right: 245px !important;
   flex: 1 !important;
