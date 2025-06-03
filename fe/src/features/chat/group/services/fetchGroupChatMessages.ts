@@ -13,7 +13,7 @@ export async function fetchGroupChatMessages(
 ): Promise<ChatMessagePayload[]> {
   try {
     const res = await apiClient<ChatMessagePayload[]>(
-      `/api/v1/group-chats/${roomId}/messages`
+      `/group-chats/${roomId}/messages`
     );
     return res;
   } catch (error) {

@@ -15,6 +15,7 @@ import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.domain.user.user.repository.UserRepository;
 import com.example.mingle.global.exception.ApiException;
 import com.example.mingle.global.exception.ErrorCode;
+import com.example.mingle.global.websocket.WebSocketSessionManager;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
@@ -26,7 +27,9 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Component
@@ -51,7 +54,10 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     private final PresenceService presenceService;
     private final UserRepository userRepository;
 
+    // 중복 연결 방지를 위한 임시 저장소
+    private final ConcurrentHashMap<Long, WebSocketSession> activeSessions = new ConcurrentHashMap<>();
 
+    private final WebSocketSessionManager sessionManager;
 
     /**
      * 클라이언트가 WebSocket에 처음 연결됐을 때 실행
@@ -69,19 +75,21 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
         Long userId = auth.getUserId();
 
-        // DB에서 저장된 수동 상태 불러오기
-        User user = userRepository.findById(userId).orElseThrow(() ->
-                new ApiException(ErrorCode.USER_NOT_FOUND)
-        );
+        /// 세션 저장
+        activeSessions.put(userId, session);
+
+        // 세션 매니저에 등록 (DM 메시지 전송 대상 탐색용)
+        sessionManager.register(session.getId(), auth, session);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
 
         PresenceStatus savedStatus = user.getPresence();
 
         if (savedStatus == PresenceStatus.DO_NOT_DISTURB || savedStatus == PresenceStatus.AWAY) {
-            // 수동 상태 복원
             presenceService.setManualStatus(userId, savedStatus);
             log.info("🔒 수동 Presence 복원: userId={}, status={}", userId, savedStatus);
         } else {
-            // 자동 상태로 진입
             presenceService.setStatus(userId, PresenceStatus.ONLINE);
             presenceService.startAwayTimer(userId);
             log.info("🟢 Presence 시작: userId={}, status=ONLINE", userId);
@@ -178,7 +186,13 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         // 활동 상태를 위해서 코드 추가
         WebSocketAuthDto auth = (WebSocketAuthDto) session.getAttributes().get("auth");
+
         if (auth != null) {
+            Long userId = auth.getUserId();
+
+            // 세션 제거
+            activeSessions.remove(userId);
+
             presenceService.setStatus(auth.getUserId(), PresenceStatus.OFFLINE);
             presenceService.cancelAwayTimer(auth.getUserId());
             log.info("OFFLINE 처리: userId={}", auth.getUserId());

@@ -23,12 +23,12 @@ export async function login(
     body: JSON.stringify({ email, password }),
   });
 
-  // 토큰과 userId를 localStorage에 저장
+  // 토큰과 userId를 sessionStorage에 저장
   if (typeof window !== 'undefined') {
-    localStorage.setItem('userId', String(user.id));
-    localStorage.setItem('userEmail', user.email);
-    localStorage.setItem('userNickname', user.nickname);
-    localStorage.setItem('token', 'dummy'); // 실제 토큰이 필요하면 응답에서 받아서 처리
+    sessionStorage.setItem('userId', String(user.id));
+    sessionStorage.setItem('userEmail', user.email);
+    sessionStorage.setItem('userNickname', user.nickname);
+    sessionStorage.setItem('token', 'dummy'); // 실제 토큰이 필요하면 응답에서 받아서 처리
   }
 
   return user;

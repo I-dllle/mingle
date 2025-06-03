@@ -26,13 +26,13 @@ export default function LoginForm() {
       });
 
       // 로그인 전 로컬스토리지 초기화
-      localStorage.clear();
+      sessionStorage.clear();
 
       // 응답에서 토큰 및 사용자 정보 저장
-      localStorage.setItem('token', res.accessToken);
-      localStorage.setItem('userId', res.userId.toString());
-      localStorage.setItem('nickname', res.nickname);
-      localStorage.setItem('email', res.email);
+      sessionStorage.setItem('token', res.accessToken);
+      sessionStorage.setItem('userId', res.userId.toString());
+      sessionStorage.setItem('nickname', res.nickname);
+      sessionStorage.setItem('email', res.email);
 
       // 로그인 성공 후 페이지 이동
       router.replace('/schedule');

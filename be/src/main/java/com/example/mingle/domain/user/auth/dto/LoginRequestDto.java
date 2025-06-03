@@ -1,4 +1,4 @@
-package com.example.mingle.domain.user.user.dto;
+package com.example.mingle.domain.user.auth.dto;
 
 import lombok.Getter;
 

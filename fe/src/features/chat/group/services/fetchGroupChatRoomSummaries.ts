@@ -8,7 +8,7 @@ export async function fetchGroupChatRoomSummaries(
   scope: ChatScope
 ): Promise<GroupChatRoomSummary[]> {
   const res = await apiClient<GroupChatRoomSummary[]>(
-    `/api/v1/group-chats/rooms?scope=${scope}`
+    `/group-chats/rooms?scope=${scope}`
   );
   return res;
 }
