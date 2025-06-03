@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { ChatMessagePayload } from '@/features/chat/common/types/ChatMessagePayload';
 
 export function useSocket(
+  roomId: number,
   token: string | null,
   onMessage: (msg: ChatMessagePayload) => void
 ) {
@@ -17,7 +18,7 @@ export function useSocket(
       return;
     }
 
-    const wsUrl = `${process.env.NEXT_PUBLIC_WS_BASE_URL}/ws/chat?token=${token}`; // EC2 주소 또는 localhost
+    const wsUrl = `${process.env.NEXT_PUBLIC_WS_BASE_URL}/ws/chat/${roomId}?token=${token}`; // EC2 주소 또는 localhost
     const socket = new WebSocket(wsUrl);
     socketRef.current = socket;
 

@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useDmChat } from '@/features/chat/dm/services/useDmChat';
 import { ChatMessagePayload } from '@/features/chat/common/types/ChatMessagePayload';
 import { MessageFormat } from '@/features/chat/common/types/MessageFormat';
+import { useSocket } from '@/hooks/useSocket';
 import {
   getDateString,
   getTimeString,
@@ -20,8 +21,19 @@ export default function DmChatMessageList({
 }: DmChatMessageListProps) {
   const { messages } = useDmChat(roomId, receiverId);
 
-  // 현재 로그인한 사용자 ID (임시: 로컬에서 가져옴)
+  // 현재 로그인한 사용자 ID와 토큰 가져오기
   const currentUserId = Number(localStorage.getItem('userId'));
+  const token = localStorage.getItem('token');
+
+  // WebSocket 수신 메시지 핸들러
+  function handleMessage(msg: ChatMessagePayload) {
+    console.log('[받은 메시지]', msg);
+    // TODO: 메시지 store에 추가 처리 필요
+    // 예시: setMessages(prev => [...prev, msg]);
+  }
+
+  // 추가: WebSocket 연결
+  // const { send, isConnected } = useSocket(roomId, token, handleMessage);
 
   const bottomRef = useRef<HTMLDivElement | null>(null); // 스크롤 타겟 ref
 

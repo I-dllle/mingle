@@ -17,7 +17,7 @@ export function useDmChat(roomId: number, receiverId: number | null) {
     typeof window !== 'undefined' ? Number(localStorage.getItem('userId')) : 0; // senderId도 SSR-safe로
 
   // WebSocket 연결 및 메시지 핸들링 (token이 있을 때만)
-  const { send } = useSocket(token, (msg) => {
+  const { send } = useSocket(roomId, token, (msg) => {
     if (msg.chatType === ChatRoomType.DIRECT && msg.roomId === roomId) {
       setMessages((prev) => [...prev, msg]);
     }

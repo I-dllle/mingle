@@ -18,10 +18,20 @@ export async function login(
   email: string,
   password: string
 ): Promise<CurrentUser> {
-  return await apiClient<CurrentUser>('/auth/login', {
+  const user = await apiClient<CurrentUser>('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
+
+  // 토큰과 userId를 localStorage에 저장
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('userId', String(user.id));
+    localStorage.setItem('userEmail', user.email);
+    localStorage.setItem('userNickname', user.nickname);
+    localStorage.setItem('token', 'dummy'); // 실제 토큰이 필요하면 응답에서 받아서 처리
+  }
+
+  return user;
 }
 
 // 로그아웃 요청
