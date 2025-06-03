@@ -32,6 +32,10 @@ management:
         enabled: true
 logging:
   level:
+  root: DEBUG
+    org.springframework: DEBUG
+    com.example: DEBUG
+    com.back: INFO
     com.back: INFO
     org.hibernate.SQL: INFO
     org.hibernate.orm.jdbc.bind: INFO
