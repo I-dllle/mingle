@@ -1,6 +1,6 @@
 'use client';
 
-import ChatTopTitle from '@/features/chat/common/components/ChatTopTitle';
+import ChatTopTitle from '@/features/chat/panel/ChatTopTitle';
 import { usePathname, useRouter } from 'next/navigation';
 import React from 'react';
 

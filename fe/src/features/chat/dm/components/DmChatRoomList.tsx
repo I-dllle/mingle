@@ -30,7 +30,7 @@ export default function DmChatRoomList() {
           {rooms.map((room) => (
             <li
               key={room.roomId} // idx 대신 고유 ID 사용
-              onClick={() => router.push(`/chat-detail/dm/${room.roomId}`)}
+              onClick={() => router.push(`/dm/${room.roomId}`)}
               className={`${styles.item} ${
                 room.unreadCount > 0 ? styles.unread : styles.read
               }`} // 읽음 여부에 따라 동적 클래스 적용

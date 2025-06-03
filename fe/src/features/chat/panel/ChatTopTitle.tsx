@@ -37,18 +37,23 @@ export default function ChatTopTitle() {
   const label = chatRoutes[currentIdx >= 0 ? currentIdx : 0].label;
 
   return (
-    <h2
+    <span
       style={{
         fontWeight: 700,
         fontSize: 22,
-        marginBottom: 24,
+        lineHeight: '1.2',
+        margin: 0,
         cursor: 'pointer',
         userSelect: 'none',
+        color: '#222', // 필요시 색상 조정
+        marginBottom: 24,
+        fontFamily: 'Alkatra',
+        // 기타 ChatPanelLayout 상단 타이틀과 동일하게
       }}
       onDoubleClick={handleDoubleClick}
       title="더블클릭 시 채팅 타입 전환"
     >
       {label}
-    </h2>
+    </span>
   );
 }

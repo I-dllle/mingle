@@ -7,6 +7,8 @@ import type { GroupChatRoom } from '@/features/chat/group/types/GroupChatRoom';
 import GroupChatRoomHeader from '@/features/chat/group/components/GroupChatRoomHeader';
 import GroupChatMessageList from '@/features/chat/group/components/GroupChatMessageList';
 import GroupChatInput from '@/features/chat/group/components/GroupChatInput';
+import ChatPanelChatLayout from '@/features/chat/panel/ChatPanelChatLayout';
+import ChatTopTitle from '@/features/chat/panel/ChatTopTitle';
 
 export default function TeamChatRoomPage() {
   const { roomId } = useParams();
@@ -19,19 +21,16 @@ export default function TeamChatRoomPage() {
     })();
   }, [roomId]);
 
+  if (!roomInfo) return <div>채팅방 정보를 불러오는 중...</div>;
+
   return (
-    <div>
-      {!roomInfo ? (
-        <div>채팅방 정보를 불러오는 중...</div>
-      ) : (
-        <>
-          <GroupChatRoomHeader room={roomInfo} />
-          <div style={{ flex: 1, overflowY: 'auto' }}>
-            <GroupChatMessageList roomId={Number(roomId)} />
-          </div>
-          <GroupChatInput roomId={Number(roomId)} />
-        </>
-      )}
-    </div>
+    <ChatPanelChatLayout
+      title={<ChatTopTitle />}
+      onBack={() => {}}
+      tabs={<GroupChatRoomHeader room={roomInfo} />}
+      input={<GroupChatInput roomId={Number(roomId)} />}
+    >
+      <GroupChatMessageList roomId={Number(roomId)} />
+    </ChatPanelChatLayout>
   );
 }

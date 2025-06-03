@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { fetchCurrentUser } from '@/features/user/auth/services/authService';
 import type { CurrentUser } from '@/features/user/auth/types/user';
 import ClientDepartmentProvider from '@/components/layout/ClientDepartmentProvider';
@@ -12,6 +12,8 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<CurrentUser | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
+  const isDmDetail = /^\/dm\/[0-9]+$/.test(pathname);
 
   useEffect(() => {
     (async () => {
@@ -33,7 +35,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         style={{
           display: 'flex',
           minHeight: '100vh',
-          background: '#f5f6fa',
+          background: isDmDetail ? '#f5f3ff' : '#f5f6fa',
         }}
       >
         <LeftSidebar />
@@ -41,9 +43,9 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         <main
           style={{
             flex: 1,
-            marginLeft: 80,
+            // marginLeft: 80,
             marginRight: 0, // 우측 채팅 사이드바 없음
-            padding: 32,
+            padding: isDmDetail ? 0 : 32,
             position: 'relative',
             zIndex: 1,
           }}
