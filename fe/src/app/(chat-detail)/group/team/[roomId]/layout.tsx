@@ -1,5 +1,7 @@
 'use client';
 
+import ChatPanelListLayout from '@/features/chat/panel/ChatPanelListLayout';
+import ChatPanelTabs from '@/features/chat/panel/ChatPanelTabs';
 import ChatTopTitle from '@/features/chat/panel/ChatTopTitle';
 import { usePathname, useRouter } from 'next/navigation';
 import React from 'react';
@@ -15,39 +17,26 @@ export default function TeamRoomLayout({
   const router = useRouter();
   const { teamId } = params;
 
+  // Determine active tab from pathname
+  const activeTab = pathname.endsWith('/archive') ? 'archive' : 'chat';
+
   return (
-    <div>
-      <ChatTopTitle />
-      <div
-        style={{
-          display: 'flex',
-          gap: 16,
-          borderBottom: '1px solid #eee',
-          marginBottom: 24,
-        }}
-      >
-        <button
-          style={{
-            fontWeight: pathname.endsWith('/normal') ? 'bold' : 'normal',
+    <ChatPanelListLayout
+      title={<ChatTopTitle />}
+      tabs={
+        <ChatPanelTabs
+          activeTab={activeTab as 'chat' | 'archive'}
+          onTabChange={(tab) => {
+            router.push(
+              `/chat-detail/group/team/${teamId}/${
+                tab === 'chat' ? 'normal' : 'archive'
+              }`
+            );
           }}
-          onClick={() =>
-            router.push(`/chat-detail/group/team/${teamId}/normal`)
-          }
-        >
-          채팅방
-        </button>
-        <button
-          style={{
-            fontWeight: pathname.endsWith('/archive') ? 'bold' : 'normal',
-          }}
-          onClick={() =>
-            router.push(`/chat-detail/group/team/${teamId}/archive`)
-          }
-        >
-          자료방
-        </button>
-      </div>
-      <div>{children}</div>
-    </div>
+        />
+      }
+    >
+      {children}
+    </ChatPanelListLayout>
   );
 }
