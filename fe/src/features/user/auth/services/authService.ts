@@ -18,7 +18,7 @@ export async function login(
   email: string,
   password: string
 ): Promise<CurrentUser> {
-  return await apiClient<CurrentUser>("/api/v1/users/login", {
+  return await apiClient<CurrentUser>("/users/login", {
     method: "POST",
     body: JSON.stringify({ loginId: email, password }),
   });
