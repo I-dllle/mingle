@@ -83,6 +83,15 @@ Mingle은 다음과 같은 기능들을 하나로 통합하여
 
     - **우측 사이드바**
         - 실시간 채팅 서비스
+           - 그룹 채팅
+              - 부서 채팅
+                 - 일반 채팅
+                 - 자료방
+              - 프로젝트 채팅
+                 - 일반 채팅
+                 - 자료방
+           - DM
+              - 1:1 채팅       
 
 - **스태프(기획/제작/정산/홍보)**
     - **게시글 CRUD**
@@ -113,7 +122,7 @@ Mingle은 다음과 같은 기능들을 하나로 통합하여
 |  |  |  |
  |-----------------|-----------------|-----------------|
 
-| 이은서   |  <img src="https://github.com/user-attachments/assets/5bd4b56f-3b71-45e9-8b85-be926de56cdc" width="100"> | <ul><li>(1) 채팅기능</li><li>(2) 프론트구조 빌드</li></ul>     |
+| 이은서   |  <img src="https://github.com/user-attachments/assets/5bd4b56f-3b71-45e9-8b85-be926de56cdc" width="100"> | <ul><li>(1) 채팅기능</li><li>(2) 프론트구조 빌드</li><li>(3) Jwt 로그인기능</li><li>(4) mingle 플젝 전반적 디자인</li></ul>     |
 | 이서영   |  <img src="https://github.com/user-attachments/assets/eb93e3ee-4b64-41e4-9672-745062936efd" width = "100">| <ul><li>(1) 게시판기능 </li><li>(2) 상점 및 결제기능 </li><li>(3) 배포</li></ul> |
 | 전병우   |  <img src="https://github.com/user-attachments/assets/5b05c683-ae90-44cb-b5de-ba26086e0994" width="100">    |<ul><li>(1) 캘린더 및 일정관리 기능</li><li>(2) 회의실/연습실 예약기능 </li><li>(3) 근태기능</li></ul>  |
 | 김현우    |  <img src="" width="100">    | <ul><li>(1) 정산 및 계약기능</li><li>(2) 관리자기능</li></ul>    |
@@ -248,12 +257,26 @@ fe/(Frontend - Next.js / TypeScript)
     |   |                      ,,,
     │   |
     ├── (auth)/                          # 인증 전용 페이지 (공통 레이아웃 미적용)
-    │   ├── login/page.tsx               # 로그인 페이지
-    │   ├── signup/page.tsx              # 회원가입 페이지
-    │   └── logout/page.tsx              # 로그아웃 처리
+    │   ├── login/                       # 로그인 페이지
+    │   ├── signup/                      # 회원가입 페이지
+    │   └── logout/                      # 로그아웃 처리
     │   
     ├── (chat-detail)/                   # 채팅방기능 
-    |                                         ,,,     
+    |   ├── layout.tsx                   # 채팅 전용 전체 레이아웃
+    │   ├── dm/                          # DM
+    │   └── group/                       # 그룹채팅
+    │       ├── create/                  # 그룹 채팅방 생성 페이지
+    │       ├── project/                 #  
+    │       │   ├── layout.tsx           # 
+    │       │   ├── [roomId]/            #  
+    │       │   │   ├── archive/         # 자료방
+    │       │   │   └── normal/          # 일반채팅 
+    │       │   └── list/                #  
+    │       └── team/                    # 팀채팅
+    │           ├── layout.tsx           # 
+    │           └── [roomId]/            #  
+    │               ├── archive/         # 자료방
+    │               └── normal/          # 일반채팅                                            
     │   
     ├── (admin)/                         # 관리자 페이지
     |                                        ,,,
