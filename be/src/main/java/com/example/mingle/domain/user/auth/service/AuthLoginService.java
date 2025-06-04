@@ -2,8 +2,8 @@ package com.example.mingle.domain.user.auth.service;
 
 import com.example.mingle.domain.user.team.entity.Department;
 import com.example.mingle.domain.user.team.repository.DepartmentRepository;
-import com.example.mingle.domain.user.user.dto.LoginRequestDto;
-import com.example.mingle.domain.user.user.dto.TokenResponseDto;
+import com.example.mingle.domain.user.auth.dto.LoginRequestDto;
+import com.example.mingle.domain.user.auth.dto.TokenResponseDto;
 import com.example.mingle.domain.user.user.entity.User;
 import com.example.mingle.domain.user.user.entity.UserRole;
 import com.example.mingle.domain.user.user.entity.UserStatus;
@@ -66,7 +66,13 @@ public class AuthLoginService {
         user.setRefreshToken(refreshToken);
         userRepository.save(user);
 
-        return new TokenResponseDto(accessToken, refreshToken);
+        return TokenResponseDto.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .userId(user.getId())
+                .nickname(user.getNickname())
+                .email(user.getEmail())
+                .build();
     }
 
 
@@ -106,7 +112,14 @@ public class AuthLoginService {
         userRepository.save(user);
 
         // 5. 응답
-        return new TokenResponseDto(newAccessToken, refreshToken);
+        return TokenResponseDto.builder()
+                .accessToken(newAccessToken)
+                .refreshToken(newRefreshToken)
+                .userId(user.getId())
+                .nickname(user.getNickname())
+                .email(user.getEmail())
+                .build();
+
     }
 
 

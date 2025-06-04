@@ -25,7 +25,7 @@ public class WebSocketSessionManager {
     public void register(String sessionId, WebSocketAuthDto authDto, WebSocketSession session) {
         sessionMap.put(sessionId, authDto);
         userSessionMap.put(authDto.getUserId(), session);
-        log.info("✅ WebSocket 등록: sessionId={}, userId={}", sessionId, authDto.getUserId());
+        log.info("WebSocket 등록: sessionId={}, userId={}", sessionId, authDto.getUserId());
     }
 
     /**

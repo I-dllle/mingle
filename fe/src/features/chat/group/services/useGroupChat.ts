@@ -10,8 +10,8 @@ import { fetchGroupChatMessages } from './fetchGroupChatMessages'; // 초기 메
 export function useGroupChat(roomId: number) {
   const [messages, setMessages] = useState<ChatMessagePayload[]>([]);
 
-  const token = localStorage.getItem('token')!;
-  const { send } = useSocket(token, (msg) => {
+  const token = sessionStorage.getItem('token')!;
+  const { send } = useSocket(roomId, token, (msg) => {
     if (msg.chatType === ChatRoomType.GROUP && msg.roomId === roomId) {
       setMessages((prev) => [...prev, msg]);
     }

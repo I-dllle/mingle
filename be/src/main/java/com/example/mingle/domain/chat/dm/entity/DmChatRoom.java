@@ -31,4 +31,10 @@ public class DmChatRoom extends BaseEntity {
     /**
      * 두 사용자 간 DM 채팅방 식별을 위해, userAId < userBId 순서로 저장할 것
      */
+
+    // 로그인 사용자가 채팅 참여자인지 확인하는 메서드
+    public boolean isParticipant(Long userId) {
+        return userAId.equals(userId) || userBId.equals(userId);
+    }
+
 }

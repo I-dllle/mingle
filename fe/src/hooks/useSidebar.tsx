@@ -10,6 +10,8 @@ type SidebarContextType = {
   isRightOpen: boolean;
   setRightOpen: (open: boolean) => void;
 
+  toggleRightSidebar: () => void; // 오른쪽 사이드바 토글 함수
+
   activeIconId: string | null; // 공통 사이드바에서 현재 선택된 아이콘 ID
   setActiveIconId: (id: string | null) => void; // 아이콘 ID 상태를 변경하는 setter
 };
@@ -21,6 +23,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   const [isDeptOpen, setDeptOpen] = useState(false);
   const [isRightOpen, setRightOpen] = useState(true);
   const [activeIconId, setActiveIconId] = useState<string | null>(null); // 현재 선택된 공통 사이드바 아이콘 ID 상태 저장 (null은 아무것도 선택 안 됨)
+  const toggleRightSidebar = () => setRightOpen((prev) => !prev);
 
   return (
     <SidebarContext.Provider
@@ -31,6 +34,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
         setDeptOpen,
         isRightOpen,
         setRightOpen,
+        toggleRightSidebar,
         activeIconId,
         setActiveIconId,
       }}

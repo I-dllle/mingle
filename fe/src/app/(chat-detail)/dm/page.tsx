@@ -1,6 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import DmChatRoomList from '@/features/chat/dm/components/DmChatRoomList';
+import ChatTopTitle from '@/features/chat/panel/ChatTopTitle';
+import ChatPanelListLayout from '@/features/chat/panel/ChatPanelListLayout';
+import DMPanelTabs from '@/features/chat/panel/DMPanelTabs';
 
 // dynamic import로 DmStartUserList 불러오기 (클라이언트 전용)
 import dynamic from 'next/dynamic';
@@ -10,17 +14,24 @@ const DmStartUserList = dynamic(
 );
 
 export default function DmChatListPage() {
+  const [tab, setTab] = useState<'start' | 'list'>('start');
+
   return (
-    <main style={{ padding: '24px' }}>
-      <h1 style={{ marginBottom: 16 }}>내 DM 채팅방</h1>
-
-      {/* 기존 채팅방 목록 */}
-      <DmChatRoomList />
-
-      <hr style={{ margin: '32px 0' }} />
-
-      {/* 새 DM 시작할 수 있는 유저 리스트 */}
-      <DmStartUserList />
-    </main>
+    <ChatPanelListLayout
+      title={<ChatTopTitle />}
+      onBack={() => {}}
+      tabs={
+        <DMPanelTabs
+          tabs={[
+            { key: 'start', label: '친구' },
+            { key: 'list', label: 'DM' },
+          ]}
+          activeTab={tab}
+          onTabChange={(key) => setTab(key as 'start' | 'list')}
+        />
+      }
+    >
+      {tab === 'start' ? <DmStartUserList /> : <DmChatRoomList />}
+    </ChatPanelListLayout>
   );
 }

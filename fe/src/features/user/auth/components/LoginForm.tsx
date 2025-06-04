@@ -13,14 +13,28 @@ export default function LoginForm() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    try {      // 로그인 요청
-      await apiClient('/users/login', {
+    try {
+      // 로그인 요청 및 응답 구조 반영 (token 포함)
+      const res = await apiClient<{
+        accessToken: string;
+        userId: number;
+        nickname: string;
+        email: string;
+      }>('/users/login', {
         method: 'POST',
         body: JSON.stringify({ loginId, password }),
-        credentials: 'include',
       });
 
-      // 성공 시 메인 페이지로 이동
+      // 로그인 전 로컬스토리지 초기화
+      sessionStorage.clear();
+
+      // 응답에서 토큰 및 사용자 정보 저장
+      sessionStorage.setItem('token', res.accessToken);
+      sessionStorage.setItem('userId', res.userId.toString());
+      sessionStorage.setItem('nickname', res.nickname);
+      sessionStorage.setItem('email', res.email);
+
+      // 로그인 성공 후 페이지 이동
       router.replace('/schedule');
     } catch (error) {
       // 실패 시 에러 메시지 설정

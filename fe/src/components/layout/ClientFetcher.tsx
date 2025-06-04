@@ -8,6 +8,7 @@ import ClientDepartmentProvider from './ClientDepartmentProvider';
 import LeftSidebar from '@/components/ui/LeftSidebar';
 import DepartmentSidebar from '@/components/ui/DepartmentSidebar';
 import RightMessenger from '@/components/ui/RightMessenger';
+import { useSidebar } from '@/hooks/useSidebar';
 
 export default function ClientFetcher({
   children,
@@ -17,6 +18,9 @@ export default function ClientFetcher({
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<CurrentUser | null>(null);
   const router = useRouter();
+
+  // 사이드바 열림 상태 가져오기
+  const { isRightOpen } = useSidebar();
 
   // [1] fetchCurrentUser 호출
   useEffect(() => {
@@ -51,7 +55,7 @@ export default function ClientFetcher({
           style={{
             flex: 1,
             marginLeft: 80,
-            marginRight: 320,
+            marginRight: isRightOpen ? 320 : 0, // 채팅 사이드바 있을 때만 margin
             padding: 32,
             position: 'relative',
             zIndex: 1,
@@ -59,7 +63,8 @@ export default function ClientFetcher({
         >
           {children}
         </main>
-        <RightMessenger />
+        {/* 채팅 사이드바 조건부 렌더링 */}
+        {isRightOpen && <RightMessenger />}
       </div>
     </ClientDepartmentProvider>
   );

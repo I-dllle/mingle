@@ -52,8 +52,8 @@ custom:
   site:
     name: "MINGLE DEV"
     cookie:
-      secure: true
-      sameSite: Strict
+      secure: false
+      sameSite: Lax
     cookieDomain: "${custom.dev.cookieDomain}"
     frontUrl: "${custom.dev.frontUrl}"
     backUrl: "${custom.dev.backUrl}"

@@ -11,8 +11,8 @@ import { ChatMessagePayload } from '@/features/chat/common/types/ChatMessagePayl
 export function useArchive(roomId: number) {
   const [archiveItems, setArchiveItems] = useState<ArchiveItem[]>([]);
 
-  const token = localStorage.getItem('token')!;
-  const { isConnected } = useSocket(token, (msg: ChatMessagePayload) => {
+  const token = sessionStorage.getItem('token')!;
+  const { isConnected } = useSocket(roomId, token, (msg: ChatMessagePayload) => {
     // 메시지 수신 시 자료 메시지만 반영
     if (msg.roomId === roomId && msg.format === MessageFormat.ARCHIVE) {
       setArchiveItems((prev) => [
