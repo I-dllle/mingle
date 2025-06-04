@@ -151,30 +151,7 @@ Mingle은 다음과 같은 기능들을 하나로 통합하여
 
 </br>
 
-### **종류 및 구조**
-
-- **그룹채팅(Group)** - **고정형**
-  - `ChatScope`: `DEPARTMENT`, `PROJECT`
-    - `DEPARTMENT` : 관리자가 생성
-    - `PROJECT` : 프로젝트 리더만 생성
-      - 그때그때 연예기획사 특성상 자유롭게 생성되고 사라짐
-  - `RoomType`: `NORMAL`, `ARCHIVE`
-    - 채팅방 1개당 일반 채팅 + 자료방 1쌍 생성됨
-      → `RoomType.ARCHIVE`로 구분됨
-- **DM(Direct Message)** - **on-demand**
-
-</br>
-
-### **채팅방 권한 정책**
-
-- 생성 권한
-  - `DEPARTMENT`: `UserRole.ADMIN`
-  - `PROJECT`: `ProjectLeaderAuth`(해당 프로젝트 리더)
-- 관리 권한 (삭제 아님)
-  - `DEPARTMENT`: 부서”장”
-  - `PROJECT`: `ProjectLeaderAuth`(해당 프로젝트 리더)
-
-### 각 체팅방 요구사항 총정리
+### 각 체팅방 요구사항 
 
 #### 그룹 채팅방 요구사항
 
