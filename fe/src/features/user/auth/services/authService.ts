@@ -18,34 +18,19 @@ export async function login(
   email: string,
   password: string
 ): Promise<CurrentUser> {
-
-  const user = await apiClient<CurrentUser>('/auth/login', {
-    method: 'POST',
-
-    body: JSON.stringify({ email, password }),
+  return await apiClient<CurrentUser>("/users/login", {
+    method: "POST",
+    body: JSON.stringify({ loginId: email, password }),
   });
-
-  // 토큰과 userId를 sessionStorage에 저장
-  if (typeof window !== 'undefined') {
-    sessionStorage.setItem('userId', String(user.id));
-    sessionStorage.setItem('userEmail', user.email);
-    sessionStorage.setItem('userNickname', user.nickname);
-    sessionStorage.setItem('token', 'dummy'); // 실제 토큰이 필요하면 응답에서 받아서 처리
-  }
-
-  return user;
 }
 
 // 로그아웃 요청
 export async function logout(): Promise<void> {
-  await apiClient("/logout", { method: "POST" });
+  await apiClient("/users/logout", { method: "POST" });
 
   // 브라우저에서 accessToken 제거
-
-  if (typeof window !== 'undefined') {
-    localStorage.clear();
-    document.cookie = 'accessToken=; Max-Age=0; path=/';
-    window.location.href = '/login';
-
+  if (typeof window !== "undefined") {
+    document.cookie = "accessToken=; Max-Age=0; path=/";
+    window.location.href = "/login";
   }
 }

@@ -1,12 +1,12 @@
-import { apiClient } from '@/lib/api/apiClient';
-import { GroupChatRoomCreateRequest } from '../types/GroupChatRoomCreateRequest';
-import { GroupChatRoom } from '../types/GroupChatRoom';
+import { apiClient } from "@/lib/api/apiClient";
+import { GroupChatRoomCreateRequest } from "../types/GroupChatRoomCreateRequest";
+import { GroupChatRoom } from "../types/GroupChatRoom";
 
 export async function createGroupChatRoom(
   data: GroupChatRoomCreateRequest
 ): Promise<GroupChatRoom> {
-  return apiClient('/api/v1/group-chats', {
-    method: 'POST',
+  return apiClient("/group-chats", {
+    method: "POST",
     body: JSON.stringify(data),
   });
 }

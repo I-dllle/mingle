@@ -14,17 +14,14 @@ import {
 const createSettlementForContract = async (
   contractId: number
 ): Promise<void> => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/finance/contracts/${contractId}/settlements`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      cache: "no-store",
-    }
-  );
+  const res = await fetch(`/finance/contracts/${contractId}/settlements`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    cache: "no-store",
+  });
 
   if (!res.ok) {
     throw new Error(`API 요청 실패: ${res.statusText}`);
@@ -54,18 +51,15 @@ const updateSettlement = async (
   settlementId: number,
   request: UpdateSettlementRequest
 ): Promise<void> => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/finance/${settlementId}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      cache: "no-store",
-      body: JSON.stringify(request),
-    }
-  );
+  const res = await fetch(`/finance/${settlementId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    cache: "no-store",
+    body: JSON.stringify(request),
+  });
 
   if (!res.ok) {
     throw new Error(`API 요청 실패: ${res.statusText}`);
@@ -82,17 +76,14 @@ const updateSettlement = async (
 
 // 정산 삭제
 const deleteSettlement = async (settlementId: number): Promise<void> => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/finance/${settlementId}`,
-    {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      cache: "no-store",
-    }
-  );
+  const res = await fetch(`/finance/${settlementId}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    cache: "no-store",
+  });
 
   if (!res.ok) {
     throw new Error(`API 요청 실패: ${res.statusText}`);
@@ -112,18 +103,15 @@ const changeSettlementStatus = async (
   settlementId: number,
   request: ChangeSettlementStatusRequest
 ): Promise<void> => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/finance/${settlementId}/status`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      cache: "no-store",
-      body: JSON.stringify(request),
-    }
-  );
+  const res = await fetch(`/finance/${settlementId}/status`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    cache: "no-store",
+    body: JSON.stringify(request),
+  });
 
   if (!res.ok) {
     throw new Error(`API 요청 실패: ${res.statusText}`);

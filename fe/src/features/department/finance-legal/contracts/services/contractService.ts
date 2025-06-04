@@ -31,7 +31,7 @@ export const createContract = async (
   formData.append("file", file);
 
   // multipart/form-data를 위해 직접 fetch 사용
-  const fullUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}${API_BASE_URL}/contracts`;
+  const fullUrl = `${API_BASE_URL}/contracts`;
 
   const res = await fetch(fullUrl, {
     method: "POST",
@@ -66,7 +66,7 @@ export const createInternalContract = async (
   formData.append("file", file);
 
   // multipart/form-data를 위해 직접 fetch 사용
-  const fullUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}${API_BASE_URL}/internal/contracts`;
+  const fullUrl = `${API_BASE_URL}/internal/contracts`;
 
   const res = await fetch(fullUrl, {
     method: "POST",
@@ -92,18 +92,15 @@ export const changeContractStatus = async (
   category: ContractCategory
 ): Promise<void> => {
   // JSON이 아닌 텍스트 응답을 처리하기 위해 직접 fetch 사용
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}${API_BASE_URL}/${id}/status?category=${category}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(request),
-      credentials: "include",
-      cache: "no-store",
-    }
-  );
+  const res = await fetch(`${API_BASE_URL}/${id}/status?category=${category}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(request),
+    credentials: "include",
+    cache: "no-store",
+  });
 
   if (!res.ok) {
     const errorText = await res.text();
@@ -134,7 +131,7 @@ export const signOfflineAsAdmin = async (
   category: ContractCategory
 ): Promise<void> => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}${API_BASE_URL}/${id}/sign-offline?category=${category}`,
+    `${API_BASE_URL}/${id}/sign-offline?category=${category}`,
     {
       method: "POST",
       headers: {
@@ -170,17 +167,14 @@ export const signOfflineAsAdmin = async (
 
 // 계약서 전자 서명 요청 생성
 export const signOnBehalf = async (id: number): Promise<void> => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}${API_BASE_URL}/${id}/sign`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      cache: "no-store",
-    }
-  );
+  const res = await fetch(`${API_BASE_URL}/${id}/sign`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    cache: "no-store",
+  });
 
   if (!res.ok) {
     const errorText = await res.text();
@@ -300,17 +294,14 @@ export const confirmContract = async (
     category: category,
   });
 
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}${API_BASE_URL}/${id}/confirm?${params}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      cache: "no-store",
-    }
-  );
+  const res = await fetch(`${API_BASE_URL}/${id}/confirm?${params}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    cache: "no-store",
+  });
 
   if (!res.ok) {
     const errorText = await res.text();
@@ -381,7 +372,7 @@ export const updateContract = async (
   }
 
   // multipart/form-data를 위해 직접 fetch 사용
-  const fullUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}${API_BASE_URL}/${contractId}`;
+  const fullUrl = `${API_BASE_URL}/${contractId}`;
 
   const res = await fetch(fullUrl, {
     method: "PUT",
@@ -409,17 +400,14 @@ export const deleteContract = async (
     category: category,
   });
 
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}${API_BASE_URL}/${contractId}?${params}`,
-    {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      cache: "no-store",
-    }
-  );
+  const res = await fetch(`${API_BASE_URL}/${contractId}?${params}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    cache: "no-store",
+  });
 
   if (!res.ok) {
     const errorText = await res.text();

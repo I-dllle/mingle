@@ -31,14 +31,11 @@ export const postService = {
           formData.append("postImage", image);
         });
       }
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/posts/create/image`,
-        {
-          method: "POST",
-          credentials: "include", // 쿠키 포함
-          body: formData, // FormData 사용 (Content-Type 헤더 자동 설정)
-        }
-      );
+      const response = await fetch(`/posts/create/image`, {
+        method: "POST",
+        credentials: "include", // 쿠키 포함
+        body: formData, // FormData 사용 (Content-Type 헤더 자동 설정)
+      });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -79,9 +76,7 @@ export const postService = {
       params.append("departmentId", deptId.toString());
 
       // API 엔드포인트를 부서별 조회로 수정
-      const url = `${
-        process.env.NEXT_PUBLIC_API_BASE_URL
-      }/posts/business-documents?${params.toString()}`;
+      const url = `/posts/business-documents?${params.toString()}`;
 
       console.log("=== 업무자료 게시판 API 호출 (수정된 엔드포인트) ===");
       console.log("deptId:", deptId);
@@ -158,9 +153,7 @@ export const postService = {
       if (departmentId) {
         params.append("departmentId", departmentId.toString());
       }
-      const url = `${
-        process.env.NEXT_PUBLIC_API_BASE_URL
-      }/posts/notices?${params.toString()}`;
+      const url = `/posts/notices?${params.toString()}`;
       console.log("=== 공지사항 API 호출 ===");
       console.log("전체 URL:", url);
       console.log("API Base URL:", process.env.NEXT_PUBLIC_API_BASE_URL);
@@ -245,16 +238,13 @@ export const postService = {
   // 게시글 상세 조회
   getPost: async (postId: number): Promise<PostResponseDto> => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/posts/${postId}`,
-        {
-          method: "GET",
-          credentials: "include", // 쿠키 포함하여 인증 처리
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetch(`/posts/${postId}`, {
+        method: "GET",
+        credentials: "include", // 쿠키 포함하여 인증 처리
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -298,14 +288,11 @@ export const postService = {
         });
       }
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/posts/${postId}`,
-        {
-          method: "PUT",
-          credentials: "include", // 쿠키 포함
-          body: formData, // FormData 사용 (Content-Type 헤더 자동 설정)
-        }
-      );
+      const response = await fetch(`/posts/${postId}`, {
+        method: "PUT",
+        credentials: "include", // 쿠키 포함
+        body: formData, // FormData 사용 (Content-Type 헤더 자동 설정)
+      });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -323,13 +310,10 @@ export const postService = {
   // 게시글 삭제
   deletePost: async (postId: number): Promise<void> => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/posts/${postId}`,
-        {
-          method: "DELETE",
-          credentials: "include", // 쿠키 포함하여 인증 처리
-        }
-      );
+      const response = await fetch(`/posts/${postId}`, {
+        method: "DELETE",
+        credentials: "include", // 쿠키 포함하여 인증 처리
+      });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));

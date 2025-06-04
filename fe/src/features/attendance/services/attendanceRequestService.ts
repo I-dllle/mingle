@@ -4,7 +4,7 @@ import type {
   AttendanceRequest,
   AttendanceRequestDetail,
   ApprovalAction,
-} from "../types/attendanceRequest";
+} from "../types/AttendanceRequest";
 import { ApprovalStatus } from "../types/attendanceCommonTypes";
 
 const BASE_URL = "/attendance-requests";
@@ -34,14 +34,11 @@ export const createRequest = async (
 ): Promise<AttendanceRequestDetail> => {
   // Content-Type을 multipart/form-data 로 지정하지 않으면 fetch가 자동으로
   // 올바른 boundary까지 함께 설정해 줍니다. 따라서 headers 생략해도 무방합니다.
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}${BASE_URL}`,
-    {
-      method: "POST",
-      credentials: "include",
-      body: formData,
-    }
-  );
+  const response = await fetch(`${BASE_URL}`, {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+  });
 
   if (!response.ok) {
     throw new Error(`요청 생성 실패: ${response.statusText}`);
@@ -99,14 +96,11 @@ export const updateRequest = async (
 ): Promise<AttendanceRequestDetail> => {
   // FormData 인스턴스인지 확인
   if (requestData instanceof FormData) {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}${BASE_URL}/${requestId}`,
-      {
-        method: "PUT",
-        credentials: "include",
-        body: requestData,
-      }
-    );
+    const response = await fetch(`${BASE_URL}/${requestId}`, {
+      method: "PUT",
+      credentials: "include",
+      body: requestData,
+    });
     if (!response.ok) {
       throw new Error(`요청 수정 실패: ${response.statusText}`);
     }
@@ -129,13 +123,10 @@ export const updateRequest = async (
  * 요청 삭제
  */
 export const deleteRequest = async (requestId: number): Promise<void> => {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}${BASE_URL}/${requestId}`,
-    {
-      method: "DELETE",
-      credentials: "include",
-    }
-  );
+  const response = await fetch(`${BASE_URL}/${requestId}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
   if (!response.ok) {
     throw new Error(`요청 삭제 실패: ${response.statusText}`);
   }

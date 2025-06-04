@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { apiClient } from '@/lib/api/apiClient';
-import { GroupChatRoom } from '@/features/chat/group/types/GroupChatRoom';
+import { apiClient } from "@/lib/api/apiClient";
+import { GroupChatRoom } from "@/features/chat/group/types/GroupChatRoom";
 
 /**
  * 그룹 채팅방 정보를 가져오는 함수
@@ -14,7 +14,7 @@ export async function fetchGroupChatRoomInfo(
   try {
     // 백엔드로부터 채팅방 정보 요청
     const res = await apiClient<GroupChatRoom>(`/group-chats/${roomId}`);
-    console.log('채팅방 정보 불러오기 성공:', res);
+    console.log("채팅방 정보 불러오기 성공:", res);
 
     // 정상 응답 반환
     return res;

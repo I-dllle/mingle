@@ -33,21 +33,20 @@ export const ROUTES = {
 // API 엔드포인트
 export const API_ENDPOINTS = {
   // 인증 관련
-  LOGIN: "/api/v1/auth/login",
-  LOGOUT: "/api/v1/auth/logout",
-  SIGNUP: "/api/v1/auth/signup",
+  LOGIN: "/auth/login",
+  LOGOUT: "/auth/logout",
+  SIGNUP: "/auth/signup",
 
   // 예약 관련
-  RESERVATIONS: "/api/v1/reservations",
-  USER_RESERVATIONS: "/api/v1/reservations/user",
-  RESERVATION_BY_ID: (id: number) => `/api/v1/reservations/${id}`,
+  RESERVATIONS: "/reservations",
+  USER_RESERVATIONS: "/reservations/user",
+  RESERVATION_BY_ID: (id: number) => `/reservations/${id}`,
 
   // 방 관련
-  ROOMS: "/api/v1/room",
-  ROOM_BY_ID: (id: number) => `/api/v1/room/${id}`,
+  ROOMS: "/room",
+  ROOM_BY_ID: (id: number) => `/room/${id}`,
 
   // 관리자 관련
-  ADMIN_RESERVATIONS: "/api/v1/admin/reservations",
-  ADMIN_RESERVATION_STATUS: (id: number) =>
-    `/api/v1/admin/reservations/${id}/status`,
+  ADMIN_RESERVATIONS: "/admin/reservations",
+  ADMIN_RESERVATION_STATUS: (id: number) => `/admin/reservations/${id}/status`,
 };
