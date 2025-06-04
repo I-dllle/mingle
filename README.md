@@ -64,6 +64,7 @@ Mingle은 다음과 같은 기능들을 하나로 통합하여
  <br/>
 
 # 3. Key Features (주요 기능)
+## 3.1 전반적 기능
 - **공통**
     - **일반로그인(JWT)**
 
@@ -114,6 +115,113 @@ Mingle은 다음과 같은 기능들을 하나로 통합하여
         - **경영진 / 관리자**
             - 전체 통계 대시보드
             - 모든 콘텐츠/정산 열람 가능
+
+</br>
+         
+## 3.2 채팅기능
+채팅은 WebSocket, 자료방은 REST API 기반으로 동작하며, 채팅방·자료방은 연동되지만 독립된 모듈로 구성되어 있습니다.
+**세션 기반, 인증 기반, format 분기, DB 연동까지 포함된 실무형 채팅**에는 **순수 WebSocket + 직접 컨트롤 구조가 훨씬 적합하고 확장 가능**하다고 판단했습니다.
+
+</br>  
+
+### 주요 구현 사항
+
+- **STOMP 미사용**, `TextWebSocketHandler` 직접 구현
+- WebSocket 연결 시 **JWT 인증 처리** (`JwtHandshakeInterceptor`)
+- 실시간 사용자 관리: **세션 ↔ 사용자 ID 매핑** (`WebSocketSessionManager`)
+  - session ↔ user DTO
+
+</br>
+
+### **WebSocket 인증 및 통신 흐름**
+
+| 구성요소                  | 역할                                |
+| ------------------------- | ----------------------------------- |
+| `WebSocketConfig`         | WebSocket 엔드포인트 설정           |
+| `JwtHandshakeInterceptor` | 연결 시 JWT 인증                    |
+| `WebSocketSessionManager` | 연결된 세션 관리 (userId ↔ session) |
+| `ChatWebSocketHandler`    | 메시지 수신/전송 처리               |
+
+**모든 채팅은 WebSocket을 통해 실시간 송수신됨.**
+
+- 사용자 JWT 인증 후 WebSocket 연결
+- `ChatMessagePayload`로 메시지 수신
+- 메시지 타입(`ChatRoomType`)에 따라 분기: `GROUP`, `DM`
+- `WebSocketSessionManager`를 통해 인증/세션 매핑
+
+</br>
+
+### **종류 및 구조**
+
+- **그룹채팅(Group)** - **고정형**
+  - `ChatScope`: `DEPARTMENT`, `PROJECT`
+    - `DEPARTMENT` : 관리자가 생성
+    - `PROJECT` : 프로젝트 리더만 생성
+      - 그때그때 연예기획사 특성상 자유롭게 생성되고 사라짐
+  - `RoomType`: `NORMAL`, `ARCHIVE`
+    - 채팅방 1개당 일반 채팅 + 자료방 1쌍 생성됨
+      → `RoomType.ARCHIVE`로 구분됨
+- **DM(Direct Message)** - **on-demand**
+
+</br>
+
+### **채팅방 권한 정책**
+
+- 생성 권한
+  - `DEPARTMENT`: `UserRole.ADMIN`
+  - `PROJECT`: `ProjectLeaderAuth`(해당 프로젝트 리더)
+- 관리 권한 (삭제 아님)
+  - `DEPARTMENT`: 부서”장”
+  - `PROJECT`: `ProjectLeaderAuth`(해당 프로젝트 리더)
+
+### 각 체팅방 요구사항 총정리
+
+#### 그룹 채팅방 요구사항
+
+| 구분                | 내용                                                                     |
+| ------------------- | ------------------------------------------------------------------------ |
+| **부서 채팅방**     | 관리자만 생성 가능                                                       |
+| **프로젝트 채팅방** | 해당 프로젝트의 리더만 생성 가능                                         |
+| 채팅방 조회         | `scope`(`DEPARTMENT`/`PROJECT`)별 조회 가능                              |
+| 종료일              | - 프로젝트 채팅방은 종료일 존재</br> - 종료일 이후는 보관 탭에 자동 이동 |
+| 채팅방 검색         | 채팅방 이름 기준 검색 API                                                |
+| 채팅방 응답         | 이름, 타입(`RoomType`), `scope`, 종료일 포함                             |
+
+
+
+#### DM 채팅 요구사항
+
+| 구분          | 내용                                                        |
+| ------------- | ----------------------------------------------------------- |
+| **DM 채팅방** | 유저 쌍 당 1개의 고유 `roomKey` 생성 (정렬 후 A_B)          |
+| 메시지 송수신 | DB 저장 + WebSocket 양측 전송                               |
+| 메시지 응답   | `sender`, `receiver`, `content`, `format`, `createdAt` 포함 |
+| 메시지 리스트 | 해당 DM 채팅방 기준 시간순 정렬 조회                        |
+| 요청 DTO      | `receiverId`, `content`, `format` 필요                      |
+
+
+
+#### 자료방 요구사항
+
+| 구분        | 내용                                                    |
+| ----------- | ------------------------------------------------------- |
+| 자료방 위치 | 그룹채팅방과 나란히 존재, 별도 용량으로 관리            |
+| 목적        | 채팅 중 실시간 업무자료 추천 기능에 집중                |
+| 자동 태그   | 업로드 시 태그 미입력이면 파일명 기반 자동 생성         |
+| #태그 추천  | 채팅창에서 `#단어` 입력 시 실시간 자료 추천             |
+| 자료 전송   | 선택한 자료는 채팅 메시지로 전송되며 `format = ARCHIVE` |
+| 자료 관리   | 자료 삭제, 태그 수정 API 필요                           |
+| 태그 필터   | 자료방에서 태그 클릭시 필터링 가능                      |
+
+</br>
+
+### **메시지 저장 구조**
+
+- 공통 포맷: `ChatMessagePayload`
+  - `roomId`, `senderId`, `receiverId?`, `content`, `format`, `chatType`
+- 메시지 저장 후 `WebSocketSessionManager`에서 전송 대상 탐색
+- `MessageFormat`은 `TEXT`, `IMAGE` 등 전송 방식 구분
+
 
  <br/>
  <br/>
