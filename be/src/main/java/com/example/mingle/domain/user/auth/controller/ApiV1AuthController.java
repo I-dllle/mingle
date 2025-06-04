@@ -18,6 +18,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.*;
+import com.example.mingle.domain.user.auth.dto.SignupRequestDto;
+import com.example.mingle.domain.user.auth.dto.LoginRequestDto;
+import com.example.mingle.domain.user.auth.dto.TokenResponseDto;
 
 import java.util.List;
 
