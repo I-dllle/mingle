@@ -71,9 +71,16 @@ dependencies {
 		exclude(group = "org.apache.commons", module = "commons-compress")
 	}
 	implementation("org.apache.commons:commons-compress:1.26.0")
-
 }
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+}
+
+tasks.bootJar {
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.jar {
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }

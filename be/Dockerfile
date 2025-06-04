@@ -5,7 +5,7 @@ FROM gradle:jdk-21-and-23-graal-jammy AS builder
 WORKDIR /app
 
 # Gradle Wrapper 및 설정 파일 복사
-COPY gradlew gradlew
+COPY gradlew .
 COPY gradle gradle
 COPY build.gradle.kts .
 COPY settings.gradle.kts .
@@ -14,13 +14,13 @@ COPY settings.gradle.kts .
 RUN chmod +x gradlew
 
 # 의존성 캐싱
-RUN ./gradlew dependencies --no-daemon
+RUN ./gradlew dependencies --no-daemon --info
 
 # 소스 코드 복사
 COPY src src
 
-# 애플리케이션 빌드
-RUN ./gradlew build --no-daemon --stacktrace
+# 애플리케이션 빌드 (메모리 설정 추가)
+RUN ./gradlew build --no-daemon --stacktrace --info -Dorg.gradle.jvmargs="-Xmx2048m -XX:MaxPermSize=512m -XX:+HeapDumpOnOutOfMemoryError" || (echo "Build failed" && cat build/reports/tests/test/index.html && exit 1)
 
 # 두 번째 스테이지: 실행 스테이지
 FROM container-registry.oracle.com/graalvm/jdk:23
