@@ -112,6 +112,7 @@ Mingle은 다음과 같은 기능들을 하나로 통합하여
 # 4. Tasks & Responsibilities (작업 및 역할 분담)
 |  |  |  |
  |-----------------|-----------------|-----------------|
+
 | 이은서   |  <img src="https://github.com/user-attachments/assets/5bd4b56f-3b71-45e9-8b85-be926de56cdc" width="100"> | <ul><li>(1) 채팅기능</li><li>(2) 프론트구조 빌드</li></ul>     |
 | 이서영   |  <img src="https://github.com/user-attachments/assets/eb93e3ee-4b64-41e4-9672-745062936efd" width = "100">| <ul><li>(1) 게시판기능 </li><li>(2) 상점 및 결제기능 </li><li>(3) 배포</li></ul> |
 | 전병우   |  <img src="https://github.com/user-attachments/assets/5b05c683-ae90-44cb-b5de-ba26086e0994" width="100">    |<ul><li>(1) 캘린더 및 일정관리 기능</li><li>(2) 회의실/연습실 예약기능 </li><li>(3) 근태기능</li></ul>  |

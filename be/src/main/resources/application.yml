@@ -1,18 +1,22 @@
 server:
-  port: 8080
+  port: 8090
 spring:
   output:
     ansi:
       enabled: ALWAYS
   profiles:
-    active: dev
+    active: prod
     include: secret
   datasource:
-    url: jdbc:mysql://localhost:3307/mingle_dev
-    username: su
-    password: sususu1234
+    url: jdbc:mysql://mingle-mysql:3306/mingle_dev
+    username: ll_local
+    password: mingleservice
     driver-class-name: com.mysql.cj.jdbc.Driver
-
+  data:
+    redis:
+      host: redis_1
+      port: 6379
+      password: mingleservice
   jpa:
     open-in-view: false
     hibernate:
@@ -21,10 +25,10 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
   jackson:
-    serialization:
-      write-dates-as-timestamps: false
-    deserialization:
-      fail-on-unknown-properties: false
+      serialization:
+        write-dates-as-timestamps: false
+      deserialization:
+        fail-on-unknown-properties: false
   servlet:
     multipart:
       max-file-size: 10MB
@@ -64,7 +68,6 @@ cloud:
       static: ap-northeast-2
     stack:
       auto: false
-
 admin:
   initial:
     email: admin@admin.com

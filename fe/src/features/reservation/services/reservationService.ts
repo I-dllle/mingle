@@ -5,7 +5,7 @@ import type {
   Reservation,
   ReservationFormInput,
 } from "@/features/reservation/types/rservation";
-import type { ReservationStatus } from "@/features/reservation/types/reservationStatus";
+import { ReservationStatus } from "../types/ReservationStatus";
 import { RoomWithReservations } from "@/features/reservation/types/roomWithReservations";
 import type { RoomType } from "@/features/room/types/room";
 

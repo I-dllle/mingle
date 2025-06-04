@@ -2,7 +2,9 @@ export async function apiClient<T>(
   url: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}${url}`, {
+  const baseUrl =
+    process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL;
+  const res = await fetch(`${baseUrl}${url}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
