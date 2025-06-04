@@ -43,7 +43,6 @@ dependencies {
 	implementation("net.datafaker:datafaker:2.1.0")
 
 	//db관련
-	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	runtimeOnly("com.mysql:mysql-connector-j")
 
 	//swagger 의존성
