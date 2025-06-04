@@ -44,5 +44,9 @@ custom:
     cookieDomain: "${custom.prod.cookieDomain}"
     frontUrl: "${custom.prod.frontUrl}"
     backUrl: "${custom.prod.backUrl}"
+    cookie:
+      secure: true
+      sameSite: None
+      cookieDomain: mingleservice.site
   genFile:
     dirPath: /gen

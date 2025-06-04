@@ -1,8 +1,5 @@
 package com.example.mingle.domain.user.auth.controller;
 
-import com.example.mingle.domain.user.auth.dto.LoginRequestDto;
-import com.example.mingle.domain.user.auth.dto.SignupRequestDto;
-import com.example.mingle.domain.user.auth.dto.TokenResponseDto;
 import com.example.mingle.domain.user.auth.service.AuthLoginService;
 import com.example.mingle.domain.user.user.dto.*;
 import com.example.mingle.domain.user.user.entity.User;
@@ -19,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -69,10 +67,10 @@ public class ApiV1AuthController {
 
         // ✅ ResponseCookie 대신 직접 Set-Cookie 헤더 문자열 작성
         String accessCookie = "accessToken=" + tokenDto.getAccessToken()
-                + "; HttpOnly; Path=/; Max-Age=3600; SameSite=Lax"; // accessToken 1시간
+                + "; HttpOnly; Path=/; Max-Age=3600; SameSite=None; Secure; Domain=mingleservice.site";
 
         String refreshCookie = "refreshToken=" + tokenDto.getRefreshToken()
-                + "; HttpOnly; Path=/; Max-Age=" + (60 * 60 * 24 * 7) + "; SameSite=Lax"; // refreshToken 7일
+                + "; HttpOnly; Path=/; Max-Age=" + (60 * 60 * 24 * 7) + "; SameSite=None; Secure; Domain=mingleservice.site";
 
 //        // accessToken을 쿠키로 설정
 //        ResponseCookie accessCookie = ResponseCookie.from("accessToken", tokenDto.getAccessToken())
