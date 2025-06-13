@@ -1,11 +1,11 @@
 server:
-  port: 8090
+  port: 8080
 spring:
   output:
     ansi:
       enabled: ALWAYS
   profiles:
-    active: prod
+    active: dev
     include: secret
   datasource:
     url: jdbc:mysql://mingle-mysql:3306/mingle_dev
