@@ -30,6 +30,15 @@ export const isEarlyCheckOut = (checkOutTime: Date | string): boolean => {
 };
 
 /**
+ * 현재 시간이 퇴근 가능 시간(18:00)인지 확인
+ */
+export const canCheckOut = (): boolean => {
+  const now = new Date();
+  const currentTime = formatTime(now);
+  return currentTime >= "18:00";
+};
+
+/**
  * 야근 시간 계산 (18:00 이후 근무 시간)
  */
 export const calculateOvertimeHours = (
@@ -221,11 +230,11 @@ export const validateLeaveRequest = (
     case "BEREAVEMENT":
     case "ANNUAL":
     case "SICK":
-      // 휴가 유형들은 3영업일 전에 신청해야 함
-      if (!isAtLeastBusinessDaysAhead(start, 3)) {
+      // 휴가 유형들은 1영업일 전에 신청해야 함
+      if (!isAtLeastBusinessDaysAhead(start, 1)) {
         return {
           isValid: false,
-          errorMessage: "휴가는 최소 3영업일 전에 신청해야 합니다.",
+          errorMessage: "휴가는 최소 1영업일 전에 신청해야 합니다.",
         };
       }
       break;

@@ -17,6 +17,17 @@ interface RequestFormProps {
   onCancel?: () => void;
   userId?: number;
   isModal?: boolean; // 모달 방식인지 여부에 따라 UI 조정
+  initialData?: {
+    userId?: number;
+    type: LeaveType;
+    startDate: string;
+    endDate: string;
+    startTime?: string;
+    endTime?: string;
+    reason: string;
+  };
+  isEdit?: boolean;
+  requestId?: number;
 }
 
 export default function RequestForm({
@@ -24,45 +35,70 @@ export default function RequestForm({
   onCancel,
   userId: propUserId,
   isModal = false,
+  initialData,
+  isEdit = false,
+  requestId,
 }: RequestFormProps) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
 
-  const [userId, setUserId] = useState<number | undefined>(propUserId);
+  const [userId, setUserId] = useState<number | undefined>(
+    initialData?.userId || propUserId
+  );
 
   useEffect(() => {
-    if (!propUserId && user?.id) {
+    if (!initialData?.userId && !propUserId && user?.id) {
       setUserId(user.id);
     }
-  }, [propUserId, user]);
+  }, [propUserId, user, initialData]);
 
   // 휴가 종류에 따라 시간 입력 필드가 필요한지 여부
   const timeBasedLeaveTypes: LeaveType[] = [
     "HALF_DAY_AM",
     "HALF_DAY_PM",
     "EARLY_LEAVE",
-  ];
-
-  // 폼 상태
+  ]; // 폼 상태
   const [formData, setFormData] = useState<{
-    type: LeaveType;
+    type: LeaveType; // 내부 폼 상태는 type으로 유지 (타입만 변경)
     startDate: string;
     endDate: string;
     startTime: string;
     endTime: string;
     reason: string;
-  }>({
-    type: "ANNUAL",
-    startDate: new Date().toISOString().split("T")[0],
-    endDate: new Date().toISOString().split("T")[0],
-    startTime: "09:00",
-    endTime: "18:00",
-    reason: "",
-  });
+  }>(
+    initialData
+      ? {
+          type: initialData.type,
+          startDate:
+            initialData.startDate || new Date().toISOString().split("T")[0],
+          endDate:
+            initialData.endDate || new Date().toISOString().split("T")[0],
+          startTime: initialData.startTime || "09:00",
+          endTime: initialData.endTime || "18:00",
+          reason: initialData.reason || "",
+        }
+      : {
+          type: "ANNUAL",
+          startDate: new Date().toISOString().split("T")[0],
+          endDate: new Date().toISOString().split("T")[0],
+          startTime: "09:00",
+          endTime: "18:00",
+          reason: "",
+        }
+  );
 
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [showTimeFields, setShowTimeFields] = useState<boolean>(false);
+  const [showTimeFields, setShowTimeFields] = useState<boolean>(
+    initialData ? timeBasedLeaveTypes.includes(initialData.type) : false
+  );
+
+  // 초기 데이터가 있을 경우 시간 필드 표시 여부를 설정
+  useEffect(() => {
+    if (initialData) {
+      setShowTimeFields(timeBasedLeaveTypes.includes(initialData.type));
+    }
+  }, [initialData]);
 
   // 폼 입력값 변경 핸들러
   const handleChange = (
@@ -128,7 +164,6 @@ export default function RequestForm({
       [name]: name === "type" ? (value as LeaveType) : value,
     }));
   };
-
   // 제출 핸들러
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -158,7 +193,7 @@ export default function RequestForm({
       // 요청 데이터 준비
       const requestData: AttendanceRequest = {
         userId: userId || 0, // userId가 없으면 서버에서 현재 사용자 ID 사용
-        type: formData.type,
+        leaveType: formData.type, // type -> leaveType으로 변경 (백엔드 DTO와 일치)
         startDate: formData.startDate,
         endDate: formData.endDate,
         startTime: formData.startTime,
@@ -166,12 +201,27 @@ export default function RequestForm({
         reason: formData.reason,
       };
 
-      // 서버에 요청 전송
-      const response = await attendanceRequestService.submitRequest(
-        requestData
-      );
+      let response;
+      // 수정 모드인 경우 updateRequest 호출
+      if (isEdit && requestId) {
+        console.log(`요청 ID ${requestId} 수정 시작:`, requestData);
+        response = await attendanceRequestService.updateRequest(
+          requestId,
+          requestData
+        );
+        console.log("요청 수정 완료:", response);
+      } else {
+        // 신규 요청인 경우 submitRequest 호출
+        console.log("새 요청 제출 시작:", requestData);
+        response = await attendanceRequestService.submitRequest(requestData);
+        console.log("새 요청 제출 완료:", response);
+      } // 성공 처리
+      if (isEdit) {
+        alert("요청이 성공적으로 수정되었습니다.");
+      } else {
+        alert("요청이 성공적으로 제출되었습니다.");
+      }
 
-      // 성공 처리
       if (onSuccess) {
         onSuccess();
       } else {
@@ -180,7 +230,14 @@ export default function RequestForm({
         router.refresh();
       }
     } catch (err: any) {
-      setError(err.message || "요청 중 오류가 발생했습니다.");
+      const errorMessage = isEdit
+        ? `요청 수정 중 오류가 발생했습니다: ${
+            err.message || "알 수 없는 오류"
+          }`
+        : `요청 생성 중 오류가 발생했습니다: ${
+            err.message || "알 수 없는 오류"
+          }`;
+      setError(errorMessage);
       console.error("Submit error:", err);
     } finally {
       setIsSubmitting(false);
@@ -197,7 +254,7 @@ export default function RequestForm({
     >
       {!isModal && (
         <h2 className="text-2xl font-bold text-gray-800 mb-6">
-          휴가/출장 신청
+          {isEdit ? "휴가/출장 수정" : "휴가/출장 신청"}
         </h2>
       )}
 
@@ -357,14 +414,13 @@ export default function RequestForm({
               disabled={isSubmitting}
             >
               취소
-            </button>
-
+            </button>{" "}
             <button
               type="submit"
               className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
               disabled={isSubmitting}
             >
-              {isSubmitting ? "제출 중..." : "신청하기"}
+              {isSubmitting ? "제출 중..." : isEdit ? "수정하기" : "신청하기"}
             </button>
           </div>
         </div>

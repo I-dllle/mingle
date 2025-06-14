@@ -7,9 +7,31 @@ import {
   ApprovalStatus,
 } from "@/features/attendance/types/attendanceCommonTypes";
 import attendanceRequestService from "@/features/attendance/services/attendanceRequestService";
-import { leaveTypeLabels } from "@/features/attendance/utils/attendanceLabels";
-import { ApprovalStatusBadge } from "@/features/attendance/components/attendance/StatusBadge";
+import {
+  leaveTypeLabels,
+  approvalColorMap,
+  statusBackgroundColorMap,
+} from "@/features/attendance/utils/attendanceLabels";
+import {
+  ApprovalStatusBadge,
+  LeaveTypeBadge,
+} from "@/features/attendance/components/attendance/StatusBadge";
 import ConfirmModal from "./ConfirmModal";
+
+// LeaveType에 따른 배경색 매핑
+const leaveTypeColorMap: Record<LeaveType, string> = {
+  ANNUAL: "bg-indigo-100 text-indigo-800",
+  SICK: "bg-purple-100 text-purple-800",
+  HALF_DAY_AM: "bg-pink-100 text-pink-800",
+  HALF_DAY_PM: "bg-pink-100 text-pink-800",
+  OFFICIAL: "bg-sky-100 text-sky-800",
+  BUSINESS_TRIP: "bg-teal-100 text-teal-800",
+  MARRIAGE: "bg-green-100 text-green-800",
+  BEREAVEMENT: "bg-gray-100 text-gray-800",
+  PARENTAL: "bg-blue-100 text-blue-800",
+  EARLY_LEAVE: "bg-orange-100 text-orange-800",
+  OTHER: "bg-gray-100 text-gray-800",
+};
 
 interface RequestDetailProps {
   requestId: number | string;
@@ -48,6 +70,13 @@ export default function RequestDetail({
               Number(requestId)
             )
           : await attendanceRequestService.getRequestById(Number(requestId));
+        console.log("API 응답 데이터:", data);
+        console.log("날짜 필드 확인:", {
+          startDate: data.startDate,
+          endDate: data.endDate,
+          startDateType: typeof data.startDate,
+          endDateType: typeof data.endDate,
+        });
 
         setRequest(data);
       } catch (err: any) {
@@ -171,30 +200,85 @@ export default function RequestDetail({
   }
   const isRequestEditable = request.approvalStatus === "PENDING" && !isAdmin;
   const isRequestCancelable = request.approvalStatus === "PENDING" && !isAdmin;
-  const canApproveOrReject = request.approvalStatus === "PENDING" && isAdmin;
+  const canApproveOrReject = request.approvalStatus === "PENDING" && isAdmin; // 날짜 형식화 - 더 안정적인 날짜 처리를 위해 개선
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return "-";
 
-  // 날짜 형식화
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("ko-KR", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      weekday: "short",
-    });
+    try {
+      // yyyy-MM-dd 형식인 경우 (백엔드에서 받은 LocalDate)
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+        // yyyy-MM-dd 형식은 직접 파싱해서 처리
+        const [year, month, day] = dateString.split("-").map(Number);
+
+        // 날짜 객체 생성 (월은 0부터 시작하므로 -1 해줌)
+        return new Date(year, month - 1, day).toLocaleDateString("ko-KR", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          weekday: "short",
+        });
+      }
+      // ISO 형식 문자열인 경우 (yyyy-MM-ddTHH:mm:ss.SSSZ)
+      else if (/^\d{4}-\d{2}-\d{2}T.*/.test(dateString)) {
+        const date = new Date(dateString);
+
+        // 유효한 날짜인지 확인
+        if (isNaN(date.getTime())) {
+          console.log("유효하지 않은 날짜:", dateString);
+          return dateString; // 원본 반환
+        }
+
+        return date.toLocaleDateString("ko-KR", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          weekday: "short",
+        });
+      }
+      // 이미 변환된 경우 등 다른 형식의 문자열
+      else {
+        return dateString;
+      }
+    } catch (e) {
+      console.error("날짜 형식 변환 오류:", e, "입력값:", dateString);
+      return dateString;
+    }
   };
 
   // 시간 형식화
-  const formatTime = (dateTimeString: string) => {
-    if (!dateTimeString) return "";
-    return new Date(dateTimeString).toLocaleTimeString("ko-KR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+  const formatTime = (timeString: string | null | undefined) => {
+    if (!timeString) return "-";
 
+    try {
+      // HH:mm 형식인지 확인
+      if (/^\d{2}:\d{2}$/.test(timeString)) {
+        return timeString; // 이미 HH:mm 형식이면 그대로 반환
+      }
+
+      // ISO 형식의 전체 날짜시간 문자열이라면
+      if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(timeString)) {
+        const date = new Date(timeString);
+
+        // 유효한 날짜인지 확인
+        if (isNaN(date.getTime())) {
+          console.log("유효하지 않은 시간:", timeString);
+          return timeString;
+        }
+
+        return date.toLocaleTimeString("ko-KR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+
+      return timeString;
+    } catch (e) {
+      console.error("시간 형식 변환 오류:", e, "입력값:", timeString);
+      return timeString;
+    }
+  };
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      {" "}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold text-gray-800">휴가 요청 상세</h2>
         <ApprovalStatusBadge status={request.approvalStatus} />
@@ -202,27 +286,25 @@ export default function RequestDetail({
       <div className="space-y-6">
         {/* 요청 기본 정보 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6">
+          {" "}
           <div>
             <p className="text-sm text-gray-500">요청 유형</p>
-            <p className="font-medium text-gray-800">
-              {leaveTypeLabels[request.type as LeaveType] || request.type}
-            </p>
+            <div className="mt-1">
+              <LeaveTypeBadge leaveType={request.leaveType as LeaveType} />
+            </div>
           </div>
-
           <div>
             <p className="text-sm text-gray-500">요청자</p>
             <p className="font-medium text-gray-800">
               {request.userName || "(정보 없음)"}
             </p>
           </div>
-
           <div>
             <p className="text-sm text-gray-500">부서</p>
             <p className="font-medium text-gray-800">
               {request.departmentName || "(정보 없음)"}
             </p>
           </div>
-
           <div>
             <p className="text-sm text-gray-500">요청일</p>
             <p className="font-medium text-gray-800">
@@ -275,7 +357,7 @@ export default function RequestDetail({
           <p className="text-gray-700 whitespace-pre-wrap bg-gray-50 p-3 rounded-md">
             {request.reason || "(사유 없음)"}
           </p>
-        </div>{" "}
+        </div>
         {/* 승인/거부 정보 */}
         {request.approvalStatus !== "PENDING" && (
           <div className="border-t border-gray-200 pt-4">
@@ -297,7 +379,7 @@ export default function RequestDetail({
                     ? formatDate(request.updatedAt)
                     : "(정보 없음)"}
                 </p>
-              </div>{" "}
+              </div>
               {request.approvalStatus === "REJECTED" &&
                 request.rejectReason && (
                   <div className="col-span-2">
@@ -345,7 +427,7 @@ export default function RequestDetail({
               ))}
             </div>
           </div>
-        )}{" "}
+        )}
         {/* 버튼 그룹 */}
         <div className="border-t border-gray-200 pt-6 flex justify-end space-x-3">
           <button
@@ -360,7 +442,7 @@ export default function RequestDetail({
             <button
               type="button"
               onClick={() =>
-                router.push(`/attendance/requests/edit/${requestId}`)
+                router.push(`/attendance/requests/${requestId}/edit`)
               }
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
               disabled={processingAction}
