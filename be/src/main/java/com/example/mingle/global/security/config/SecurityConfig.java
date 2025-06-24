@@ -63,9 +63,11 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) // CSRF 비활성화 (세션사용 X : JWT 방식이므로 꺼도 됨)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(config -> config.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션사용 X (JWT 기반 인증이므로)
-
+                    
                 // 요청 경로별 권한 설정
                 .authorizeHttpRequests(auth -> auth
+                         // ① 프리플라이트(OPTIONS) 요청 허용
+                        .requestMatchers(HttpMethod.OPTIONS, "/api/**").permitAll()
                         .requestMatchers(
                                 "/api/v1/users/signup",
                                 "/api/v1/users/login",
