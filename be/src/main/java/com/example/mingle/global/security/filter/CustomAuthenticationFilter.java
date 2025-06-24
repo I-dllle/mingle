@@ -64,12 +64,6 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain)
             throws ServletException, IOException {
-                
-         // 0. CORS 프리플라이트(OPTIONS) 요청은 인증 필터를 타지 않도록
-        if (HttpMethod.OPTIONS.matches(request.getMethod())) {
-             filterChain.doFilter(request, response);
-            return;
-        }
 
         log.info("요청 URI: {}", request.getRequestURI());
 
