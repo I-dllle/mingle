@@ -66,8 +66,6 @@ public class SecurityConfig {
                     
                 // 요청 경로별 권한 설정
                 .authorizeHttpRequests(auth -> auth
-                         // ① 프리플라이트(OPTIONS) 요청 허용
-                        .requestMatchers(HttpMethod.OPTIONS, "/api/**").permitAll()
                         .requestMatchers(
                                 "/api/v1/users/signup",
                                 "/api/v1/users/login",
