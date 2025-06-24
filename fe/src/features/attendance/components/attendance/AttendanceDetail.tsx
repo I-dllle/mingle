@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { AttendanceDetail as AttendanceDetailType } from "@/features/attendance/types/attendance";
 import attendanceService from "@/features/attendance/services/attendanceService";
 import { AttendanceStatusBadge } from "./StatusBadge";
+import { formatHoursAndMinutes } from "../../utils/attendanceTimeUtils";
 
 interface AttendanceDetailProps {
   attendanceId: number | string;
@@ -158,7 +159,7 @@ export default function AttendanceDetail({
             <div>
               <p className="text-sm text-gray-500">일반 근무</p>
               <p className="font-medium text-gray-800">
-                {attendance.workingHours}시간
+                {formatHoursAndMinutes(attendance.workingHours)}
               </p>
             </div>
 
@@ -166,7 +167,7 @@ export default function AttendanceDetail({
               <div>
                 <p className="text-sm text-gray-500">연장 근무</p>
                 <p className="font-medium text-gray-800">
-                  {attendance.overtimeHours}시간
+                  {formatHoursAndMinutes(attendance.overtimeHours)}
                 </p>
               </div>
             )}

@@ -339,4 +339,36 @@ export const getAttendanceStatusText = (
   return status;
 };
 
+/**
+ * 소수점 형태의 시간을 'X시간 Y분' 형식으로 변환합니다.
+ * @param totalHours - 소수점 형태의 시간 (예: 5.5는 5시간 30분)
+ * @returns 'X시간 Y분' 형식의 문자열
+ */
+export const formatHoursAndMinutes = (totalHours: number): string => {
+  if (totalHours === null || totalHours === undefined || totalHours < 0) {
+    return "0분";
+  }
+
+  const hours = Math.floor(totalHours);
+  const minutes = Math.round((totalHours - hours) * 60);
+
+  if (minutes === 60) {
+    return `${hours + 1}시간`;
+  }
+
+  const hourString = hours > 0 ? `${hours}시간` : "";
+  const minuteString = minutes > 0 ? `${minutes}분` : "";
+
+  if (hourString && minuteString) {
+    return `${hourString} ${minuteString}`;
+  }
+  if (hourString) {
+    return hourString;
+  }
+  if (minuteString) {
+    return minuteString;
+  }
+  return "0분";
+};
+
 // 색상 관련 코드는 StatusBadge.tsx의 statusColorMap을 사용하거나 attendanceLabels.ts에서 가져와 사용

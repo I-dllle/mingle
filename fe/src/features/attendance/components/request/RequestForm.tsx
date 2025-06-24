@@ -188,12 +188,10 @@ export default function RequestForm({
         setError(validation.errorMessage || "유효하지 않은 요청입니다.");
         setIsSubmitting(false);
         return;
-      }
-
-      // 요청 데이터 준비
+      } // 요청 데이터 준비
       const requestData: AttendanceRequest = {
         userId: userId || 0, // userId가 없으면 서버에서 현재 사용자 ID 사용
-        leaveType: formData.type, // type -> leaveType으로 변경 (백엔드 DTO와 일치)
+        leaveType: formData.type, // 프론트엔드는 leaveType 필드를 사용하고, 서비스 레이어에서 백엔드에 맞게 변환
         startDate: formData.startDate,
         endDate: formData.endDate,
         startTime: formData.startTime,
