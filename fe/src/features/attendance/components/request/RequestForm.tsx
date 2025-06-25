@@ -406,14 +406,6 @@ export default function RequestForm({
           {/* 버튼 */}
           <div className="flex justify-end space-x-3 mt-6">
             <button
-              type="button"
-              onClick={onCancel || (() => router.back())}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              disabled={isSubmitting}
-            >
-              취소
-            </button>{" "}
-            <button
               type="submit"
               className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
               disabled={isSubmitting}

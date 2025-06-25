@@ -166,7 +166,9 @@ export default function ScheduleDetailModal({
                   <h3 className="text-sm font-medium text-gray-500 mb-1">
                     부서
                   </h3>
-                  <p className="text-gray-900">{schedule!.departmentId}</p>
+                  <p className="text-gray-900">
+                    {schedule!.departmentName || schedule!.departmentId}
+                  </p>
                 </div>
               )}
             </div>

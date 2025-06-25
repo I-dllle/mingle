@@ -204,13 +204,6 @@ export default function AttendanceDetail({
 
         {/* 버튼 그룹 */}
         <div className="border-t border-gray-200 pt-6 flex justify-end space-x-3">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-          >
-            뒤로 가기
-          </button>{" "}
           {isAdmin && (
             <button
               type="button"

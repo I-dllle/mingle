@@ -189,18 +189,37 @@ export default function RequestDetail({
     return (
       <div className="bg-yellow-50 p-4 rounded-md text-yellow-700">
         <p>요청 정보를 찾을 수 없습니다.</p>
-        <button
-          onClick={() => router.back()}
-          className="mt-2 text-sm text-purple-600 hover:text-purple-800"
-        >
-          뒤로 가기
-        </button>
       </div>
     );
   }
-  const isRequestEditable = request.approvalStatus === "PENDING" && !isAdmin;
-  const isRequestCancelable = request.approvalStatus === "PENDING" && !isAdmin;
-  const canApproveOrReject = request.approvalStatus === "PENDING" && isAdmin; // 날짜 형식화 - 더 안정적인 날짜 처리를 위해 개선
+
+  const now = new Date();
+  let isPastStartDate = false;
+
+  if (request.startDate) {
+    const startDateOnly = request.startDate.split("T")[0];
+    const startDateTimeString = `${startDateOnly}T${
+      request.startTime || "00:00:00"
+    }`;
+
+    try {
+      const requestStartDateTime = new Date(startDateTimeString);
+      if (!isNaN(requestStartDateTime.getTime())) {
+        isPastStartDate = requestStartDateTime < now;
+      }
+    } catch (e) {
+      console.error("Error parsing request start date/time", e);
+    }
+  }
+
+  const isPending = request.approvalStatus === "PENDING";
+  const isOwner = !isAdmin;
+
+  const isRequestEditable = isPending && isOwner && !isPastStartDate;
+  const isRequestCancelable = isPending && isOwner && !isPastStartDate;
+  const canApproveOrReject = isPending && isAdmin;
+
+  // 날짜 형식화 - 더 안정적인 날짜 처리를 위해 개선
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return "-";
 
@@ -278,14 +297,14 @@ export default function RequestDetail({
     }
   };
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold text-gray-800">휴가 요청 상세</h2>
+    <div className="bg-white rounded-2xl shadow-xl p-8">
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-2xl font-bold text-gray-800">휴가 요청 상세</h2>
         <ApprovalStatusBadge status={request.approvalStatus} />
       </div>
-      <div className="space-y-6">
+      <div className="space-y-8">
         {/* 요청 기본 정보 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
           {" "}
           <div>
             <p className="text-sm text-gray-500">요청 유형</p>
@@ -315,10 +334,10 @@ export default function RequestDetail({
           </div>
         </div>
         {/* 휴가 기간 */}
-        <div className="border-t border-gray-200 pt-4">
-          <h3 className="text-lg font-medium text-gray-800 mb-3">휴가 기간</h3>
+        <div className="border-t border-gray-200 pt-6">
+          <h3 className="text-lg font-medium text-gray-800 mb-4">휴가 기간</h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
             <div>
               <p className="text-sm text-gray-500">시작일</p>
               <p className="font-medium text-gray-800">
@@ -352,20 +371,20 @@ export default function RequestDetail({
           </div>
         </div>
         {/* 요청 사유 */}
-        <div className="border-t border-gray-200 pt-4">
-          <h3 className="text-lg font-medium text-gray-800 mb-3">요청 사유</h3>
-          <p className="text-gray-700 whitespace-pre-wrap bg-gray-50 p-3 rounded-md">
+        <div className="border-t border-gray-200 pt-6">
+          <h3 className="text-lg font-medium text-gray-800 mb-4">요청 사유</h3>
+          <p className="text-gray-700 whitespace-pre-wrap bg-gray-50 p-4 rounded-lg">
             {request.reason || "(사유 없음)"}
           </p>
         </div>
         {/* 승인/거부 정보 */}
         {request.approvalStatus !== "PENDING" && (
-          <div className="border-t border-gray-200 pt-4">
-            <h3 className="text-lg font-medium text-gray-800 mb-3">
+          <div className="border-t border-gray-200 pt-6">
+            <h3 className="text-lg font-medium text-gray-800 mb-4">
               승인/거부 정보
             </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
               <div>
                 <p className="text-sm text-gray-500">처리자</p>
                 <p className="font-medium text-gray-800">
@@ -394,8 +413,8 @@ export default function RequestDetail({
         )}
         {/* 첨부 파일 */}
         {request.attachments && request.attachments.length > 0 && (
-          <div className="border-t border-gray-200 pt-4">
-            <h3 className="text-lg font-medium text-gray-800 mb-3">
+          <div className="border-t border-gray-200 pt-6">
+            <h3 className="text-lg font-medium text-gray-800 mb-4">
               첨부 파일
             </h3>
             <div className="space-y-2">
@@ -429,22 +448,14 @@ export default function RequestDetail({
           </div>
         )}
         {/* 버튼 그룹 */}
-        <div className="border-t border-gray-200 pt-6 flex justify-end space-x-3">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-          >
-            뒤로 가기
-          </button>
-
+        <div className="border-t border-gray-200 pt-8 flex justify-end space-x-3">
           {isRequestEditable && (
             <button
               type="button"
               onClick={() =>
                 router.push(`/attendance/requests/${requestId}/edit`)
               }
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:bg-gray-400"
               disabled={processingAction}
             >
               수정하기
@@ -455,10 +466,10 @@ export default function RequestDetail({
             <button
               type="button"
               onClick={() => setShowCancelConfirm(true)}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-400"
               disabled={processingAction}
             >
-              {processingAction ? "처리중..." : "취소하기"}
+              {processingAction ? "처리중..." : "요청 취소"}
             </button>
           )}
 
@@ -467,16 +478,16 @@ export default function RequestDetail({
               <button
                 type="button"
                 onClick={() => setShowRejectModal(true)}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-400"
                 disabled={processingAction}
               >
-                {processingAction ? "처리중..." : "거부하기"}
+                {processingAction ? "처리중..." : "반려하기"}
               </button>
 
               <button
                 type="button"
                 onClick={() => setShowApproveModal(true)}
-                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400"
                 disabled={processingAction}
               >
                 {processingAction ? "처리중..." : "승인하기"}

@@ -207,21 +207,23 @@ export async function getScheduleById(id: number): Promise<Schedule> {
   const response = await apiClient<ScheduleResponse>(`${BASE}/${id}`, {
     method: "GET",
   });
-  const schedule = mapResponseToSchedule(response); // 변수로 먼저 받고
+  const schedule = mapResponseToSchedule(response);
 
-  // 🔥 DEPARTMENT 타입이면 부서 이름 추가
+  // DEPARTMENT 타입이면 부서 이름 추가
   if (
     schedule.scheduleType === ScheduleType.DEPARTMENT &&
     schedule.departmentId
   ) {
     try {
       const departments = await fetchAllDepartments();
-      const dept = departments.find((d) => d.id === schedule.departmentId);
-      if (dept) {
-        (schedule as any).departmentName = dept.departmentName;
+      const department = departments.find(
+        (d) => d.id === schedule.departmentId
+      );
+      if (department) {
+        schedule.departmentName = department.departmentName;
       }
     } catch (e) {
-      console.warn("부서 목록을 불러오지 못했습니다.", e);
+      console.error("부서 정보를 가져오는데 실패했습니다.", e);
     }
   }
   return schedule;
