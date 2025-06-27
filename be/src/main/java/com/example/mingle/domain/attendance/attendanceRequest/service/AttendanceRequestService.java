@@ -396,7 +396,7 @@ public class AttendanceRequestService {
         LocalDate current = LocalDate.now();
         int businessDays = 0;
 
-        while (businessDays < 3) {
+        while (businessDays < 1) {
             current = current.plusDays(1); // 다음 날로 이동
 
             // 주말(토,일)이 아닌 경우에만 영업일 카운트 증가
@@ -405,7 +405,7 @@ public class AttendanceRequestService {
                 businessDays++;
             }
         }
-        // 타겟 날짜가 3영업일 이후인지 확인
+        // 타겟 날짜가 1영업일 이후인지 확인
         return !targetDate.isBefore(current);
     }
 }

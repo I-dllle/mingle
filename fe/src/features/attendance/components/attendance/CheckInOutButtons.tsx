@@ -8,6 +8,7 @@ import attendanceService from "@/features/attendance/services/attendanceService"
 import {
   isLateCheckIn,
   isEarlyCheckOut,
+  canCheckOut,
 } from "@/features/attendance/utils/attendanceTimeUtils";
 
 interface CheckInOutButtonsProps {
@@ -100,7 +101,7 @@ export default function CheckInOutButtons({
 
   // 연장근무 보고 페이지로 이동
   const handleOvertimeReport = () => {
-    router.push("/attendance/request/overtime/report");
+    router.push("/attendance/requests/overtime");
   };
   // 근무 상태 요약
   const getStatusSummary = () => {
@@ -196,13 +197,14 @@ export default function CheckInOutButtons({
               출근하기
             </div>
           )}
-        </button>
-
+        </button>{" "}
         <button
           onClick={handleCheckOut}
-          disabled={isLoading || !hasCheckedIn || hasCheckedOut}
+          disabled={
+            isLoading || !hasCheckedIn || hasCheckedOut || !canCheckOut()
+          }
           className={`px-6 py-3 rounded-lg text-white font-medium transition-colors ${
-            !hasCheckedIn || hasCheckedOut
+            !hasCheckedIn || hasCheckedOut || !canCheckOut()
               ? "bg-gray-400 cursor-not-allowed"
               : "bg-purple-600 hover:bg-purple-700"
           }`}
@@ -233,6 +235,7 @@ export default function CheckInOutButtons({
             </div>
           ) : (
             <div className="flex items-center justify-center">
+              {" "}
               <svg
                 className="mr-2 h-5 w-5"
                 xmlns="http://www.w3.org/2000/svg"
@@ -247,7 +250,14 @@ export default function CheckInOutButtons({
                   d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m-6 0l3-3m0 0l3 3m-3-3v12"
                 />
               </svg>
-              퇴근하기
+              <span className="relative group">
+                퇴근하기
+                {!canCheckOut() && (
+                  <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-xs text-white rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    18:00 이후에 퇴근 가능합니다
+                  </span>
+                )}
+              </span>
             </div>
           )}
         </button>

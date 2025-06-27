@@ -8,9 +8,9 @@ spring:
     active: dev
     include: secret
   datasource:
-    url: jdbc:mysql://mingle-mysql:3306/mingle_dev
-    username: ll_local
-    password: mingleservice
+    url: jdbc:mysql://localhost:3307/mingle_dev
+    username: su
+    password: sususu1234
     driver-class-name: com.mysql.cj.jdbc.Driver
   data:
     redis:

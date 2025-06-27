@@ -17,11 +17,22 @@ const BASE_URL = "/attendance-requests";
 export const submitRequest = async (
   requestData: AttendanceRequest
 ): Promise<AttendanceRequestDetail> => {
+  // leaveType을 type으로 변환하여 서버에 전송 (백엔드 API 요구사항에 맞춤)
+  const serverRequestData = {
+    userId: requestData.userId,
+    type: requestData.leaveType,
+    startDate: requestData.startDate,
+    endDate: requestData.endDate,
+    startTime: requestData.startTime,
+    endTime: requestData.endTime,
+    reason: requestData.reason,
+  };
+
   // POST 요청 시 JSON.stringify
   const data = await apiClient<AttendanceRequestDetail>(BASE_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(requestData),
+    body: JSON.stringify(serverRequestData),
   });
   return data;
 };
@@ -112,13 +123,24 @@ export const updateRequest = async (
     }
     return response.json();
   } else {
+    // leaveType을 type으로 변환하여 서버에 전송 (백엔드 API 요구사항에 맞춤)
+    const serverRequestData = {
+      userId: requestData.userId,
+      type: requestData.leaveType,
+      startDate: requestData.startDate,
+      endDate: requestData.endDate,
+      startTime: requestData.startTime,
+      endTime: requestData.endTime,
+      reason: requestData.reason,
+    };
+
     // 일반 JSON 객체
     const data = await apiClient<AttendanceRequestDetail>(
       `${BASE_URL}/${requestId}`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestData),
+        body: JSON.stringify(serverRequestData),
       }
     );
     return data;

@@ -77,7 +77,7 @@ export interface OvertimeRequest {
 
 export interface AttendanceRequest {
   userId: number;
-  type: LeaveType;
+  leaveType: LeaveType;
   startDate: string;
   endDate: string;
   startTime: string;
@@ -85,18 +85,24 @@ export interface AttendanceRequest {
   reason: string;
 }
 
-export interface AttendanceRequestDetail extends AttendanceRequest {
+export interface AttendanceRequestDetail {
   id: number;
+  userId: number;
   userName?: string;
   nickName?: string;
   departmentName?: string;
+  leaveType: LeaveType;
+  startDate: string;
+  endDate: string;
+  startTime: string;
+  endTime?: string;
+  reason: string;
   approvalStatus: ApprovalStatus;
   approvalComment?: string;
   approverId?: number;
   approverName?: string;
   createdAt?: string;
   approvedAt?: string;
-  rejectReason?: string;
   attendances: AttendanceSummary[];
 }
 

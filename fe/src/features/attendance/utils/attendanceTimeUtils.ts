@@ -30,6 +30,15 @@ export const isEarlyCheckOut = (checkOutTime: Date | string): boolean => {
 };
 
 /**
+ * 현재 시간이 퇴근 가능 시간(18:00)인지 확인
+ */
+export const canCheckOut = (): boolean => {
+  const now = new Date();
+  const currentTime = formatTime(now);
+  return currentTime >= "18:00";
+};
+
+/**
  * 야근 시간 계산 (18:00 이후 근무 시간)
  */
 export const calculateOvertimeHours = (
@@ -221,11 +230,11 @@ export const validateLeaveRequest = (
     case "BEREAVEMENT":
     case "ANNUAL":
     case "SICK":
-      // 휴가 유형들은 3영업일 전에 신청해야 함
-      if (!isAtLeastBusinessDaysAhead(start, 3)) {
+      // 휴가 유형들은 1영업일 전에 신청해야 함
+      if (!isAtLeastBusinessDaysAhead(start, 1)) {
         return {
           isValid: false,
-          errorMessage: "휴가는 최소 3영업일 전에 신청해야 합니다.",
+          errorMessage: "휴가는 최소 1영업일 전에 신청해야 합니다.",
         };
       }
       break;
@@ -328,6 +337,38 @@ export const getAttendanceStatusText = (
 
   // fallback: 기본 레이블
   return status;
+};
+
+/**
+ * 소수점 형태의 시간을 'X시간 Y분' 형식으로 변환합니다.
+ * @param totalHours - 소수점 형태의 시간 (예: 5.5는 5시간 30분)
+ * @returns 'X시간 Y분' 형식의 문자열
+ */
+export const formatHoursAndMinutes = (totalHours: number): string => {
+  if (totalHours === null || totalHours === undefined || totalHours < 0) {
+    return "0분";
+  }
+
+  const hours = Math.floor(totalHours);
+  const minutes = Math.round((totalHours - hours) * 60);
+
+  if (minutes === 60) {
+    return `${hours + 1}시간`;
+  }
+
+  const hourString = hours > 0 ? `${hours}시간` : "";
+  const minuteString = minutes > 0 ? `${minutes}분` : "";
+
+  if (hourString && minuteString) {
+    return `${hourString} ${minuteString}`;
+  }
+  if (hourString) {
+    return hourString;
+  }
+  if (minuteString) {
+    return minuteString;
+  }
+  return "0분";
 };
 
 // 색상 관련 코드는 StatusBadge.tsx의 statusColorMap을 사용하거나 attendanceLabels.ts에서 가져와 사용
