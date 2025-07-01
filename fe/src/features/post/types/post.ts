@@ -106,6 +106,7 @@ export interface PostEditorProps {
     noticeType?: NoticeType;
     businessDocumentCategory?: BusinessDocumentCategory;
   }) => void;
+  postTypeId?: number | string;
 }
 
 export interface PostListProps {

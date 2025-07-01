@@ -122,7 +122,7 @@ export default function PostWritePage() {
         {/* Main Content */}
         <div className="bg-white shadow-xl rounded-lg overflow-hidden">
           <div className="px-6 py-8 sm:px-8 sm:py-10">
-            <PostEditor onSubmit={handleSubmit} />
+            <PostEditor onSubmit={handleSubmit} postTypeId={postTypeId || undefined} />
           </div>
         </div>
 

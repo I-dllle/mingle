@@ -26,6 +26,7 @@ export default function ActivityPlanningPage() {
   console.log("Available menus:", menus);
   console.log("Current menu:", currentMenu);
   console.log("Looking for path:", "/activity-planning");
+  console.log("Current pathname:", window.location.pathname);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchInput, setSearchInput] = useState("");

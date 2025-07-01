@@ -10,7 +10,7 @@ export const departmentMenus: Record<
 > = {
   "Creative Studio": [
     {
-      id: 4, // 백엔드 PostType 테이블의 실제 ID 사용 (menu_id=12, department_id=1)
+      id: 4, // Creative Studio 공지사항 메뉴 ID
       name: "공지사항",
       icon: "document",
       path: "/creative-notices",
@@ -36,7 +36,7 @@ export const departmentMenus: Record<
   ],
   "Planning & A&R": [
     {
-      id: 4, // 백엔드 PostType 테이블의 실제 ID 사용 (menu_id=12, department_id=1)
+      id: 4, // Planning & A&R 공지사항 메뉴 ID (백엔드 공통 메뉴와 일치)
       name: "공지사항",
       icon: "document",
       path: "/planning-notices",
@@ -62,7 +62,7 @@ export const departmentMenus: Record<
   ],
   "Marketing & PR": [
     {
-      id: 4, // 백엔드 PostType 테이블의 실제 ID 사용 (menu_id=12, department_id=1)
+      id: 4, // Marketing & PR 공지사항 메뉴 ID (백엔드 공통 메뉴와 일치)
       name: "공지사항",
       icon: "document",
       path: "/marketing-notices",
@@ -82,7 +82,7 @@ export const departmentMenus: Record<
   ],
   "Finance & Legal": [
     {
-      id: 4, // 백엔드 PostType 테이블의 실제 ID 사용 (menu_id=12, department_id=1)
+      id: 4, // Finance & Legal 공지사항 메뉴 ID (백엔드 공통 메뉴와 일치)
       name: "공지사항",
       icon: "document",
       path: "/finance-notices",
@@ -153,7 +153,7 @@ export const departmentMenus: Record<
   ],
   "Artist & Manager": [
     {
-      id: 4, // 백엔드 PostType 테이블의 실제 ID 사용 (menu_id=12, department_id=1)
+      id: 4, // Artist & Manager 공지사항 메뉴 ID (백엔드 공통 메뉴와 일치)
       name: "공지사항",
       icon: "document",
       path: "/artist-notices",

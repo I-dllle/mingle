@@ -26,6 +26,7 @@ export default function ArtistsPage() {
   console.log("Available menus:", menus);
   console.log("Current menu:", currentMenu);
   console.log("Looking for path:", "/artists");
+  console.log("Current pathname:", window.location.pathname);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchInput, setSearchInput] = useState("");

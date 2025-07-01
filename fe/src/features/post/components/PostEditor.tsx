@@ -16,8 +16,13 @@ import {
   PlusIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import {
+  getBoardType,
+  getBoardTypeConfig,
+  BoardType,
+} from "@/utils/boardTypeUtils";
 
-export default function PostEditor({ onSubmit }: PostEditorProps) {
+export default function PostEditor({ onSubmit, postTypeId }: PostEditorProps) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [tags, setTags] = useState<string[]>([]);
@@ -29,6 +34,10 @@ export default function PostEditor({ onSubmit }: PostEditorProps) {
   const [businessDocumentCategory, setBusinessDocumentCategory] = useState<
     BusinessDocumentCategory | undefined
   >(undefined);
+
+  // 게시판 타입 설정
+  const boardType = postTypeId ? getBoardType(postTypeId) : BoardType.GENERAL;
+  const boardConfig = getBoardTypeConfig(boardType);
 
   useEffect(() => {
     const draft = getDraftFromLocalStorage();
@@ -60,6 +69,18 @@ export default function PostEditor({ onSubmit }: PostEditorProps) {
   };
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // 게시판 타입에 따른 필수 필드 검증
+    if (boardConfig.showNoticeType && !noticeType) {
+      alert("공지사항 타입을 선택해주세요.");
+      return;
+    }
+    
+    if (boardConfig.showBusinessDocumentCategory && !businessDocumentCategory) {
+      alert("비즈니스 문서 카테고리를 선택해주세요.");
+      return;
+    }
+    
     onSubmit({
       title,
       content,
@@ -86,7 +107,7 @@ export default function PostEditor({ onSubmit }: PostEditorProps) {
             </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900">
-                새 게시글 작성
+                {boardConfig.title}
               </h2>
               <p className="text-sm text-gray-500 mt-1">
                 게시글 정보를 입력해주세요
@@ -118,53 +139,65 @@ export default function PostEditor({ onSubmit }: PostEditorProps) {
           </div>
 
           {/* Notice Type and Category in Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {" "}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                공지사항 타입
-              </label>
-              <select
-                value={noticeType || ""}
-                onChange={(e) =>
-                  setNoticeType(
-                    e.target.value ? (e.target.value as NoticeType) : undefined
-                  )
-                }
-                className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white text-gray-900"
-              >
-                <option value="">선택하지 않음</option>
-                <option value={NoticeType.GENERAL_NOTICE}>전체 공지</option>
-                <option value={NoticeType.DEPARTMENT_NOTICE}>
-                  부서별 공지
-                </option>
-                <option value={NoticeType.COMPANY_NEWS}>회사 소식</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                비즈니스 문서 카테고리
-              </label>
-              <select
-                value={businessDocumentCategory || ""}
-                onChange={(e) =>
-                  setBusinessDocumentCategory(
-                    e.target.value
-                      ? (e.target.value as BusinessDocumentCategory)
-                      : undefined
-                  )
-                }
-                className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white text-gray-900"
-              >
-                <option value="">선택하지 않음</option>
-                <option value={BusinessDocumentCategory.MEETING_MINUTES}>
-                  회의록
-                </option>
-                <option value={BusinessDocumentCategory.RESOURCE}>
-                  업무문서
-                </option>
-              </select>
-            </div>
+          <div className={`grid gap-6 ${
+            boardConfig.showNoticeType && boardConfig.showBusinessDocumentCategory 
+              ? 'grid-cols-1 lg:grid-cols-2' 
+              : 'grid-cols-1'
+          }`}>
+            {/* 공지사항 타입 선택란 - 공지사항 게시판에서만 표시 */}
+            {boardConfig.showNoticeType && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  공지사항 타입 <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={noticeType || ""}
+                  onChange={(e) =>
+                    setNoticeType(
+                      e.target.value ? (e.target.value as NoticeType) : undefined
+                    )
+                  }
+                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white text-gray-900"
+                  required
+                >
+                  <option value="">공지사항 타입을 선택하세요</option>
+                  <option value={NoticeType.GENERAL_NOTICE}>전체 공지</option>
+                  <option value={NoticeType.DEPARTMENT_NOTICE}>
+                    부서별 공지
+                  </option>
+                  <option value={NoticeType.COMPANY_NEWS}>회사 소식</option>
+                </select>
+              </div>
+            )}
+            
+            {/* 비즈니스 문서 카테고리 선택란 - 업무자료 게시판에서만 표시 */}
+            {boardConfig.showBusinessDocumentCategory && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  비즈니스 문서 카테고리 <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={businessDocumentCategory || ""}
+                  onChange={(e) =>
+                    setBusinessDocumentCategory(
+                      e.target.value
+                        ? (e.target.value as BusinessDocumentCategory)
+                        : undefined
+                    )
+                  }
+                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white text-gray-900"
+                  required
+                >
+                  <option value="">카테고리를 선택하세요</option>
+                  <option value={BusinessDocumentCategory.MEETING_MINUTES}>
+                    회의록
+                  </option>
+                  <option value={BusinessDocumentCategory.RESOURCE}>
+                    업무문서
+                  </option>
+                </select>
+              </div>
+            )}
           </div>
         </div>
 

@@ -214,83 +214,44 @@ export default function CreativeNoticesDetailPage() {
         {/* 메인 콘텐츠 */}
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden">
           <div className="p-8">
-            {/* 헤더 정보 */}
-            <div className="mb-8 pb-6 border-b border-gray-200">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-4 mb-3">
-                    <span className="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full bg-blue-100 text-blue-800">
-                      <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                      활동보고서
-                    </span>
-                    <span className="text-sm text-gray-500">ID: {post.postId}</span>
-                  </div>
-                  
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={editTitle}
-                      onChange={(e) => setEditTitle(e.target.value)}
-                      className="text-3xl font-bold text-gray-900 w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="제목을 입력하세요"
-                    />
-                  ) : (
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{post.title}</h1>
-                  )}
-                </div>
-              </div>              {/* 메타 정보 */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4">
-                  <label className="text-xs font-semibold text-blue-600 uppercase tracking-wider">
-                    작성자
-                  </label>
-                  <p className="text-lg font-semibold text-gray-900 mt-2">{post.writerName}</p>
-                  <p className="text-sm text-blue-600/70 mt-1">ID: {post.userId}</p>
-                </div>
-                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4">
-                  <label className="text-xs font-semibold text-green-600 uppercase tracking-wider">
-                    작성일
-                  </label>
-                  <p className="text-base font-semibold text-gray-900 mt-2">
-                    {new Date(post.createdAt).toLocaleDateString("ko-KR", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric"
-                    })}
-                  </p>
-                  <p className="text-sm text-green-600/70 mt-1">
-                    {new Date(post.createdAt).toLocaleTimeString("ko-KR", {
-                      hour: "2-digit",
-                      minute: "2-digit"
-                    })}
-                  </p>
-                </div>
-                <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4">
-                  <label className="text-xs font-semibold text-purple-600 uppercase tracking-wider">
-                    수정일
-                  </label>
-                  <p className="text-base font-semibold text-gray-900 mt-2">
-                    {new Date(post.updatedAt).toLocaleDateString("ko-KR", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric"
-                    })}
-                  </p>
-                  <p className="text-sm text-purple-600/70 mt-1">
-                    {new Date(post.updatedAt).toLocaleTimeString("ko-KR", {
-                      hour: "2-digit",
-                      minute: "2-digit"
-                    })}
-                  </p>
-                </div>
-              </div>
+            {/* 제목 - 최상단 */}
+            {isEditing ? (
+              <input
+                type="text"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                className="text-3xl font-bold text-gray-900 w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+                placeholder="제목을 입력하세요"
+              />
+            ) : (
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">{post.title}</h1>
+            )}
+
+            {/* 메타 정보 - 작은 글씨로 */}
+            <div className="flex items-center gap-4 text-sm text-gray-500 mb-6 pb-4 border-b border-gray-200">
+              <span>작성자: {post.writerName}</span>
+              <span>•</span>
+              <span>작성일: {new Date(post.createdAt).toLocaleDateString("ko-KR", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit"
+              })} {new Date(post.createdAt).toLocaleTimeString("ko-KR", {
+                hour: "2-digit",
+                minute: "2-digit"
+              })}</span>
+              <span>•</span>
+              <span>수정일: {new Date(post.updatedAt).toLocaleDateString("ko-KR", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit"
+              })} {new Date(post.updatedAt).toLocaleTimeString("ko-KR", {
+                hour: "2-digit",
+                minute: "2-digit"
+              })}</span>
             </div>
 
             {/* 콘텐츠 영역 */}
             <div className="mb-8">
-              <label className="block text-sm font-semibold text-gray-700 mb-4">
-                내용
-              </label>
               {isEditing ? (
                 <textarea
                   value={editContent}
@@ -355,17 +316,7 @@ export default function CreativeNoticesDetailPage() {
           </div>
         </div>
 
-        {/* 하단 부가 정보 */}
-        <div className="mt-6 bg-white/60 backdrop-blur-sm rounded-xl shadow-md p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-gray-600">
-            <div>
-              <span className="font-medium">부서:</span> {post.departmentName}
-            </div>
-            <div>
-              <span className="font-medium">카테고리:</span> {post.postMenuName}
-            </div>
-          </div>
-        </div>
+
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import { useDepartment } from "@/context/DepartmentContext";
 import { departmentMenus } from "@/context/departmentMenus";
 import { getDepartmentIdByName } from "@/utils/departmentUtils";
 import { postService } from "@/features/post/services/postService";
+import { extractTags, removeTagsFromTitle } from "@/features/post/services/tagService";
 import { FiSearch } from "react-icons/fi";
 import { IoChevronDown } from "react-icons/io5";
 
@@ -57,8 +58,11 @@ export default function MarketingNoticesPage() {
     setLoading(true);
     try {
       const deptId = getDepartmentIdByName(userDepartment);
-      // 마케팅 부서 공지사항 메뉴 ID로 설정 (현재 메뉴 ID 사용)
-      const response = await postService.getPostsByMenu(deptId, 4);
+      // 현재 메뉴 ID 사용
+      const response = await postService.getPostsByMenu(
+        deptId,
+        currentMenu?.id || 4
+      );
       setPosts(response);
       // 새로운 API는 페이지네이션이 없으므로 전체를 한 번에 가져옴
       setTotalPages(1);
@@ -248,47 +252,66 @@ export default function MarketingNoticesPage() {
                   </td>
                 </tr>
               ) : (
-                paginatedPosts.map((post) => (
-                  <tr
-                    key={post.postId}
-                    className="hover:bg-gray-50 cursor-pointer transition-colors duration-150"
-                    onClick={(e) => {
-                      console.log("테이블 행 클릭됨");
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handlePostClick(post.postId);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        console.log("키보드 이벤트 발생");
+                paginatedPosts.map((post) => {
+                  const tags = extractTags(post.title);
+                  const cleanTitle = removeTagsFromTitle(post.title);
+                  
+                  return (
+                    <tr
+                      key={post.postId}
+                      className="hover:bg-gray-50 cursor-pointer transition-colors duration-150"
+                      onClick={(e) => {
+                        console.log("테이블 행 클릭됨");
                         e.preventDefault();
+                        e.stopPropagation();
                         handlePostClick(post.postId);
-                      }
-                    }}
-                    tabIndex={0}
-                    role="button"
-                    aria-label={`${post.title} 상세보기`}
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex gap-2 items-center">
-                        <span className="text-gray-900 hover:text-blue-600 font-medium">
-                          {post.title}
-                        </span>
-                        {post.imageUrl && post.imageUrl.length > 0 && (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
-                            📷 {post.imageUrl.length}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-700">
-                      {post.writerName}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                      {formatDate(post.createdAt)}
-                    </td>
-                  </tr>
-                ))
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          console.log("키보드 이벤트 발생");
+                          e.preventDefault();
+                          handlePostClick(post.postId);
+                        }
+                      }}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={`${cleanTitle} 상세보기`}
+                    >
+                      <td className="px-6 py-4">
+                        <div className="space-y-2">
+                          <div className="flex gap-2 items-center">
+                            <span className="text-gray-900 hover:text-blue-600 font-medium">
+                              {cleanTitle}
+                            </span>
+                            {post.imageUrl && post.imageUrl.length > 0 && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                                📷 {post.imageUrl.length}
+                              </span>
+                            )}
+                          </div>
+                          {tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {tags.map((tag) => (
+                                <span
+                                  key={tag}
+                                  className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-800"
+                                >
+                                  #{tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-700">
+                        {post.writerName}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-500">
+                        {formatDate(post.createdAt)}
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

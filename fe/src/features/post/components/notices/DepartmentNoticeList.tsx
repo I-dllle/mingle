@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { boardService } from "../../services/boardService";
 import { getDepartmentIdByName } from "@/utils/departmentUtils";
+import { postService } from "../../services/postService";
+import { extractTags, removeTagsFromTitle } from "../../services/tagService";
 import type { PostResponseDto } from "../../types/post";
 
 type DepartmentNotice = {
@@ -43,7 +44,8 @@ export default function DepartmentNoticeList({
     try {
       const departmentId = getDepartmentIdByName(selectedTab);
       if (departmentId) {
-        const data = await boardService.getDepartmentNotices(departmentId);
+        // 모든 부서가 동일한 공지사항 메뉴 ID(4)를 사용
+        const data = await postService.getPostsByMenu(departmentId, 4);
         setApiNotices(data);
       }
     } catch (error) {
@@ -95,19 +97,38 @@ export default function DepartmentNoticeList({
                 {selectedTab} 공지사항이 없습니다.
               </li>
             ) : (
-              apiNotices.map((notice) => (
-                <li key={notice.postId}>
-                  <Link
-                    href={`/board/common/notices/${notice.postId}`}
-                    className="py-2 flex justify-between items-center cursor-pointer hover:bg-gray-50 block w-full"
-                  >
-                    <span className="text-base">{notice.title}</span>
-                    <span className="text-xs text-gray-400">
-                      {formatDate(notice.createdAt)}
-                    </span>
-                  </Link>
-                </li>
-              ))
+              apiNotices.map((notice) => {
+                const tags = extractTags(notice.title);
+                const cleanTitle = removeTagsFromTitle(notice.title);
+                
+                return (
+                  <li key={notice.postId}>
+                    <Link
+                      href={`/board/common/notices/${notice.postId}`}
+                      className="py-2 flex justify-between items-center cursor-pointer hover:bg-gray-50 block w-full"
+                    >
+                      <div className="flex-1">
+                        <span className="text-base">{cleanTitle}</span>
+                        {tags.length > 0 && (
+                          <div className="mt-1 flex flex-wrap gap-1">
+                            {tags.map((tag) => (
+                              <span
+                                key={tag}
+                                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-800"
+                              >
+                                #{tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-xs text-gray-400 ml-4">
+                        {formatDate(notice.createdAt)}
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })
             )
           ) : (
             notices?.[selectedTab]?.map((notice) => (
