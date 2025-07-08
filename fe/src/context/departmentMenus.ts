@@ -128,12 +128,18 @@ export const departmentMenus: Record<
     },
     {
       id: 23,
-      name: "근태관리",
+      name: "근태 관리",
       icon: "clock",
       path: "/panel/attendance",
     },
     {
       id: 24,
+      name: "휴가 요청 관리",
+      icon: "clock",
+      path: "/panel/requests",
+    },
+    {
+      id: 25,
       name: "수익/정산관리",
       icon: "money",
       path: "/adminRevenue",

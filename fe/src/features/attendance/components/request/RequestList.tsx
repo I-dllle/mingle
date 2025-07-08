@@ -8,51 +8,19 @@ import {
   ApprovalStatus,
   LeaveType,
 } from "@/features/attendance/types/attendanceCommonTypes";
-import { ApprovalStatusBadge } from "../attendance/StatusBadge";
-import {
-  leaveTypeLabels,
-  statusBackgroundColorMap,
-} from "@/features/attendance/utils/attendanceLabels";
-
-// LeaveType에 따른 배경색 매핑
-const leaveTypeColorMap: Record<LeaveType, string> = {
-  ANNUAL: "bg-indigo-100 text-indigo-800",
-  SICK: "bg-purple-100 text-purple-800",
-  HALF_DAY_AM: "bg-pink-100 text-pink-800",
-  HALF_DAY_PM: "bg-pink-100 text-pink-800",
-  OFFICIAL: "bg-sky-100 text-sky-800",
-  BUSINESS_TRIP: "bg-teal-100 text-teal-800",
-  MARRIAGE: "bg-green-100 text-green-800",
-  BEREAVEMENT: "bg-gray-100 text-gray-800",
-  PARENTAL: "bg-blue-100 text-blue-800",
-  EARLY_LEAVE: "bg-orange-100 text-orange-800",
-  OTHER: "bg-gray-100 text-gray-800",
-};
+import { ApprovalStatusBadge, LeaveTypeBadge } from "../attendance/StatusBadge";
+import { leaveTypeLabels } from "@/features/attendance/utils/attendanceLabels";
 
 // 날짜 포맷팅 함수
 const formatDate = (dateString: string | null | undefined) => {
   if (!dateString) return "-";
 
   try {
-    // yyyy-MM-dd 포맷 (백엔드 LocalDate 객체에서 오는 형식)
-    if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-      const [year, month, day] = dateString.split("-").map(Number);
-
-      // 날짜 객체 생성 (월은 0부터 시작)
-      return new Date(year, month - 1, day).toLocaleDateString("ko-KR", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-    }
-
-    // ISO 포맷 또는 다른 형식의 날짜 스트링
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) {
-      console.warn(`Invalid date format: ${dateString}`);
-      return dateString;
+    // getTime()이 0이거나 유효하지 않은 날짜인 경우 '-' 반환
+    if (isNaN(date.getTime()) || date.getTime() === 0) {
+      return "-";
     }
-
     return date.toLocaleDateString("ko-KR", {
       year: "numeric",
       month: "long",
@@ -60,7 +28,7 @@ const formatDate = (dateString: string | null | undefined) => {
     });
   } catch (e) {
     console.error("날짜 변환 에러:", e);
-    return dateString;
+    return "-";
   }
 };
 
@@ -87,14 +55,34 @@ export default function RequestList({
       setLoading(true);
       setError(null);
 
-      const fetchFunction = isAdmin
-        ? attendanceRequestService.getAllRequests
-        : attendanceRequestService.getUserRequests;
+      let response;
+      if (isAdmin) {
+        // 관리자용 API 호출
+        response = await attendanceRequestService.getAllRequests(
+          status,
+          yearMonth,
+          currentPage,
+          10
+        );
+      } else {
+        // 일반 사용자용 API 호출
+        response = await attendanceRequestService.getUserRequests(
+          status,
+          yearMonth,
+          currentPage,
+          10
+        );
+      }
 
-      const response = await fetchFunction(status, yearMonth, currentPage, 10);
+      console.log(
+        `[${
+          isAdmin ? "Admin" : "User"
+        }] API Response for ${yearMonth} (${status}):`,
+        response
+      );
 
+      // 두 API 모두 동일한 페이지네이션 구조를 반환한다고 가정
       if (response && response.content) {
-        console.log("첫번째 요청 항목:", response.content[0]);
         setRequests(response.content);
         setTotalPages(response.totalPages);
       } else {
@@ -142,10 +130,10 @@ export default function RequestList({
         <div className="flex space-x-2 mt-2 sm:mt-0">
           {!isAdmin && (
             <Link
-              href="/attendance/request/new"
+              href="/attendance/requests/new"
               className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
             >
-              새 요청
+              새 요청 신청하기
             </Link>
           )}
         </div>
@@ -218,48 +206,57 @@ export default function RequestList({
               </tr>
             </thead>
             <tbody>
-              {requests.map((request, index) => (
-                <tr
-                  key={request.id}
-                  className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
-                >
-                  <td className="px-4 py-3 text-center">{request.id}</td>
-                  {isAdmin && (
-                    <td className="px-4 py-3">{request.userName}</td>
-                  )}{" "}
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
-                        leaveTypeColorMap[request.leaveType as LeaveType]
-                      }`}
-                    >
-                      {leaveTypeLabels[request.leaveType as LeaveType] ||
-                        request.leaveType}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    {formatDate(request.startDate)}
-                    {request.endDate !== request.startDate &&
-                      ` ~ ${formatDate(request.endDate)}`}
-                  </td>
-                  <td className="px-4 py-3">
-                    <ApprovalStatusBadge status={request.approvalStatus} />
-                  </td>
-                  <td className="px-4 py-3">{formatDate(request.createdAt)}</td>
-                  <td className="px-4 py-3">
-                    <Link
-                      href={
-                        isAdmin
-                          ? `/panel/attendance/requests/${request.id}`
-                          : `/attendance/requests/${request.id}`
-                      }
-                      className="text-purple-600 hover:text-purple-800 hover:underline"
-                    >
-                      상세보기
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+              {requests.map((request, index) => {
+                const formattedStartDate = formatDate(request.startDate);
+                const formattedEndDate = formatDate(request.endDate);
+
+                return (
+                  <tr
+                    key={request.id}
+                    className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                  >
+                    <td className="px-4 py-3 text-center">
+                      {(currentPage - 1) * 10 + index + 1}
+                    </td>
+                    {isAdmin && (
+                      <td className="px-4 py-3 text-center">
+                        {request.nickname || "-"}
+                      </td>
+                    )}
+                    <td className="px-4 py-3 text-center">
+                      {request.leaveType ? (
+                        <LeaveTypeBadge leaveType={request.leaveType} />
+                      ) : (
+                        "-"
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      {formattedStartDate}
+                      {formattedEndDate !== "-" &&
+                        formattedStartDate !== formattedEndDate &&
+                        ` ~ ${formattedEndDate}`}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <ApprovalStatusBadge status={request.approvalStatus} />
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      {formatDate(request.createdAt)}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <Link
+                        href={
+                          isAdmin
+                            ? `/panel/attendance/requests/${request.id}`
+                            : `/attendance/requests/${request.id}`
+                        }
+                        className="text-purple-600 hover:text-purple-800 hover:underline"
+                      >
+                        상세보기
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

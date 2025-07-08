@@ -51,6 +51,7 @@ public class AttendanceMapper {
         return WorkHoursChartResponseDto.builder()
                 .date(attendance.getDate())
                 .workingHours(attendance.getWorkingHours())
+                .overtimeHours(attendance.getOvertimeHours())
                 .build();
     }
 
@@ -67,7 +68,7 @@ public class AttendanceMapper {
 
         return AttendanceRequestDetailDto.builder()
                 .id(attendanceRequest.getId())
-                .userId(attendanceRequest.getUser().getId())
+                .nickname(attendanceRequest.getUser().getNickname())
                 .leaveType(attendanceRequest.getLeaveType())
                 .startDate(attendanceRequest.getStartDate())
                 .endDate(attendanceRequest.getEndDate())
@@ -77,6 +78,8 @@ public class AttendanceMapper {
                 .approvalStatus(attendanceRequest.getApprovalStatus())
                 .approvalComment(attendanceRequest.getApprovalComment())
                 .approverId(attendanceRequest.getApprover() != null ? attendanceRequest.getApprover().getId() : null)
+                .approverName(attendanceRequest.getApprover().getName())
+                .approverNickname(attendanceRequest.getApprover().getNickname())
                 .approvedAt(attendanceRequest.getApprovedAt())
                 .attendances(summary)
                 .createdAt(attendanceRequest.getCreatedAt())

@@ -224,7 +224,7 @@ export default function RecentRecordsTable({
                   >
                     {isAdmin && (
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div>{adminRecord.memberName}</div>
+                        <div>{adminRecord.nickName}</div>
                         <div className="text-xs text-gray-500">
                           {adminRecord.departmentName}
                         </div>

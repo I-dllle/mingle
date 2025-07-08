@@ -88,8 +88,7 @@ export interface AttendanceRequest {
 export interface AttendanceRequestDetail {
   id: number;
   userId: number;
-  userName?: string;
-  nickName?: string;
+  nickname?: string;
   departmentName?: string;
   leaveType: LeaveType;
   startDate: string;
@@ -116,4 +115,15 @@ export interface AttendanceSummary {
 export interface ApprovalAction {
   comment?: string;
   approvalStatus: ApprovalStatus;
+}
+
+// 차트 데이터 타입 정의
+export interface DepartmentUsage {
+  departmentName: string;
+  count: number;
+}
+
+export interface LeaveTypeUsage {
+  leaveType: string;
+  count: number;
 }

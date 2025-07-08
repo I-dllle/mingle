@@ -1,118 +1,826 @@
-/* 파일: features/attendance/styles/chart.module.css */
+/* 관리자 대시보드 차트 모던 스타일 */
 
+/* 차트 컨테이너 */
 .chartWrapper {
   height: 320px;
   position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+/* 부서별 차트 스타일 */
+.departmentChart {
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.05) 0%,
+    rgba(139, 92, 246, 0.05) 100%
+  );
+}
+
+/* 유형별 차트 스타일 */
+.leaveTypeChart {
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.05) 0%,
+    rgba(6, 182, 212, 0.05) 100%
+  );
+}
+
+/* 차트 제목 */
+.chartTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.chartTitle::before {
+  content: "";
+  width: 12px;
+  height: 12px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+/* 로딩 상태 */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 1rem;
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #6366f1;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loadingText {
+  color: #64748b;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* 빈 데이터 상태 */
+.emptyContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 1rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.emptyIcon {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.emptyIcon::before {
+  content: "📊";
+  font-size: 24px;
+  opacity: 0.5;
+}
+
+.emptyMessage {
+  color: #64748b;
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.emptyDescription {
+  color: #94a3b8;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+/* 바 차트 커스텀 스타일 */
+.barChart .recharts-bar-rectangles {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.barChart .recharts-cartesian-axis-tick {
+  font-size: 12px;
+  fill: #64748b;
+}
+
+.barChart .recharts-cartesian-grid-horizontal line,
+.barChart .recharts-cartesian-grid-vertical line {
+  stroke: #e2e8f0;
+  stroke-dasharray: 3 3;
+}
+
+/* 파이 차트 커스텀 스타일 */
+.pieChart .recharts-pie-sector {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
   transition: all 0.3s ease;
 }
 
-.barContainer {
-  position: relative;
-  height: 100%;
-  width: 100%;
+.pieChart .recharts-pie-sector:hover {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+  transform: scale(1.02);
+}
+
+.pieChart .recharts-legend-wrapper {
+  font-size: 12px;
+}
+
+.pieChart .recharts-legend-item-text {
+  color: #475569 !important;
+  font-weight: 500;
+}
+
+/* 툴팁 스타일 */
+.customTooltip {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.1) !important;
+  backdrop-filter: blur(10px);
+  padding: 0.75rem 1rem !important;
+}
+
+.customTooltip .recharts-tooltip-label {
+  color: #1e293b !important;
+  font-weight: 600 !important;
+  margin-bottom: 0.25rem !important;
+}
+
+.customTooltip .recharts-tooltip-item {
+  color: #475569 !important;
+  font-weight: 500 !important;
+}
+
+/* 일반 사용자 근태 차트 스타일 */
+
+/* 기본 사용자 차트 래퍼 */
+.recordChartWrapper {
+  background: #ffffff;
+  border: 1px solid rgba(139, 92, 246, 0.1);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.recordChartWrapper:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(139, 92, 246, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 차트 헤더 */
+.recordChartHeader {
   display: flex;
-  align-items: flex-end;
   justify-content: space-between;
-  padding-bottom: 30px;
-}
-
-.bar {
-  transition: height 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-  border-radius: 4px 4px 0 0;
-  min-height: 4px;
-  position: absolute;
-  bottom: 0;
-}
-
-.barToday {
-  box-shadow: 0 0 8px rgba(124, 58, 237, 0.5);
-}
-
-.barWeekend {
-  opacity: 0.7;
-}
-
-.barOvertime {
-  position: relative;
-}
-
-.barOvertime::after {
-  content: "";
-  position: absolute;
-  top: -4px;
-  left: 0;
-  width: 100%;
-  height: 4px;
-  background-color: #ef4444;
-  border-radius: 2px 2px 0 0;
-}
-
-.averageLine {
-  position: absolute;
-  width: 100%;
-  border-top: 2px dashed #ef4444;
-  z-index: 10;
-  transition: top 0.5s ease;
-}
-
-.dayLabel {
-  margin-top: 8px;
-  font-size: 0.75rem;
-  color: #6b7280;
-  text-align: center;
-}
-
-.dayOfWeek {
-  font-size: 0.75rem;
-  color: #6b7280;
-  text-align: center;
-}
-
-.dayOfWeekWeekend {
-  color: #ef4444;
-}
-
-.dayOfWeekToday {
-  font-weight: 600;
-}
-
-.hoursLabel {
-  position: absolute;
-  font-size: 0.7rem;
-  color: #6b7280;
-  right: 0;
-  transform: translateY(-50%);
-}
-
-.emptyChartMessage {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
-  height: 100%;
-  color: #9ca3af;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.recordChartTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.recordChartTitle::before {
+  content: "📈";
+  font-size: 1.25rem;
+  background: none;
+  -webkit-text-fill-color: initial;
+}
+
+.chartDateRange {
+  font-size: 0.875rem;
+  color: #64748b;
+  font-weight: 500;
+  margin-left: 0.5rem;
+  background: rgba(139, 92, 246, 0.05);
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+/* 버튼 그룹 */
+.recordChartControls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .refreshButton {
-  transition: transform 0.3s ease;
+  padding: 0.5rem;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  color: #8b5cf6;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
 }
 
-.refreshButton:hover {
-  transform: rotate(45deg);
+.refreshButton:hover:not(:disabled) {
+  background: rgba(139, 92, 246, 0.1);
+  transform: rotate(180deg);
 }
 
-.loadingAnimation {
-  animation: pulse 1.5s infinite;
+.refreshButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-@keyframes pulse {
-  0% {
-    opacity: 0.6;
+.viewToggleGroup {
+  display: flex;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 0.75rem;
+  padding: 0.25rem;
+  border: 1px solid rgba(139, 92, 246, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.viewToggleButton {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.viewToggleButton.active {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  color: white;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+}
+
+.viewToggleButton:not(.active) {
+  background: transparent;
+  color: #64748b;
+}
+
+.viewToggleButton:not(.active):hover {
+  background: rgba(139, 92, 246, 0.05);
+  color: #8b5cf6;
+}
+
+/* 차트 영역 */
+.recordChartContainer {
+  position: relative;
+  height: 300px;
+  padding-bottom: 60px;
+  margin-top: 1rem;
+}
+
+/* 기준선 스타일 */
+.baselineLabelContainer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.baselineLabel {
+  position: absolute;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.375rem;
+  backdrop-filter: blur(8px);
+}
+
+.standardBaseline {
+  border-top: 2px dotted rgba(99, 102, 241, 0.4);
+}
+
+.standardBaseline .baselineLabel {
+  left: 0;
+  top: -1.75rem;
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.averageBaseline {
+  border-top: 2px dashed rgba(239, 68, 68, 0.4);
+}
+
+.averageBaseline .baselineLabel {
+  right: 0;
+  top: -1.75rem;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* 막대 차트 영역 */
+.chartBarsContainer {
+  display: flex;
+  justify-content: space-between;
+  height: 100%;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.chartBarColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  height: 100%;
+  position: relative;
+}
+
+/* 근무시간 라벨 */
+.workHoursLabel {
+  position: absolute;
+  top: -1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.375rem;
+  backdrop-filter: blur(8px);
+  z-index: 20;
+}
+
+.workHoursLabel.normal {
+  background: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.workHoursLabel.overtime {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* 막대 그래프 */
+.chartBarContainer {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+
+.chartBar {
+  width: 75%;
+  border-radius: 0.375rem 0.375rem 0 0;
+  position: absolute;
+  bottom: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.chartBar.normal {
+  background: linear-gradient(180deg, #a855f7 0%, #8b5cf6 50%, #7c3aed 100%);
+}
+
+.chartBar.overtime {
+  background: linear-gradient(180deg, #f87171 0%, #ef4444 50%, #dc2626 100%);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  z-index: 2;
+}
+
+.chartBar.today {
+  background: linear-gradient(180deg, #6366f1 0%, #4f46e5 50%, #4338ca 100%);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3),
+    0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.chartBar:hover {
+  transform: scaleY(1.05);
+  filter: brightness(110%);
+}
+
+/* 날짜 라벨 */
+.dateLabelContainer {
+  position: absolute;
+  bottom: -3.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  width: 100%;
+}
+
+.dateLabel {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+  margin-bottom: 0.125rem;
+}
+
+.dayLabel {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+.dayLabel.today {
+  color: #6366f1;
+  font-weight: 600;
+}
+
+/* 범례 */
+.chartLegend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 3rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 0.75rem;
+  border: 1px solid rgba(139, 92, 246, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.legendColor {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 0.125rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.legendColor.normal {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.legendColor.overtime {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.legendColor.today {
+  background: linear-gradient(135deg, #6366f1, #4338ca);
+}
+
+.legendColor.averageLine {
+  width: 1rem;
+  height: 2px;
+  border-top: 2px dashed #ef4444;
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* 데이터 요약 */
+.dataSummary {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.summaryCard {
+  background: rgba(255, 255, 255, 0.6);
+  padding: 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(139, 92, 246, 0.1);
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+}
+
+.summaryCard:hover {
+  background: rgba(255, 255, 255, 0.8);
+  transform: translateY(-1px);
+}
+
+.summaryLabel {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.summaryValue {
+  font-size: 1.125rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .chartWrapper {
+    height: 280px;
   }
-  50% {
+
+  .chartTitle {
+    font-size: 1.125rem;
+    margin-bottom: 1rem;
+  }
+
+  .emptyContainer {
+    padding: 1.5rem;
+  }
+
+  .emptyIcon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .emptyIcon::before {
+    font-size: 20px;
+  }
+
+  .recordChartWrapper {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .recordChartHeader {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .recordChartTitle {
+    font-size: 1.25rem;
+  }
+
+  .chartDateRange {
+    font-size: 0.75rem;
+    margin-left: 0;
+    margin-top: 0.25rem;
+  }
+
+  .recordChartControls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .recordChartContainer {
+    height: 240px;
+    padding-bottom: 50px;
+  }
+
+  .chartLegend {
+    gap: 1rem;
+    justify-content: center;
+  }
+
+  .summaryGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .chartWrapper {
+    height: 240px;
+  }
+
+  .chartTitle {
+    font-size: 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .barChart .recharts-cartesian-axis-tick {
+    font-size: 10px;
+  }
+
+  .pieChart .recharts-legend-wrapper {
+    font-size: 10px;
+  }
+
+  .recordChartTitle {
+    font-size: 1.125rem;
+  }
+
+  .viewToggleButton {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .recordChartContainer {
+    height: 200px;
+  }
+
+  .summaryGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .chartLegend {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+}
+
+/* 다크 모드 지원 */
+@media (prefers-color-scheme: dark) {
+  .chartTitle {
+    color: #e2e8f0;
+    border-bottom-color: #334155;
+  }
+
+  .loadingText,
+  .emptyMessage {
+    color: #94a3b8;
+  }
+
+  .emptyDescription {
+    color: #64748b;
+  }
+
+  .barChart .recharts-cartesian-axis-tick {
+    fill: #94a3b8;
+  }
+
+  .barChart .recharts-cartesian-grid-horizontal line,
+  .barChart .recharts-cartesian-grid-vertical line {
+    stroke: #334155;
+  }
+
+  .customTooltip {
+    background: rgba(30, 41, 59, 0.95) !important;
+    border-color: rgba(51, 65, 85, 0.8) !important;
+  }
+
+  .customTooltip .recharts-tooltip-label {
+    color: #e2e8f0 !important;
+  }
+
+  .customTooltip .recharts-tooltip-item {
+    color: #cbd5e1 !important;
+  }
+}
+
+/* 툴팁이 있는 차트 바 */
+.chartBarWithTooltip {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.chartBarWithTooltip:hover {
+  transform: scaleY(1.05) scaleX(1.1);
+  filter: brightness(110%);
+  z-index: 3;
+}
+
+/* 야근 인디케이터 */
+.overtimeIndicator {
+  position: absolute;
+  right: -5px;
+  width: 8px;
+  height: 8px;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+  z-index: 4;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.overtimeIndicator:hover {
+  transform: scale(1.3);
+  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.5);
+}
+
+/* 커스텀 툴팁 스타일 개선 */
+.chartBarWithTooltip[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: pre-line;
+  z-index: 1000;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+/* 커스텀 툴팁 스타일 */
+.customTooltipOverlay {
+  position: fixed;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.tooltipContent {
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  font-size: 14px;
+  min-width: 200px;
+  animation: tooltipFadeIn 0.2s ease;
+}
+
+.tooltipHeader {
+  font-weight: 600;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.tooltipBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tooltipRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tooltipLabel {
+  color: #cbd5e1;
+  font-size: 13px;
+}
+
+.tooltipValue {
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.overtimeValue {
+  color: #fca5a5 !important;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
     opacity: 1;
-  }
-  100% {
-    opacity: 0.6;
+    transform: translateY(0);
   }
 }

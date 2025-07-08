@@ -11,4 +11,5 @@ import java.time.LocalDate;
 public class WorkHoursChartResponseDto {
     private LocalDate date;
     private Double workingHours;
+    private Double overtimeHours;
 }

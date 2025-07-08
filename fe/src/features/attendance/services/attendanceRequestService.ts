@@ -184,7 +184,8 @@ export const getAllRequests = async (
   status: ApprovalStatus = "PENDING",
   yearMonth?: string,
   page: number = 1,
-  size: number = 15
+  size: number = 15,
+  keyword?: string // 현재 백엔드에서 지원하지 않음, 프론트엔드에서 필터링
 ): Promise<{
   content: AttendanceRequestDetail[];
   totalPages: number;
@@ -197,8 +198,15 @@ export const getAllRequests = async (
   if (yearMonth) {
     params.append("yearMonth", yearMonth);
   }
+  // keyword는 백엔드에서 지원하지 않으므로 제외
+  // if (keyword) {
+  //   params.append("keyword", keyword);
+  // }
 
   const fullUrl = `${BASE_URL}/admin?${params.toString()}`;
+  console.log("API 호출 URL:", fullUrl);
+  console.log("검색 키워드 (프론트엔드 처리):", keyword);
+
   const data = await apiClient<{
     content: AttendanceRequestDetail[];
     totalPages: number;
@@ -275,6 +283,100 @@ export const isElectron = (): boolean => {
   return process.env.NEXT_PUBLIC_ENV === "electron";
 };
 
+// ============================== 차트 데이터 API ==============================
+
+/**
+ * 부서별 휴가 사용 통계 조회 (관리자용)
+ */
+export const getDepartmentUsageStats = async (
+  yearMonth: string
+): Promise<{ departmentName: string; count: number }[]> => {
+  try {
+    // 모든 상태의 요청 데이터를 가져와서 부서별로 집계
+    const [pendingResponse, approvedResponse, rejectedResponse] =
+      await Promise.all([
+        getAllRequests("PENDING", yearMonth, 1, 1000),
+        getAllRequests("APPROVED", yearMonth, 1, 1000),
+        getAllRequests("REJECTED", yearMonth, 1, 1000),
+      ]);
+
+    // 모든 요청 합치기
+    const allRequests = [
+      ...pendingResponse.content,
+      ...approvedResponse.content,
+      ...rejectedResponse.content,
+    ];
+
+    if (allRequests.length === 0) {
+      return [];
+    }
+
+    // 부서별로 그룹화
+    const departmentStats = allRequests.reduce((acc, request) => {
+      const dept = request.departmentName || "미분류";
+      acc[dept] = (acc[dept] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // 배열 형태로 변환
+    const result = Object.entries(departmentStats).map(
+      ([departmentName, count]) => ({
+        departmentName,
+        count,
+      })
+    );
+
+    return result;
+  } catch (error) {
+    return [];
+  }
+};
+
+/**
+ * 휴가 유형별 사용 통계 조회 (관리자용)
+ */
+export const getLeaveTypeUsageStats = async (
+  yearMonth: string
+): Promise<{ leaveType: string; count: number }[]> => {
+  try {
+    // 모든 상태의 요청 데이터를 가져와서 휴가 유형별로 집계
+    const [pendingResponse, approvedResponse, rejectedResponse] =
+      await Promise.all([
+        getAllRequests("PENDING", yearMonth, 1, 1000),
+        getAllRequests("APPROVED", yearMonth, 1, 1000),
+        getAllRequests("REJECTED", yearMonth, 1, 1000),
+      ]);
+
+    // 모든 요청 합치기
+    const allRequests = [
+      ...pendingResponse.content,
+      ...approvedResponse.content,
+      ...rejectedResponse.content,
+    ];
+
+    if (allRequests.length === 0) {
+      return [];
+    }
+
+    // 휴가 유형별로 그룹화
+    const leaveTypeStats = allRequests.reduce((acc, request) => {
+      const type = request.leaveType;
+      acc[type] = (acc[type] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // 배열 형태로 변환
+    const result = Object.entries(leaveTypeStats).map(([leaveType, count]) => ({
+      leaveType,
+      count,
+    }));
+
+    return result;
+  } catch (error) {
+    return [];
+  }
+};
+
 export default {
   // 일반 사용자용 API
   submitRequest,
@@ -290,6 +392,10 @@ export default {
   approveRequest,
   rejectRequest,
   changeRequestStatus,
+
+  // 차트 데이터 API
+  getDepartmentUsageStats,
+  getLeaveTypeUsageStats,
 
   // 유틸리티
   isElectron,

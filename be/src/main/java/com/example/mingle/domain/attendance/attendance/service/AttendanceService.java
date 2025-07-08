@@ -139,33 +139,48 @@ public class AttendanceService {
             throw new IllegalStateException("이미 퇴근 처리되었습니다.");
         }
 
+        attendance.setCheckOutTime(now);
+
         // 표준 퇴근 시간 설정 (18:00)
         LocalDateTime standardEndTime = today.atTime(STANDARD_END_HOUR, STANDARD_END_MINUTE);
 
-        // 야근 기준 시간 (18:10) - 10분 유예
-        LocalDateTime overtimeThreshold = standardEndTime.plusMinutes(OVERTIME_THRESHOLD_MINUTES);
+        // 정규시간과 야근시간 분리 계산
+        if (now.isAfter(standardEndTime)) {
+            // 18시를 넘은 경우
+            LocalDateTime regularEndTime = attendance.getCheckInTime().isAfter(standardEndTime)
+                    ? attendance.getCheckInTime()  // 출근이 18시 이후면 정규시간 0
+                    : standardEndTime;             // 정상적으로 18시까지가 정규시간
 
+            // 정규 근무시간 계산 (출근시간 ~ 18시, 점심시간 제외)
+            double regularHours = Duration.between(attendance.getCheckInTime(), regularEndTime).toMinutes() / 60.0;
+            double regularLunchDeduction = calculateLunchDeduction(today, attendance.getCheckInTime(), regularEndTime);
+            regularHours = Math.max(0, regularHours - regularLunchDeduction);
 
-        attendance.setCheckOutTime(now);
-        double workingHours = Duration.between(attendance.getCheckInTime(), now).toMinutes() / 60.0;
-        // 점심시간 제외 (기본 1시간)
-        workingHours = Math.max(0, workingHours - 1.0);  // 음수 방지
-        attendance.setWorkingHours(workingHours);
+            // 야근시간 계산 (18시 ~ 퇴근시간) - 점심시간 제외 없음
+            double overtimeHours = Duration.between(standardEndTime, now).toMinutes() / 60.0;
 
-        // 야근 자동 감지 및 처리
-        if (now.isAfter(overtimeThreshold)) {
+            // 전체 근무시간 = 정규시간 + 야근시간
+            double totalWorkingHours = regularHours + overtimeHours;
+
+            attendance.setWorkingHours(totalWorkingHours);  // 전체 근무시간
+            attendance.setOvertimeHours(overtimeHours);     // 야근시간만
+
             // 상태가 오후 반차인 경우는 야근 처리하지 않음
             if (attendance.getAttendanceStatus() != AttendanceStatus.ON_HALF_DAY_PM) {
                 attendance.setAttendanceStatus(AttendanceStatus.OVERTIME);
-
                 attendance.setOvertimeStart(standardEndTime);
                 attendance.setOvertimeEnd(now);
-
-                // 야근 시간 계산 (표준 퇴근 시간부터 실제 퇴근 시간까지)
-                double overtimeHours = Duration.between(standardEndTime, now).toMinutes() / 60.0;
-                attendance.setOvertimeHours(overtimeHours);
             }
+        } else {
+            // 18시 이전 퇴근
+            double totalWorkingHours = Duration.between(attendance.getCheckInTime(), now).toMinutes() / 60.0;
+            double lunchDeduction = calculateLunchDeduction(today, attendance.getCheckInTime(), now);
+            totalWorkingHours = Math.max(0, totalWorkingHours - lunchDeduction);
+
+            attendance.setWorkingHours(totalWorkingHours);
+            attendance.setOvertimeHours(0.0);  // 야근시간 없음
         }
+
         attendanceRepository.save(attendance);
         return attendanceMapper.toRecordDto(attendance);
     }
@@ -471,6 +486,23 @@ public class AttendanceService {
             attendance.setOvertimeHours(0.0);
         }
         return attendanceMapper.toDetailDto(attendance);
+    }
+
+    private static double calculateLunchDeduction(LocalDate date, LocalDateTime startTime, LocalDateTime endTime) {
+        // 점심시간 설정 (12:00 ~ 13:00)
+        LocalDateTime lunchStart = date.atTime(12, 0);
+        LocalDateTime lunchEnd = date.atTime(13, 0);
+
+        // 근무시간이 점심시간과 겹치는지 확인
+        if (startTime.isBefore(lunchEnd) && endTime.isAfter(lunchStart)) {
+            LocalDateTime overlapStart = startTime.isAfter(lunchStart) ? startTime : lunchStart;
+            LocalDateTime overlapEnd = endTime.isBefore(lunchEnd) ? endTime : lunchEnd;
+
+            if (overlapStart.isBefore(overlapEnd)) {
+                return Duration.between(overlapStart, overlapEnd).toMinutes() / 60.0;
+            }
+        }
+        return 0.0;
     }
 
 }

@@ -11,4 +11,6 @@ import lombok.NoArgsConstructor;
 public class ApprovalActionRequest {
     private String comment;
     private ApprovalStatus approvalStatus;
+    private String nickName;
+    private String userName;
 }

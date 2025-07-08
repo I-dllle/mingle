@@ -4,6 +4,7 @@ import type {
   AttendanceRecord,
   AttendanceDetail,
   AttendancePageResponse,
+  AttendanceAdminPageResponse,
   AttendanceMonthStats,
   AttendanceAdminRecord,
   WorkHoursChartPoint,
@@ -154,7 +155,7 @@ export const getAllAttendanceRecordsForAdmin = async (
   status?: AttendanceStatus,
   page: number = 1,
   size: number = 15
-): Promise<AttendancePageResponse> => {
+): Promise<AttendanceAdminPageResponse> => {
   // 1) URLSearchParams로 쿼리스트링 생성
   const params = new URLSearchParams();
   params.append("yearMonth", yearMonth);
@@ -171,8 +172,8 @@ export const getAllAttendanceRecordsForAdmin = async (
 
   // 3) apiClient<T> 함수 자체가 fetch 후 res.json()을 리턴하기 때문에,
   //    response.data 가 아니라, 함수가 곧 { content: [...], totalPages, … } 형태를 직접 리턴함.
-  const response: AttendancePageResponse =
-    await apiClient<AttendancePageResponse>(urlWithQuery, {
+  const response: AttendanceAdminPageResponse =
+    await apiClient<AttendanceAdminPageResponse>(urlWithQuery, {
       method: "GET",
       // fetch 기본이 “GET”이므로, 사실 옵션을 안 줘도 무방합니다.
     });

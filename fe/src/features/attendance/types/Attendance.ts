@@ -24,11 +24,16 @@ export interface AttendanceDetail extends AttendanceRecord {
 export interface AttendanceAdminRecord {
   id: number;
   date: string;
+  userName: string;
+  userEmail: string;
   nickName: string;
   departmentName: string;
-  attendanceStatus: AttendanceStatus;
-  checkIn: string | null;
-  checkOut: string | null;
+  status: AttendanceStatus;
+  checkInTime: string | null;
+  checkOutTime: string | null;
+  workingHours: number;
+  overtimeHours: number;
+  remarks: string | null;
 }
 
 export interface AttendanceMonthStats {
@@ -51,9 +56,19 @@ export interface AttendancePageResponse {
   last: boolean;
 }
 
+export interface AttendanceAdminPageResponse {
+  content: AttendanceAdminRecord[];
+  pageNumber: number;
+  pageSize: number;
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+}
+
 export interface WorkHoursChartPoint {
   date: string;
   workingHours: number;
+  overtimeHours?: number; // 백엔드에서 추가된 필드
 }
 
 export interface AttendanceExcelRow {

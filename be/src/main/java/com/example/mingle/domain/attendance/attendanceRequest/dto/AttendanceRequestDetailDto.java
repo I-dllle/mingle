@@ -14,8 +14,7 @@ import java.util.List;
 @Getter
 @Builder
 public class AttendanceRequestDetailDto {
-
-    private Long userId;
+    private String nickname;
 
     private Long id;
 
@@ -38,6 +37,8 @@ public class AttendanceRequestDetailDto {
     private String approvalComment;
 
     private Long approverId;
+    private String approverNickname;
+    private String approverName;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;

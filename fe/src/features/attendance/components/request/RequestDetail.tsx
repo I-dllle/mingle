@@ -93,12 +93,16 @@ export default function RequestDetail({
   }, [requestId, isAdmin]);
   // 승인 처리
   const handleApprove = async (comment: string = "") => {
+    console.log("승인 버튼 클릭됨, comment:", comment);
     try {
       setProcessingAction(true);
+      console.log("API 호출 시작:", requestId);
       await attendanceRequestService.approveRequest(Number(requestId), comment);
+      console.log("API 호출 성공");
       setShowApproveModal(false);
 
       if (onApprove) {
+        console.log("onApprove 콜백 호출");
         onApprove();
       } else {
         // 요청 데이터 다시 로드
@@ -109,14 +113,15 @@ export default function RequestDetail({
         setRequest(updatedRequest);
       }
     } catch (err: any) {
+      console.error("승인 처리 오류:", err);
       setError(err.message || "요청 승인 중 오류가 발생했습니다.");
-      console.error("Approval error:", err);
     } finally {
       setProcessingAction(false);
     }
   };
   // 거부 처리
   const handleReject = async (comment?: string) => {
+    console.log("반려 버튼 클릭됨, comment:", comment);
     // comment가 undefined이거나 빈 문자열이면 오류 처리
     if (!comment || !comment.trim()) {
       setError("거부 사유를 입력해주세요.");
@@ -125,10 +130,13 @@ export default function RequestDetail({
 
     try {
       setProcessingAction(true);
+      console.log("반려 API 호출 시작:", requestId);
       await attendanceRequestService.rejectRequest(Number(requestId), comment);
+      console.log("반려 API 호출 성공");
       setShowRejectModal(false);
 
       if (onReject) {
+        console.log("onReject 콜백 호출");
         onReject();
       } else {
         // 요청 데이터 다시 로드
@@ -139,8 +147,8 @@ export default function RequestDetail({
         setRequest(updatedRequest);
       }
     } catch (err: any) {
+      console.error("반려 처리 오류:", err);
       setError(err.message || "요청 거부 중 오류가 발생했습니다.");
-      console.error("Rejection error:", err);
     } finally {
       setProcessingAction(false);
     }
@@ -218,6 +226,9 @@ export default function RequestDetail({
   const isRequestEditable = isPending && isOwner && !isPastStartDate;
   const isRequestCancelable = isPending && isOwner && !isPastStartDate;
   const canApproveOrReject = isPending && isAdmin;
+
+  // 관리자도 기간이 지났으면 수정 불가
+  const canAdminEdit = isAdmin && !isPastStartDate;
 
   // 날짜 형식화 - 더 안정적인 날짜 처리를 위해 개선
   const formatDate = (dateString: string | null | undefined) => {
@@ -297,7 +308,7 @@ export default function RequestDetail({
     }
   };
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-8">
+    <div className="p-8">
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-2xl font-bold text-gray-800">휴가 요청 상세</h2>
         <ApprovalStatusBadge status={request.approvalStatus} />
@@ -315,7 +326,7 @@ export default function RequestDetail({
           <div>
             <p className="text-sm text-gray-500">요청자</p>
             <p className="font-medium text-gray-800">
-              {request.userName || "(정보 없음)"}
+              {request.nickname || request.userName || "(정보 없음)"}
             </p>
           </div>
           <div>
@@ -388,14 +399,16 @@ export default function RequestDetail({
               <div>
                 <p className="text-sm text-gray-500">처리자</p>
                 <p className="font-medium text-gray-800">
-                  {request.approverName || "(정보 없음)"}
+                  {request.approverName ||
+                    request.approverNickname ||
+                    "(정보 없음)"}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">처리일</p>
                 <p className="font-medium text-gray-800">
-                  {request.updatedAt
-                    ? formatDate(request.updatedAt)
+                  {request.approvedAt || request.updatedAt
+                    ? formatDate(request.approvedAt || request.updatedAt)
                     : "(정보 없음)"}
                 </p>
               </div>
@@ -408,6 +421,20 @@ export default function RequestDetail({
                     </p>
                   </div>
                 )}
+
+              {/* 승인/반려 댓글 표시 */}
+              {request.approvalComment && (
+                <div className="col-span-2">
+                  <p className="text-sm text-gray-500">
+                    {request.approvalStatus === "APPROVED"
+                      ? "승인 의견"
+                      : "처리 의견"}
+                  </p>
+                  <p className="text-gray-700 bg-gray-50 p-3 rounded-md whitespace-pre-wrap">
+                    {request.approvalComment}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -448,52 +475,82 @@ export default function RequestDetail({
           </div>
         )}
         {/* 버튼 그룹 */}
-        <div className="border-t border-gray-200 pt-8 flex justify-end space-x-3">
-          {isRequestEditable && (
-            <button
-              type="button"
-              onClick={() =>
-                router.push(`/attendance/requests/${requestId}/edit`)
-              }
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:bg-gray-400"
-              disabled={processingAction}
-            >
-              수정하기
-            </button>
+        <div className="border-t border-gray-200 pt-8">
+          {/* 기간 만료 알림 */}
+          {isPastStartDate && (
+            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+              <p className="text-sm text-yellow-800">
+                ⚠️ 시작일이 지난 요청은 수정하거나 취소할 수 없습니다.
+              </p>
+            </div>
           )}
 
-          {isRequestCancelable && (
-            <button
-              type="button"
-              onClick={() => setShowCancelConfirm(true)}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-400"
-              disabled={processingAction}
-            >
-              {processingAction ? "처리중..." : "요청 취소"}
-            </button>
-          )}
-
-          {canApproveOrReject && (
-            <>
+          <div className="flex justify-end space-x-3">
+            {/* 관리자 수정 버튼 (관리자는 기간이 지나지 않았을 때만 수정 가능) */}
+            {canAdminEdit && (
               <button
                 type="button"
-                onClick={() => setShowRejectModal(true)}
+                onClick={() => router.push(`/panel/requests/${requestId}/edit`)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400"
+                disabled={processingAction}
+              >
+                관리자 수정
+              </button>
+            )}
+
+            {/* 일반 사용자 수정 버튼 */}
+            {isRequestEditable && (
+              <button
+                type="button"
+                onClick={() =>
+                  router.push(`/attendance/requests/${requestId}/edit`)
+                }
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:bg-gray-400"
+                disabled={processingAction}
+              >
+                수정하기
+              </button>
+            )}
+
+            {isRequestCancelable && (
+              <button
+                type="button"
+                onClick={() => setShowCancelConfirm(true)}
                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-400"
                 disabled={processingAction}
               >
-                {processingAction ? "처리중..." : "반려하기"}
+                {processingAction ? "처리중..." : "요청 취소"}
               </button>
+            )}
 
-              <button
-                type="button"
-                onClick={() => setShowApproveModal(true)}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400"
-                disabled={processingAction}
-              >
-                {processingAction ? "처리중..." : "승인하기"}
-              </button>
-            </>
-          )}
+            {canApproveOrReject && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    console.log("반려하기 버튼 클릭됨");
+                    setShowRejectModal(true);
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-400"
+                  disabled={processingAction}
+                >
+                  {processingAction ? "처리중..." : "반려하기"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    console.log("승인하기 버튼 클릭됨");
+                    setShowApproveModal(true);
+                  }}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400"
+                  disabled={processingAction}
+                >
+                  {processingAction ? "처리중..." : "승인하기"}
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </div>{" "}
       {/* 모달 컴포넌트들 */}

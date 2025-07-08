@@ -5,6 +5,7 @@ import com.example.mingle.domain.attendance.enums.ApprovalStatus;
 import com.example.mingle.domain.attendance.attendanceRequest.entity.AttendanceRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -29,6 +30,7 @@ public interface AttendanceRequestRepository extends JpaRepository<AttendanceReq
             Long userId, ApprovalStatus status, LocalDate start, LocalDate end, Pageable pageable
     );
 
+    @EntityGraph(attributePaths = {"user", "user.department"})
     Page<AttendanceRequest> findByApprovalStatusAndStartDateBetween(
             ApprovalStatus status, LocalDate start, LocalDate end, Pageable pageable
     );
