@@ -44,8 +44,8 @@ public class AttendanceExcelService {
                         .nickName(defaultIfEmpty(a.getUser().getNickname()))
                         .departmentName(defaultIfEmpty(a.getUser().getDepartment().getDepartmentName()))
                         .date(a.getDate().toString())
-                        .checkIn(formatTime(a.getCheckInTime()))
-                        .checkOut(formatTime(a.getCheckOutTime()))
+                        .checkInTime(formatTime(a.getCheckInTime()))
+                        .checkOutTime(formatTime(a.getCheckOutTime()))
                         .attendanceStatus(a.getAttendanceStatus().getDisplayName())
                         .leaveReason(a.getLeaveType() != null ? a.getLeaveType().getDisplayName() : "-")
                         .build())
@@ -94,10 +94,10 @@ public class AttendanceExcelService {
             row.createCell(3).setCellValue(dto.getDate());
             row.getCell(3).setCellStyle(defaultStyle);
 
-            row.createCell(4).setCellValue(dto.getCheckIn());
+            row.createCell(4).setCellValue(dto.getCheckInTime());
             row.getCell(4).setCellStyle(defaultStyle);
 
-            row.createCell(5).setCellValue(dto.getCheckOut());
+            row.createCell(5).setCellValue(dto.getCheckOutTime());
             row.getCell(5).setCellStyle(defaultStyle);
 
             Cell statusCell = row.createCell(6);

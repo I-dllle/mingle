@@ -114,8 +114,8 @@ public class AttendanceMapper {
                 .nickName(nickName)
                 .departmentName(departmentName)
                 .attendanceStatus(attendance.getAttendanceStatus())
-                .checkIn(checkIn)
-                .checkOut(checkOut)
+                .checkInTime(checkIn)
+                .checkOutTime(checkOut)
                 .build();
     }
 

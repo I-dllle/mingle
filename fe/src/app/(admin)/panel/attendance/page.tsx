@@ -22,7 +22,6 @@ export default function AdminAttendancePage() {
 
   // AdminAttendanceList에서 필터링된 데이터를 받는 핸들러
   const handleDataFiltered = (data: AttendanceAdminRecord[]) => {
-    console.log("필터링된 근태 데이터:", data);
     setFilteredRecords(data);
   };
 
@@ -38,17 +37,6 @@ export default function AdminAttendancePage() {
             직원들의 근태 현황을 효율적으로 관리하고 분석하세요
           </p>
         </header>
-
-        {/* 실제 컴포넌트 연동 확인 메시지 */}
-        <div className="mb-6 p-4 bg-blue-100 border border-blue-400 rounded-lg">
-          <div className="flex items-center">
-            <span className="text-blue-600 mr-2">🔗</span>
-            <span className="text-blue-800">
-              실제 컴포넌트 연동 완료 - AdminAttendanceList와
-              AttendanceStatsChart가 실제 API 데이터를 사용합니다
-            </span>
-          </div>
-        </div>
 
         {/* 기본 툴바 영역 */}
         <div className="mb-6 bg-white rounded-lg shadow-sm p-6">
@@ -97,13 +85,13 @@ export default function AdminAttendancePage() {
             {/* 검색 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                검색
+                통합 검색
               </label>
               <input
                 type="text"
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
-                placeholder="이름, 부서로 검색..."
+                placeholder="닉네임, 이름, 부서명으로 검색..."
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500"
               />
             </div>

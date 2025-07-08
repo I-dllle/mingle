@@ -16,6 +16,6 @@ public class AttendanceAdminDto {
     private String nickName;
     private String departmentName;
     private AttendanceStatus attendanceStatus;
-    private String checkIn;  // "09:00"
-    private String checkOut; // "18:00"
+    private String checkInTime;  // "09:00"
+    private String checkOutTime; // "18:00"
 }

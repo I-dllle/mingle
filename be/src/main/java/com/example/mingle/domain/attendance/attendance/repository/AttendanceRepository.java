@@ -46,8 +46,9 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
       AND (:userId IS NULL OR a.user.id = :userId)
       AND (:status IS NULL OR a.attendanceStatus = :status)
       AND (:keyword IS NULL OR (
-            LOWER(a.user.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
-            LOWER(a.user.loginId) LIKE LOWER(CONCAT('%', :keyword, '%'))
+            LOWER(a.user.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+            LOWER(a.user.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR 
+            LOWER(a.user.department.departmentName) LIKE LOWER(CONCAT('%', :keyword, '%'))
       ))
 """)
     Page<Attendance> findWithFilters(

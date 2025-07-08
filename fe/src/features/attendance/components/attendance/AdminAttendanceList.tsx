@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { AttendanceStatusBadge } from "./StatusBadge";
 import { getAllAttendanceRecordsForAdmin } from "@/features/attendance/services/attendanceService";
 import type { AttendanceAdminRecord } from "@/features/attendance/types/attendance";
@@ -35,7 +36,6 @@ export default function AdminAttendanceList({
 
   const fetchAttendanceRecords = async (page: number = 1) => {
     if (!yearMonth) {
-      console.log("yearMonth가 설정되지 않음:", yearMonth);
       return;
     }
 
@@ -43,15 +43,6 @@ export default function AdminAttendanceList({
     setError(null);
 
     try {
-      console.log("API 호출 시작:", {
-        yearMonth,
-        departmentId,
-        userId,
-        keyword,
-        status,
-        page,
-      });
-
       const response = await getAllAttendanceRecordsForAdmin(
         yearMonth,
         departmentId,
@@ -61,8 +52,6 @@ export default function AdminAttendanceList({
         page,
         pageSize
       );
-
-      console.log("API 응답:", response);
 
       setAttendanceRecords(response.content);
       setTotalPages(response.totalPages);
@@ -78,7 +67,6 @@ export default function AdminAttendanceList({
           ? err.message
           : "데이터 조회 중 오류가 발생했습니다."
       );
-      console.error("근태 데이터 조회 오류:", err);
     } finally {
       setLoading(false);
     }
@@ -106,6 +94,33 @@ export default function AdminAttendanceList({
     const h = Math.floor(hours);
     const m = Math.round((hours - h) * 60);
     return `${h}시간 ${m}분`;
+  };
+
+  const calculateWorkingHours = (
+    checkIn: string | null,
+    checkOut: string | null
+  ) => {
+    if (!checkIn || !checkOut) return "-";
+
+    try {
+      // HH:MM 형식의 시간을 분으로 변환
+      const [inHour, inMin] = checkIn.split(":").map(Number);
+      const [outHour, outMin] = checkOut.split(":").map(Number);
+
+      const checkInMinutes = inHour * 60 + inMin;
+      const checkOutMinutes = outHour * 60 + outMin;
+
+      const totalMinutes = checkOutMinutes - checkInMinutes;
+
+      if (totalMinutes <= 0) return "-";
+
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+
+      return `${hours}시간 ${minutes}분`;
+    } catch (error) {
+      return "-";
+    }
   };
 
   if (loading) {
@@ -172,7 +187,7 @@ export default function AdminAttendanceList({
                 상태
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                비고
+                액션
               </th>
             </tr>
           </thead>
@@ -199,16 +214,16 @@ export default function AdminAttendanceList({
                     <div className="flex items-center">
                       <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
                         <span className="text-sm font-medium text-purple-600">
-                          {record.userName?.charAt(0) || "?"}
+                          {record.nickName?.charAt(0) || "?"}
                         </span>
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">
-                          {record.userName || "이름 없음"}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {record.userEmail || ""}
-                        </div>
+                        <Link 
+                          href={`/panel/attendance/${record.id}`}
+                          className="text-sm font-medium text-gray-900 hover:text-purple-600 hover:underline cursor-pointer"
+                        >
+                          {record.nickName || "이름 없음"}
+                        </Link>
                       </div>
                     </div>
                   </td>
@@ -225,18 +240,22 @@ export default function AdminAttendanceList({
                     {formatTime(record.checkOutTime)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {formatWorkingHours(record.workingHours)}
-                    {record.overtimeHours && record.overtimeHours > 0 && (
-                      <div className="text-xs text-orange-600">
-                        야근: {formatWorkingHours(record.overtimeHours)}
-                      </div>
-                    )}
+                    {calculateWorkingHours(record.checkInTime, record.checkOutTime)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <AttendanceStatusBadge status={record.status} />
+                    <AttendanceStatusBadge status={record.attendanceStatus} />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {record.remarks || "-"}
+                    <Link
+                      href={`/panel/attendance/${record.id}`}
+                      className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-purple-600 bg-purple-100 hover:bg-purple-200 hover:text-purple-700 transition-colors"
+                    >
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      상세보기
+                    </Link>
                   </td>
                 </tr>
               ))

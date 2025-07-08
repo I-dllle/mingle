@@ -24,16 +24,11 @@ export interface AttendanceDetail extends AttendanceRecord {
 export interface AttendanceAdminRecord {
   id: number;
   date: string;
-  userName: string;
-  userEmail: string;
   nickName: string;
   departmentName: string;
-  status: AttendanceStatus;
-  checkInTime: string | null;
-  checkOutTime: string | null;
-  workingHours: number;
-  overtimeHours: number;
-  remarks: string | null;
+  attendanceStatus: AttendanceStatus;
+  checkInTime: string | null;  // "09:00"
+  checkOutTime: string | null; // "18:00"
 }
 
 export interface AttendanceMonthStats {
